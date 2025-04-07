@@ -65,4 +65,4 @@ Feel free to connect with me:
 
 [Email](mailto:germonram@gmail.com)
 ##
-Made with ❤️ using Astro
+Made with ❤️  using Astro
