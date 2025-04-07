@@ -1,0 +1,49 @@
+---
+let {
+	title,
+	class: className,
+	importance = 'h4',
+	higlight = false,
+	...args
+} = Astro.props;
+className += ' card';
+let cardTitleClass = ['card-title'];
+if (higlight) {
+	cardTitleClass.push('highlight');
+}
+
+const Tag = importance;
+---
+
+<style>
+	.card {
+		margin-bottom: 30px;
+		padding: 20px;
+		background-color: var(--card-background);
+		border-radius: 8px;
+		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+		border: 1px solid rgba(255, 255, 255, 0.05);
+		transition: background-color 0.2s ease;
+	}
+	.card-title {
+		width: 100%;
+		display: block;
+		color: var(--accent-color);
+		padding-bottom: 5px;
+		margin-bottom: 15px;
+	}
+	.highlight {
+		color: var(--accent-color);
+		text-decoration: underline var(--accent-color) solid 2px;
+	}
+	.card .card {
+		background-color: var(--nested-card-background);
+		box-shadow: none;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		margin-top: 15px;
+	}
+</style>
+<div class={className} {...args}>
+	<Tag class:list={[cardTitleClass]}>{title}</Tag>
+	<slot />
+</div>
