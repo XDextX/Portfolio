@@ -6,7 +6,7 @@ import node from '@astrojs/node';
 // https://astro.build/config
 export default defineConfig({
   output: "server",
-  base: '/Portfolio',
+  base: '/',
   adapter: node({
     mode: 'standalone'
   })
