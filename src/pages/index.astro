@@ -2,10 +2,11 @@
 import Card from '../components/Card.astro';
 import Profile from '../components/Profile.astro';
 import Resume from '../layouts/Resume.astro';
+import type { RepoObject } from '../types/global';
 let profileImg =
 	'https://media.licdn.com/dms/image/v2/C4E03AQHpgM-STCRHAw/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1538542265294?e=1749081600&v=beta&t=MJwKHbB4d5kNqCENPPGEtWT_WXBzTnQ1EIDQDhKrtDM';
 const response = await fetch(`${Astro.url}api/github-profile.json`);
-const repos = await response.json();
+const repos: RepoObject[] = await response.json();
 ---
 
 <style>
@@ -107,7 +108,7 @@ const repos = await response.json();
 	<section id='proyectos'>
 		<Card class:list={['card-container']} title='Proyectos' higlight>
 			{
-				repos.map((repo: any) => (
+				repos.map((repo: RepoObject) => (
 					<Card title={repo.name}>
 						<p>{repo.description}</p>
 					</Card>
