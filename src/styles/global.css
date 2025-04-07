@@ -1,0 +1,116 @@
+/* Variables de colores */
+:root {
+    /* Base oscura elegante */
+    --background-color: #1e1e2f;
+
+    /* Color primario: gris azulado profesional */
+    --primary-color: #2d3142;
+    --primary-color-dark: #1a1d2e;
+
+    /* Cards */
+    --card-background: #3c405a;
+    /* fondo para cards de primer nivel */
+    --nested-card-background: #2e3144;
+    /* fondo para cards anidadas */
+
+    /* Acento fresco */
+    --accent-color: #7bd389;
+    /* verde lima suave */
+    --accent-color-dark: #65b077;
+    --accent-color-darker: #4c9e66;
+
+    /* Texto */
+    --text-color: #f1f1f1;
+}
+
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: system-ui, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+main {
+    max-width: 80%;
+    margin: 20px auto;
+    background-color: var(--primary-color);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Secciones */
+
+/* Títulos */
+
+h1 {
+    font-size: 2rem;
+}
+
+h3 {
+    font-size: 1.5rem;
+}
+
+h4 {
+    font-size: 1.2rem;
+}
+
+/* Párrafos */
+p {
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+/* Listas */
+ul {
+    list-style: none;
+    padding-left: 20px;
+}
+
+ul li {
+    margin-bottom: 8px;
+}
+
+ul ul {
+    margin-top: 5px;
+    padding-left: 20px;
+    list-style-type: disc;
+}
+
+/* Imagen de perfil */
+
+/* Enlaces */
+a {
+    color: var(--accent-color);
+    font-weight: bold;
+}
+
+a:hover {
+    color: var(--accent-color-dark);
+    text-decoration: underline;
+}
+
+/* Diseño responsivo */
+@media (max-width: 768px) {
+    main {
+        width: 90%;
+    }
+
+    #intro img {
+        width: 120px;
+        height: 120px;
+    }
+}

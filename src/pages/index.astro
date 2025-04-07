@@ -3,6 +3,8 @@ import Card from '../components/Card.astro';
 import Profile from '../components/Profile.astro';
 import Resume from '../layouts/Resume.astro';
 import type { RepoObject } from '../types/global';
+import '../styles/global.css';
+
 let profileImg =
 	'https://media.licdn.com/dms/image/v2/C4E03AQHpgM-STCRHAw/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1538542265294?e=1749081600&v=beta&t=MJwKHbB4d5kNqCENPPGEtWT_WXBzTnQ1EIDQDhKrtDM';
 const response = await fetch(`${Astro.url}api/github-profile.json`);
@@ -20,7 +22,7 @@ const repos: RepoObject[] = await response.json();
 	}
 </style>
 <Resume>
-	<section id='intro'>
+	<section id='intro' data-label='Intro'>
 		<h1>German Montero Ramirez</h1>
 		<p>
 			Soy un desarrollador full stack con experiencia en .NET, Angular y desarrollo
@@ -29,7 +31,7 @@ const repos: RepoObject[] = await response.json();
 		</p>
 		<Profile size='280px' source={profileImg} />
 	</section>
-	<section id='habilidades'>
+	<section id='habilidades' data-label='Habilidades'>
 		<!-- make the items same width -->
 		<Card
 			class:list={['card-container']}
@@ -81,7 +83,7 @@ const repos: RepoObject[] = await response.json();
 			</Card>
 		</Card>
 	</section>
-	<section id='experiencia'>
+	<section id='experiencia' data-label='Experiencia'>
 		<Card class:list={['card-container']} title='Experiencia laboral' higlight>
 			<Card
 				title='Full Stack Developer - SD Misiones de Costa Rica S. A (2022 - 2025)'
@@ -105,7 +107,7 @@ const repos: RepoObject[] = await response.json();
 			</Card>
 		</Card>
 	</section>
-	<section id='proyectos'>
+	<section id='proyectos' data-label='Proyectos'>
 		<Card class:list={['card-container']} title='Proyectos' higlight>
 			{
 				repos.map((repo: RepoObject) => (
@@ -116,7 +118,7 @@ const repos: RepoObject[] = await response.json();
 			}
 		</Card>
 	</section>
-	<section id='contacto'>
+	<section id='contacto' data-label='Contacto'>
 		<Card class:list={['card-container']} title='Contacto' higlight>
 			<Card title='Email'>
 				<p>germonram@gmail.com</p>

@@ -44,6 +44,8 @@ const Tag = importance;
 	}
 </style>
 <div class={className} {...args}>
-	<Tag class:list={[cardTitleClass]}>{title}</Tag>
+	<slot name='title' class:list={[cardTitleClass]}>
+		{Tag ? <Tag class:list={[cardTitleClass]}>{title}</Tag> : ''}
+	</slot>
 	<slot />
 </div>

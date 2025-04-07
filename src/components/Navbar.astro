@@ -1,0 +1,134 @@
+---
+
+---
+
+<style>
+	/* Navbar estilizada al estilo del sitio */
+	.navbar {
+		position: sticky;
+		top: 0;
+		width: 100%;
+		background: var(--primary-color-dark);
+		padding: 1rem 2rem;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		z-index: 999;
+		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+		border-bottom: 1px solid var(--card-background);
+	}
+
+	.nav-list {
+		display: flex;
+		gap: 1.5rem;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		transition: all 0.3s ease;
+	}
+
+	.nav-link {
+		text-decoration: none;
+		color: var(--text-color);
+		font-weight: 600;
+		padding: 0.5rem 0;
+		border-bottom: 2px solid transparent;
+		transition:
+			color 0.2s,
+			border-color 0.2s;
+	}
+
+	.nav-link:hover {
+		color: var(--accent-color);
+		border-bottom: 2px solid var(--accent-color);
+	}
+
+	.nav-link.active {
+		color: var(--accent-color);
+		border-bottom: 2px solid var(--accent-color);
+	}
+
+	.menu-toggle {
+		display: none;
+		font-size: 1.8rem;
+		background: none;
+		border: none;
+		color: var(--accent-color);
+		cursor: pointer;
+	}
+
+	/* Responsive nav */
+	@media (max-width: 768px) {
+		.nav-list {
+			position: absolute;
+			top: 100%;
+			left: 0;
+			width: 100%;
+			background: var(--primary-color);
+			flex-direction: column;
+			align-items: flex-start;
+			padding: 1rem 2rem;
+			display: none;
+		}
+
+		.nav-list.open {
+			display: flex;
+		}
+
+		.menu-toggle {
+			display: block;
+		}
+
+		.nav-link {
+			padding: 0.75rem 0;
+			width: 100%;
+		}
+	}
+</style>
+<nav class='navbar'>
+	<button class='menu-toggle' id='menuToggle' aria-label='Abrir menú'>☰</button>
+	<ul class='nav-list' id='navList'></ul>
+
+	<script is:inline>
+		document.addEventListener('DOMContentLoaded', () => {
+			const menu = document.getElementById('navList');
+			const toggle = document.getElementById('menuToggle');
+
+			// 1. Generar links automáticamente
+			const sections = document.querySelectorAll('section[id]');
+			sections.forEach((section) => {
+				const li = document.createElement('li');
+				const a = document.createElement('a');
+				a.href = `#${section.id}`;
+				a.textContent = section.dataset.label || section.id;
+				a.className = 'nav-link';
+				li.appendChild(a);
+				menu.appendChild(li);
+			});
+
+			// 2. Scroll activo con IntersectionObserver
+			const observer = new IntersectionObserver(
+				(entries) => {
+					entries.forEach((entry) => {
+						const id = entry.target.id;
+						const link = document.querySelector(`a[href="#${id}"]`);
+						if (entry.isIntersecting) {
+							document
+								.querySelectorAll('.nav-link')
+								.forEach((el) => el.classList.remove('active'));
+							if (link) link.classList.add('active');
+						}
+					});
+				},
+				{ threshold: 0.5 },
+			);
+
+			sections.forEach((section) => observer.observe(section));
+
+			// 3. Toggle menú hamburguesa
+			toggle.addEventListener('click', () => {
+				menu.classList.toggle('open');
+			});
+		});
+	</script>
+</nav>
