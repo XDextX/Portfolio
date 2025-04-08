@@ -23,13 +23,27 @@ const repos: RepoObject[] = await response.json();
 </style>
 <Resume>
 	<section id='intro' data-label='Intro'>
-		<h1>German Montero Ramirez</h1>
-		<p>
-			Soy un desarrollador full stack con experiencia en .NET, Angular y desarrollo
-			de APIs. Me apasiona la optimización de bases de datos y las tecnologías en
-			la nube.
-		</p>
-		<Profile size='280px' source={profileImg} />
+		<Card title='German Montero Ramirez' class:list={['card-container']}>
+			<Profile size='280px' source={profileImg} />
+			<div>
+				<p>
+					Soy desarrollador de software con más de 6 años de experiencia,
+					especializado en desarrollo Full Stack y apasionado por construir
+					soluciones tecnológicas robustas y eficientes. A lo largo de mi carrera he
+					trabajado con tecnologías como .NET Core, Spring Boot, Azure Functions y
+					Angular, abarcando desde el diseño de bases de datos hasta la
+					implementación de APIs y aplicaciones web modernas. Tengo conocimientos
+					sólidos en lenguajes como Java, TypeScript, C# y SQL, así como experiencia
+					en entornos cloud, metodologías ágiles (Scrum y Kanban), y pruebas
+					automatizadas. Actualmente me encuentro en proceso de aprendizaje y
+					perfeccionamiento en Server-Sent Events (SSE), Jasmine y Selenium para
+					continuar expandiendo mis habilidades técnicas. Me apasiona mantenerme
+					actualizado con nuevas tecnologías, adaptarme a diferentes entornos de
+					desarrollo y participar en equipos colaborativos donde se impulsen
+					soluciones de alto impacto.
+				</p>
+			</div>
+		</Card>
 	</section>
 	<section id='habilidades' data-label='Habilidades'>
 		<!-- make the items same width -->
