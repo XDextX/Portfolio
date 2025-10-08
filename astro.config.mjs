@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import vercel from "@astrojs/vercel/serverless";
 
 import node from '@astrojs/node';
 
@@ -7,7 +8,5 @@ import node from '@astrojs/node';
 export default defineConfig({
   output: "server",
   base: '/',
-  adapter: node({
-    mode: 'standalone'
-  })
+  adapter: vercel( {  }),
 });
