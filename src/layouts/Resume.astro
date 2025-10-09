@@ -1,21 +1,154 @@
 ---
+import Card from '../components/Card.astro';
 import Navbar from '../components/Navbar.astro';
+import Profile from '../components/Profile.astro';
+import type { RepoObject } from '../types/global';
+let profileImg =
+	'https://media.licdn.com/dms/image/v2/C4E03AQHpgM-STCRHAw/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1538542265294?e=1749081600&v=beta&t=MJwKHbB4d5kNqCENPPGEtWT_WXBzTnQ1EIDQDhKrtDM';
+const response = await fetch(`${Astro.url}api/github-profile.json`);
+const repos: RepoObject[] = await response.json();
+
 ---
 
-<!doctype html>
-<html lang='en'>
-	<head>
-		<meta charset='UTF-8' />
-		<meta name='viewport' content='width=device-width' />
-		<link rel='icon' type='image/svg+xml' href='/favicon.svg' />
-		<meta name='generator' content={Astro.generator} />
-		<title>Astro Basics</title>
-	</head>
-	<body>
-		<Navbar />
-
-		<main>
-			<slot />
-		</main>
-	</body>
-</html>
+<style>
+	.card-container {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 20px;
+	}
+	.card-container > * {
+		flex: 1 1 30%;
+	}
+</style>
+<section id='intro' data-label='Intro'>
+	<Card title='German Montero Ramirez' class:list={['card-container']}>
+		<Profile size='280px' source={profileImg} />
+		<div>
+			<p>
+				Soy desarrollador de software con más de 6 años de experiencia,
+				especializado en desarrollo Full Stack y apasionado por construir soluciones
+				tecnológicas robustas y eficientes. A lo largo de mi carrera he trabajado
+				con tecnologías como .NET Core, Spring Boot, Azure Functions y Angular,
+				abarcando desde el diseño de bases de datos hasta la implementación de APIs
+				y aplicaciones web modernas. Tengo conocimientos sólidos en lenguajes como
+				Java, TypeScript, C# y SQL, así como experiencia en entornos cloud,
+				metodologías ágiles (Scrum y Kanban), y pruebas automatizadas. Actualmente
+				me encuentro en proceso de aprendizaje y perfeccionamiento en Server-Sent
+				Events (SSE), Jasmine y Selenium para continuar expandiendo mis habilidades
+				técnicas. Me apasiona mantenerme actualizado con nuevas tecnologías,
+				adaptarme a diferentes entornos de desarrollo y participar en equipos
+				colaborativos donde se impulsen soluciones de alto impacto.
+			</p>
+		</div>
+	</Card>
+</section>
+<section id='habilidades' data-label='Habilidades'>
+	<!-- make the items same width -->
+	<Card
+		class:list={['card-container']}
+		title='Habilidades'
+		importance='h2'
+		higlight
+	>
+		<Card title='Lenguajes de programación'>
+			<ul>
+				<li>C#</li>
+				<li>Java</li>
+				<li>JavaScript</li>
+				<li>TypeScript</li>
+			</ul>
+		</Card>
+		<Card title='Tecnologías'>
+			<ul>
+				<li>Angular</li>
+				<li>ASP.NET Core</li>
+				<li>Azure</li>
+				<li>Docker</li>
+				<li>Git</li>
+				<li>MongoDB</li>
+				<li>Node.js</li>
+				<li>PostgreSQL</li>
+				<li>React</li>
+				<li>TypeScript</li>
+			</ul>
+		</Card>
+		<Card title='Herramientas de desarrollo'>
+			<ul>
+				<li>GitHub</li>
+				<li>Visual Studio Code</li>
+				<li>Visual Studio</li>
+			</ul>
+		</Card>
+		<Card title='Herramientas de pruebas'>
+			<ul>
+				<li>Jest</li>
+				<li>Cypress</li>
+				<li>Selenium</li>
+			</ul>
+		</Card>
+		<Card title='Metodologías ágiles'>
+			<ul>
+				<li>Scrum</li>
+				<li>Kanban</li>
+			</ul>
+		</Card>
+	</Card>
+</section>
+<section id='experiencia' data-label='Experiencia'>
+	<Card class:list={['card-container']} title='Experiencia laboral' higlight>
+		<Card
+			title='Full Stack Developer - SD Misiones de Costa Rica S. A (2022 - 2025)'
+		>
+			<ul>
+				<li>Desarrollo de APIs en .NET Core.</li>
+				<li>Optimización de bases de datos SQL.</li>
+				<li>Desarrollo frontend con Angular y TypeScript.</li>
+				<li>Uso de SSE para comunicación en tiempo real.</li>
+			</ul>
+		</Card>
+		<Card
+			title='Software Engineer - Plantas y Flores Ornamentales S.A. (2019 - 2020)'
+		>
+			<ul>
+				<li>Desarrollo de aplicaciones web y de escritorio en .NET y ASP.NET.</li>
+				<li>Desarrollo de APIs con C#, Node.js y JavaScript.</li>
+				<li>Desarrollo móvil en Kotlin y Java.</li>
+				<li>Administración de bases de datos SQL Server.</li>
+			</ul>
+		</Card>
+	</Card>
+</section>
+<section id='proyectos' data-label='Proyectos'>
+	<Card class:list={['card-container']} title='Proyectos' higlight>
+		{
+			repos.map((repo: RepoObject) => (
+				<Card title={repo.name}>
+					<p>{repo.description}</p>
+				</Card>
+			))
+		}
+	</Card>
+</section>
+<section id='contacto' data-label='Contacto'>
+	<Card class:list={['card-container']} title='Contacto' higlight>
+		<Card title='Email'>
+			<p>germonram@gmail.com</p>
+		</Card>
+		<Card title='GitHub'>
+			<a target='_blank' href='https://github.com/XDextX'
+				>https://github.com/XDextX</a
+			>
+		</Card>
+		<Card title='LinkedIn'>
+			<a
+				target='_blank'
+				href='https://www.linkedin.com/in/german-montero-ramirez/'
+			>
+				https://www.linkedin.com/in/german-montero-ramirez/</a
+			>
+		</Card>
+	</Card>
+</section>
+<script type="application/ld+json">
+  {JSON.stringify(personJsonLd)}
+</script>
