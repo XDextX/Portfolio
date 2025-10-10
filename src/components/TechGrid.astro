@@ -1,0 +1,70 @@
+---
+import TechBadge from './TechBadge.astro';
+
+export interface TechItem {
+	name: string;
+	logo: string;
+	href?: string;
+	level?: 'beginner' | 'intermediate' | 'advanced';
+}
+export interface Props {
+	items: TechItem[];
+	title?: string;
+	compact?: boolean;
+	columns?: number;
+}
+const {
+	items,
+	title = 'Technologies / Tecnologías',
+	compact = false,
+	columns = 5,
+} = Astro.props;
+---
+
+<section class='tech-grid'>
+	<h2>{title}</h2>
+	<div class='grid' style={`--cols:${columns}`}>
+		{
+			items.map((t) => (
+				<TechBadge
+					name={t.name}
+					logo={t.logo}
+					href={t.href}
+					level={t.level}
+					compact={compact}
+					locale='en'
+				/>
+			))
+		}
+	</div>
+</section>
+
+<style>
+	.tech-grid {
+		margin-block: 1.25rem 1.5rem;
+	}
+	.tech-grid h2 {
+		font-size: 1.25rem;
+		margin-bottom: 0.75rem;
+	}
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(var(--cols, 5), minmax(0, 1fr));
+		gap: 12px;
+	}
+	@media (max-width: 1024px) {
+		.grid {
+			grid-template-columns: repeat(4, 1fr);
+		}
+	}
+	@media (max-width: 768px) {
+		.grid {
+			grid-template-columns: repeat(3, 1fr);
+		}
+	}
+	@media (max-width: 520px) {
+		.grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+</style>

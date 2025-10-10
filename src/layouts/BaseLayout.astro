@@ -5,27 +5,6 @@ const desc =
 	'Portafolio de German Montero Ramirez: .NET Core, Angular SSR, Java, SSE y optimización SQL. Proyectos, experiencia y contacto.';
 const site = 'https://portfolio-dext.vercel.app';
 const image = `${site}/og-cover.png`; // súbela a /public
-
-const personJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Person",
-  "name": "German Montero Ramirez",
-  "jobTitle": "Full-Stack Developer",
-  "url": "https://portfolio-dext.vercel.app",
-  "image": "https://portfolio-dext.vercel.app/images/profile.jpg", // o tu avatar de GitHub si lo obtienes por fetch
-  "sameAs": [
-    "https://www.linkedin.com/in/german-montero-ramirez/",
-    "https://github.com/XDextX"
-  ],
-  "email": "mailto:germonram@gmail.com",
-  "telephone": "+50685287828",
-  "address": {
-    "@type": "PostalAddress",
-    "addressLocality": "Jacó",
-    "addressRegion": "Puntarenas",
-    "addressCountry": "Costa Rica"
-  }
-};
 ---
 
 <head>
@@ -38,7 +17,7 @@ const personJsonLd = {
 	<meta property='og:type' content='website' />
 	<meta property='og:title' content={title} />
 	<meta property='og:description' content={desc} />
-	<meta property='og:url' content={site} />
+	<meta property='og:url' content={site + Astro.url.pathname} />
 	<meta property='og:image' content={image} />
 
 	<!-- Twitter -->
@@ -46,6 +25,5 @@ const personJsonLd = {
 	<meta name='twitter:title' content={title} />
 	<meta name='twitter:description' content={desc} />
 	<meta name='twitter:image' content={image} />
-	
 </head>
 <slot />

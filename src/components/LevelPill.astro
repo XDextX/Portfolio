@@ -1,0 +1,36 @@
+---
+import Pill from './Pill.astro';
+
+export interface Props {
+	level: 'beginner' | 'intermediate' | 'advanced';
+	size?: 'sm' | 'md';
+	outline?: boolean;
+	locale?: 'es' | 'en';
+}
+
+const { level, size = 'sm', outline = false, locale = 'en' } = Astro.props;
+
+const labelMap = {
+	en: {
+		beginner: 'Beginner',
+		intermediate: 'Intermediate',
+		advanced: 'Advanced',
+	},
+	es: {
+		beginner: 'Principiante',
+		intermediate: 'Intermedio',
+		advanced: 'Avanzado',
+	},
+} as const;
+
+const variantMap = {
+	beginner: 'warning',
+	intermediate: 'info',
+	advanced: 'success',
+} as const;
+
+const label = labelMap[locale][level];
+const variant = variantMap[level] as 'warning' | 'info' | 'success';
+---
+
+<Pill label={label} variant={variant} size={size} outline={outline} />

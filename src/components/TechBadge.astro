@@ -1,0 +1,102 @@
+---
+import LevelPill from './LevelPill.astro';
+
+export interface Props {
+	name: string; // "TypeScript"
+	logo: string; // "/tech/typescript.svg"
+	href?: string; // "https://www.typescriptlang.org/"
+	level?: 'beginner' | 'intermediate' | 'advanced';
+	compact?: boolean;
+	ariaLabel?: string;
+	locale?: 'es' | 'en';
+}
+
+const {
+	name,
+	logo,
+	href,
+	level,
+	compact = false,
+	ariaLabel = `${name} logo`,
+	locale = 'en',
+} = Astro.props;
+
+const Tag = href ? 'a' : 'div';
+---
+
+<figure class={`tech-badge ${compact ? 'compact' : ''}`}>
+	<Tag
+		{...href ? { href, target: '_blank', rel: 'noopener noreferrer' } : {}}
+		aria-label={ariaLabel}
+		title={name}
+		class='row'
+	>
+		<img
+			src={logo}
+			alt={ariaLabel}
+			loading='lazy'
+			decoding='async'
+			width='40'
+			height='40'
+		/>
+		<figcaption class='name'>
+			{name}
+			{
+				level && (
+					<LevelPill
+						level={level}
+						size={compact ? 'sm' : 'md'}
+						outline={false}
+						locale={locale}
+					/>
+				)
+			}
+		</figcaption>
+	</Tag>
+</figure>
+
+<style>
+	.tech-badge {
+		display: inline-block;
+		border: 1px solid var(--border, #e6e6e6);
+		border-radius: 12px;
+		padding: 10px 12px;
+		background: var(--card-background, #f7f7f7);
+		transition:
+			transform 0.15s,
+			box-shadow 0.15s,
+			border-color 0.15s;
+	}
+	.tech-badge:hover {
+		transform: translateY(-1px);
+		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
+		border-color: #ddd;
+	}
+	.row {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		text-decoration: none;
+		color: inherit;
+	}
+	img {
+		display: block;
+		width: 40px;
+		height: 40px;
+	}
+	.tech-badge.compact {
+		padding: 6px 8px;
+		border-radius: 10px;
+	}
+	.tech-badge.compact img {
+		width: 28px;
+		height: 28px;
+	}
+	.name {
+		font-size: 0.95rem;
+		font-weight: 600;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+</style>

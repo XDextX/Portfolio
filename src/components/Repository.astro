@@ -1,23 +1,43 @@
 ---
 import type { RepoObject } from '../types/global';
 import Card from './Card.astro';
-
-const p: RepoObject = Astro.props as RepoObject;
+interface Props {
+	name: string;
+	description: string;
+	language: string;
+	stargazers_count: number;
+	forks_count: number;
+	updated_at: string;
+	html_url: string;
+	homepage: string;
+}
+const {
+	name,
+	description,
+	language,
+	stargazers_count,
+	forks_count,
+	updated_at,
+	html_url,
+	homepage,
+} = Astro.props;
 ---
 
-<Card title={p.name} importance='h3'>
-	<p>{p.description || 'Sin descripción'}</p>
-	<p><strong>Stack:</strong> {p.language || 'N/A'}</p>
-	<p>⭐ {p.stargazers_count} · 🍴 {p.forks_count}</p>
-	<p>Actualizado: {new Date(p.updated_at).toLocaleDateString()}</p>
+<Card title={name} importance='h3'>
+	<p>{description || 'Sin descripción'}</p>
+	<p><strong>Stack:</strong> {language || 'N/A'}</p>
+	<p>⭐ {stargazers_count} · 🍴 {forks_count}</p>
+	<p>Actualizado: {new Date(updated_at).toLocaleDateString()}</p>
 	<div class='actions'>
-		<a href={p.html_url} target='_blank' rel='noopener'>Código</a>
+		<a href={html_url} target='_blank' rel='noopener'>Código</a>
 		{
-			p.homepage ? (
-				<a href={p.homepage} target='_blank' rel='noopener'>
+			homepage ? (
+				<a href={homepage} target='_blank' rel='noopener'>
 					Live Demo
 				</a>
-			) : null
+			) : (
+				<a>Sin demo</a>
+			)
 		}
 	</div>
 </Card>

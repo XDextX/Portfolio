@@ -1,15 +1,13 @@
 ---
 import Card from '../components/Card.astro';
-import Navbar from '../components/Navbar.astro';
 import Profile from '../components/Profile.astro';
 import Repository from '../components/Repository.astro';
-import Snack from '../components/Snack.astro';
 import type { RepoObject } from '../types/global';
-let profileImg =
-	'https://github.com/xdextx.png';
+import { TECH } from '../data/tech';
+import TechGrid from '../components/TechGrid.astro';
+let profileImg = 'https://github.com/xdextx.png';
 const response = await fetch(`${Astro.url}api/github-list.json`);
 const repos: RepoObject[] = await response.json();
-
 ---
 
 <style>
@@ -47,55 +45,7 @@ const repos: RepoObject[] = await response.json();
 </section>
 <section id='habilidades' data-label='Habilidades'>
 	<!-- make the items same width -->
-	<Card
-		class:list={['card-container']}
-		title='Habilidades'
-		importance='h2'
-		higlight
-	>
-		<Card title='Lenguajes de programación'>
-			<ul>
-				<li>C#</li>
-				<li>Java</li>
-				<li>JavaScript</li>
-				<li>TypeScript</li>
-			</ul>
-		</Card>
-		<Card title='Tecnologías'>
-			<ul>
-				<li>Angular</li>
-				<li>ASP.NET Core</li>
-				<li>Azure</li>
-				<li>Docker</li>
-				<li>Git</li>
-				<li>MongoDB</li>
-				<li>Node.js</li>
-				<li>PostgreSQL</li>
-				<li>React</li>
-				<li>TypeScript</li>
-			</ul>
-		</Card>
-		<Card title='Herramientas de desarrollo'>
-			<ul>
-				<li>GitHub</li>
-				<li>Visual Studio Code</li>
-				<li>Visual Studio</li>
-			</ul>
-		</Card>
-		<Card title='Herramientas de pruebas'>
-			<ul>
-				<li>Jest</li>
-				<li>Cypress</li>
-				<li>Selenium</li>
-			</ul>
-		</Card>
-		<Card title='Metodologías ágiles'>
-			<ul>
-				<li>Scrum</li>
-				<li>Kanban</li>
-			</ul>
-		</Card>
-	</Card>
+	<TechGrid items={TECH} title='Habilidades' columns={5} />
 </section>
 <section id='experiencia' data-label='Experiencia'>
 	<Card class:list={['card-container']} title='Experiencia laboral' higlight>
@@ -123,12 +73,7 @@ const repos: RepoObject[] = await response.json();
 </section>
 <section id='proyectos' data-label='Proyectos'>
 	<Card class:list={['card-container']} title='Proyectos' higlight>
-		{
-			repos.map((repo: RepoObject) => (
-				<Repository {...repo} />
-			))
-			
-		}
+		{repos.map((repo: RepoObject) => <Repository {...repo} />)}
 	</Card>
 </section>
 <section id='contacto' data-label='Contacto'>
@@ -142,7 +87,6 @@ const repos: RepoObject[] = await response.json();
 			>
 		</Card>
 		<Card title='LinkedIn'>
-			
 			<a
 				target='_blank'
 				href='https://www.linkedin.com/in/german-montero-ramirez/'
@@ -152,6 +96,25 @@ const repos: RepoObject[] = await response.json();
 		</Card>
 	</Card>
 </section>
-<script type="application/ld+json">
-  {JSON.stringify(personJsonLd)}
+<script type='application/ld+json'>
+	{
+		"@context": "https://schema.org",
+		"@type": "Person",
+		"name": "German Montero Ramirez",
+		"jobTitle": "Full-Stack Developer",
+		"url": "https://portfolio-dext.vercel.app",
+		"image": "https://portfolio-dext.vercel.app/images/profile.jpg", // o tu avatar de GitHub si lo obtienes por fetch
+		"sameAs": [
+			"https://www.linkedin.com/in/german-montero-ramirez/",
+			"https://github.com/XDextX"
+		],
+		"email": "mailto:germonram@gmail.com",
+		"telephone": "+50685287828",
+		"address": {
+			"@type": "PostalAddress",
+			"addressLocality": "Jacó",
+			"addressRegion": "Puntarenas",
+			"addressCountry": "Costa Rica"
+		}
+	}
 </script>
