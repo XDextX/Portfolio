@@ -13,7 +13,8 @@ export const GET: APIRoute = async () => {
             return new Response(JSON.stringify(cache.data), { headers: { "Content-Type": "application/json" } });
         }
         const url = new URL("https://api.github.com/search/repositories");
-        url.searchParams.set("q", `user:${GITHUB_USERNAME} topic:${GITHUB_TOPIC}`);
+        // url.searchParams.set("q", `user:${GITHUB_USERNAME} topic:${GITHUB_TOPIC}`);
+        url.searchParams.set("q", `user:${GITHUB_USERNAME}`);
         url.searchParams.set("per_page", "50");
         url.searchParams.set("sort", "updated");
         url.searchParams.set("order", "desc");
@@ -30,7 +31,6 @@ export const GET: APIRoute = async () => {
             return new Response(JSON.stringify({ error: "GitHub API error" }), { status: 500 });
         }
         const data = await res.json();
-        console.log(data);
         const items = (data.items || []).map((r: any) => ({
             id: r.id, name: r.name, full_name: r.full_name,
             description: r.description, html_url: r.html_url,
@@ -38,6 +38,8 @@ export const GET: APIRoute = async () => {
             topics: r.topics || [], stargazers_count: r.stargazers_count,
             forks_count: r.forks_count, updated_at: r.updated_at
         }));
+        console.log(items);
+
 
         cache = { data: items, at: Date.now() };
         return new Response(JSON.stringify(items), { headers: { "Content-Type": "application/json" } });

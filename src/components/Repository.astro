@@ -1,0 +1,39 @@
+---
+import type { RepoObject } from '../types/global';
+import Card from './Card.astro';
+
+const p: RepoObject = Astro.props as RepoObject;
+---
+
+<Card title={p.name} importance='h3'>
+	<p>{p.description || 'Sin descripción'}</p>
+	<p><strong>Stack:</strong> {p.language || 'N/A'}</p>
+	<p>⭐ {p.stargazers_count} · 🍴 {p.forks_count}</p>
+	<p>Actualizado: {new Date(p.updated_at).toLocaleDateString()}</p>
+	<div class='actions'>
+		<a href={p.html_url} target='_blank' rel='noopener'>Código</a>
+		{
+			p.homepage ? (
+				<a href={p.homepage} target='_blank' rel='noopener'>
+					Live Demo
+				</a>
+			) : null
+		}
+	</div>
+</Card>
+<style>
+	.actions {
+		display: flex;
+		gap: 10px;
+	}
+	.actions > * {
+		flex: 1 1 auto;
+	}
+
+	.actions > a {
+		display: block;
+		padding: 10px;
+		border-radius: 5px;
+		text-decoration: none;
+	}
+</style>
