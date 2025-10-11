@@ -20,9 +20,18 @@ function k(n: number): string {
 ---
 
 <article class='card' aria-labelledby={`p-${repo.id}-title`}>
-	<h3 id={`p-${repo.id}-title`} class='title'>{repo.name}</h3>
+	<header class='flex justify-between items-center mb-4'>
+		<h3 id={`p-${repo.id}-title`} class='text-xl'>{repo.name}</h3>
+		{
+			hasDemo ? (
+				<a class='btn ghost' href={demo} target='_blank' rel='noopener'>
+					Live Demo
+				</a>
+			) : null
+		}
+	</header>
 
-	<p class='desc'>{desc}</p>
+	<p class='mb-4'>{desc}</p>
 	<p class='stack'>
 		<strong>Stack:</strong>
 		<LanguageBadge lang={lang} />
@@ -46,24 +55,13 @@ function k(n: number): string {
 	<p class='date'>Actualizado: {updated}</p>
 
 	<nav class='actions' aria-label='Acciones'>
-		{
-			hasDemo ? (
-				<a class='btn' href={demo} target='_blank' rel='noopener'>
-					Live Demo
-				</a>
-			) : (
-				<span class='btn disabled' aria-disabled='true'>
-					Sin demo
-				</span>
-			)
-		}
 		<a class='btn' href={repo.html_url} target='_blank' rel='noopener'>Código</a>
 		<a class='btn ghost' href={`/proyectos/${repo.name}`}>Detalle</a>
 	</nav>
 </article>
 
 <style>
-	.card {
+	/* .card {
 		background: #2d3244;
 		border: 1px solid #3a4056;
 		border-radius: 12px;
@@ -136,5 +134,5 @@ function k(n: number): string {
 	.btn.ghost {
 		background: transparent;
 		color: #b9c3d9;
-	}
+	} */
 </style>

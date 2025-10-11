@@ -1,0 +1,31 @@
+:root[data-theme="dark"] {
+    --bg: #0b1020;
+    --fg: #e5e7eb;
+    --brand-text: #b9a7ff;
+
+    --neutral-0: #0f1324;
+    --neutral-50: #12162a;
+    --neutral-100: #1a2038;
+    --neutral-200: #232a44;
+    --neutral-600: #9aa3b2;
+    --neutral-800: #e5e7eb;
+    --neutral-900: #f3f4f6;
+
+    color-scheme: dark;
+}
+
+:root[data-theme="dark"] .card {
+    background: var(--neutral-50);
+    border-color: var(--neutral-200);
+}
+
+:root[data-theme="dark"] .pill {
+    background: var(--neutral-100);
+    color: var(--neutral-900);
+    border-color: var(--neutral-200);
+}
+
+:root[data-theme="dark"] .btn.ghost {
+    color: var(--brand-text);
+    border-color: var(--brand-text);
+}

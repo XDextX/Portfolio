@@ -1,0 +1,126 @@
+.flex {
+    display: flex;
+}
+
+.grid {
+    display: grid;
+}
+
+.wrap {
+    flex-wrap: wrap;
+}
+
+.center {
+    align-items: center;
+    justify-content: center;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.gap-2 {
+    gap: var(--sp-2);
+}
+
+.gap-4 {
+    gap: var(--sp-4);
+}
+
+.gap-6 {
+    gap: var(--sp-6);
+}
+
+.p-2 {
+    padding: var(--sp-2);
+}
+
+.p-4 {
+    padding: var(--sp-4);
+}
+
+.p-6 {
+    padding: var(--sp-6);
+}
+
+.py-6 {
+    padding-block: var(--sp-6);
+}
+
+.px-4 {
+    padding-inline: var(--sp-4);
+}
+
+.mt-4 {
+    margin-top: var(--sp-4);
+}
+
+.mb-4 {
+    margin-bottom: var(--sp-4);
+}
+
+.text-sm {
+    font-size: var(--fs-sm);
+}
+
+.text-base {
+    font-size: var(--fs-base);
+}
+
+.text-lg {
+    font-size: var(--fs-lg);
+}
+
+.text-xl {
+    font-size: var(--fs-xl);
+}
+
+.muted {
+    color: var(--neutral-600);
+}
+
+/* Bordes y sombras */
+.rounded-sm {
+    border-radius: var(--radius-sm);
+}
+
+.rounded-md {
+    border-radius: var(--radius-md);
+}
+
+.rounded-lg {
+    border-radius: var(--radius-lg);
+}
+
+.shadow-sm {
+    box-shadow: var(--shadow-sm);
+}
+
+.shadow-md {
+    box-shadow: var(--shadow-md);
+}
+
+.shadow-lg {
+    box-shadow: var(--shadow-lg);
+}
+
+/* Grillas responsivas comunes */
+.grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 900px) {
+
+    .grid-2,
+    .grid-3 {
+        grid-template-columns: 1fr;
+    }
+}

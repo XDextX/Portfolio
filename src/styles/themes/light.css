@@ -1,0 +1,11 @@
+:root {
+    --bg: var(--neutral-0);
+    --fg: var(--neutral-900);
+    --brand-text: var(--color-brand-700);
+    color-scheme: light;
+}
+
+body {
+    background: var(--bg);
+    color: var(--fg);
+}

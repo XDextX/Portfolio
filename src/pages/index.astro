@@ -9,3 +9,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 		<Resume />
 	</main>
 </BaseLayout>
+
+<script>
+	const root = document.documentElement;
+	const next = root.getAttribute('data-theme') === 'dark' ? null : 'dark';
+	if (next) root.setAttribute('data-theme', next);
+	else root.removeAttribute('data-theme');
+	localStorage.setItem('theme', next ?? 'light');
+</script>

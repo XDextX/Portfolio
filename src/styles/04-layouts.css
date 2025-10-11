@@ -1,0 +1,30 @@
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(255, 255, 255, .7);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--neutral-200);
+}
+
+.hero {
+    padding-block: clamp(3rem, 8vw, 6rem);
+}
+
+.hero__title {
+    font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.hero__subtitle {
+    color: var(--neutral-600);
+    max-width: 60ch;
+}
+
+.section {
+    padding-block: 3rem;
+}
+
+.section__title {
+    font-size: var(--fs-2xl);
+    margin-bottom: var(--sp-4);
+}

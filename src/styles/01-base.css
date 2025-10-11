@@ -1,0 +1,73 @@
+/* Modern reset */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html:focus-within {
+    scroll-behavior: smooth;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: var(--font-sans);
+    color: var(--neutral-900);
+    background: var(--neutral-0);
+    line-height: var(--lh-normal);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+    display: block;
+    max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+    font: inherit;
+}
+
+a {
+    color: var(--brand-text, var(--color-brand-700));
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+h1,
+h2,
+h3 {
+    line-height: var(--lh-tight);
+    margin: var(--sp-6) 0 var(--sp-3);
+}
+
+p {
+    margin: 0 0 var(--sp-4);
+}
+
+/* Contenedor */
+.container {
+    width: min(100% - 2rem, var(--max-w));
+    margin-inline: auto;
+}
+
+/* Focus visible accesible */
+:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+}
