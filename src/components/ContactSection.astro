@@ -1,0 +1,49 @@
+---
+import ContactCard from './ContactCard.astro';
+import { CONTACTS } from '../data/contacts';
+
+const titleId = 'contact-title';
+---
+
+<section
+	class='wrap'
+	aria-labelledby={titleId}
+	itemscope
+	itemtype='https://schema.org/Person'
+>
+	<meta itemprop='name' content='German Montero Ramirez' />
+	<h2 id={titleId}>Contacto</h2>
+
+	<div class='grid'>
+		{CONTACTS.map((c) => <ContactCard item={c} />)}
+	</div>
+</section>
+
+<style>
+	.wrap {
+		border: 1px solid #3a4056;
+		background: #2a2f41;
+		border-radius: 12px;
+		padding: 1rem;
+	}
+	.wrap > h2 {
+		color: #7de089;
+		margin: 0.25rem 0 1rem 0;
+		font-size: 1.2rem;
+	}
+	.grid {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+	@media (max-width: 1024px) {
+		.grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+	@media (max-width: 640px) {
+		.grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

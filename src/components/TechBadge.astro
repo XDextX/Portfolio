@@ -25,21 +25,21 @@ const Tag = href ? 'a' : 'div';
 ---
 
 <figure class={`tech-badge ${compact ? 'compact' : ''}`}>
-	<Tag
-		{...href ? { href, target: '_blank', rel: 'noopener noreferrer' } : {}}
-		aria-label={ariaLabel}
-		title={name}
-		class='row'
-	>
+	<figcaption class='name'>
 		<img
 			src={logo}
 			alt={ariaLabel}
-			loading='lazy'
+			loading='eager'
 			decoding='async'
 			width='40'
 			height='40'
 		/>
-		<figcaption class='name'>
+		<Tag
+			{...href ? { href, target: '_blank', rel: 'noopener noreferrer' } : {}}
+			aria-label={ariaLabel}
+			title={name}
+			class='row'
+		>
 			{name}
 			{
 				level && (
@@ -51,8 +51,8 @@ const Tag = href ? 'a' : 'div';
 					/>
 				)
 			}
-		</figcaption>
-	</Tag>
+		</Tag>
+	</figcaption>
 </figure>
 
 <style>

@@ -1,0 +1,23 @@
+---
+export interface Props {
+	text: string;
+}
+const { text } = Astro.props;
+---
+
+<span class='chip'>{text}</span>
+
+<style>
+	.chip {
+		display: inline-block;
+		font-size: 0.72rem;
+		font-weight: 600;
+		padding: 0.22rem 0.5rem;
+		border-radius: 999px;
+		border: 1px solid #3a4056;
+		background: #2e3447;
+		color: #b9c3d9;
+		white-space: nowrap;
+		user-select: none;
+	}
+</style>

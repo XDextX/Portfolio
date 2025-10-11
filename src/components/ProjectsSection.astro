@@ -1,0 +1,73 @@
+---
+import ProjectCard from './ProjectCard.astro';
+import type { GitHubRepo } from '../types/github';
+
+export interface Props {
+	repos: GitHubRepo[];
+	title?: string;
+}
+
+const { repos, title = 'Proyectos' } = Astro.props;
+const titleId = 'projects-title';
+---
+
+<section class='wrap' aria-labelledby={titleId}>
+	<h2 id={titleId}>{title}</h2>
+
+	{
+		repos.length === 0 ? (
+			<p class='empty'>
+				No hay proyectos para mostrar. Agrega el topic <code>portfolio</code> a tus
+				repos en GitHub.
+			</p>
+		) : (
+			<div class='grid'>
+				{repos.map((r) => (
+					<ProjectCard repo={r} />
+				))}
+			</div>
+		)
+	}
+</section>
+
+<style>
+	.wrap {
+		border: 1px solid #3a4056;
+		background: #2a2f41;
+		border-radius: 12px;
+		padding: 1rem;
+	}
+	.wrap > h2 {
+		color: #7de089;
+		margin: 0.25rem 0 1rem 0;
+		font-size: 1.2rem;
+	}
+	.grid {
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+	}
+	@media (max-width: 1200px) {
+		.grid {
+			grid-template-columns: repeat(4, 1fr);
+		}
+	}
+	@media (max-width: 980px) {
+		.grid {
+			grid-template-columns: repeat(3, 1fr);
+		}
+	}
+	@media (max-width: 720px) {
+		.grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+	@media (max-width: 480px) {
+		.grid {
+			grid-template-columns: 1fr;
+		}
+	}
+	.empty {
+		color: #cfd6e6;
+	}
+</style>

@@ -1,16 +1,3 @@
-export type RepoObject = {
-    id: number;
-    name: string;
-    full_name: string;
-    description: string;
-    html_url: string;
-    homepage: string;
-    language: string;
-    topics: string[];
-    stargazers_count: number;
-    forks_count: number;
-    updated_at: string;
-}
 
 export type Owner = {
     avatar_url: string;

@@ -1,0 +1,82 @@
+---
+import AvatarCircle from "./AvatarCircle.astro";
+import Pill from "./Pill.astro";
+import { ABOUT } from "../data/about";
+
+export interface Props {
+  lang?: "es" | "en";
+  withJsonLd?: boolean;
+}
+
+const { lang = "es", withJsonLd = true } = Astro.props;
+
+const personJsonLd = withJsonLd ? {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": ABOUT.name,
+  "jobTitle": ABOUT.title,
+  "url": "https://portfolio-dext.vercel.app",
+  "image": `https://portfolio-dext.vercel.app${ABOUT.avatar}`,
+  "sameAs": ABOUT.socials.filter(s => s.label !== "Email").map(s => s.href),
+  "email": "mailto:germonram@gmail.com",
+  "address": { "@type": "PostalAddress", "addressCountry": "Costa Rica" }
+} : null;
+---
+
+<section class="about" aria-labelledby="about-title">
+  {personJsonLd && (
+    <script type="application/ld+json">{JSON.stringify(personJsonLd)}</script>
+  )}
+
+  <div class="left">
+    <AvatarCircle src={ABOUT.avatar} alt={`${ABOUT.name} avatar`} size={260} ring />
+  </div>
+
+  <div class="right">
+    <h1 id="about-title" class="name">{ABOUT.name}</h1>
+    <div class="row">
+      <Pill text={ABOUT.title} variant="success" size="md" outlined />
+      <span class="dot" aria-hidden="true">•</span>
+      <span class="loc" aria-label={lang === "es" ? "Ubicación" : "Location"}>{ABOUT.location}</span>
+    </div>
+
+    <p class="bio">
+      {ABOUT.bio[lang]}
+    </p>
+
+    <nav class="cta" aria-label={lang === "es" ? "Acciones" : "Actions"}>
+      <a class="btn primary" href={ABOUT.resumeUrl} target="_blank" rel="noopener">
+        {lang === "es" ? "Descargar CV" : "Download Resume"}
+      </a>
+      <a class="btn" href="mailto:germonram@gmail.com">Email</a>
+      <a class="btn" href="https://github.com/XDextX" target="_blank" rel="noopener me">GitHub</a>
+      <a class="btn" href="https://www.linkedin.com/in/german-montero-ramirez/" target="_blank" rel="noopener me">LinkedIn</a>
+    </nav>
+  </div>
+</section>
+
+<style>
+  .about{
+    border:1px solid #3a4056; background:#2a2f41; border-radius:12px; padding:1rem;
+    display:grid; grid-template-columns: 280px 1fr; gap:1.2rem; align-items:center;
+  }
+  @media (max-width: 900px){ .about{ grid-template-columns: 1fr; text-align:left; } }
+
+  .name{ color:#7de089; margin:.2rem 0 .4rem 0; font-size:1.6rem; font-weight:800; }
+  .row{ display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; color:#cfd6e6; margin-bottom:.6rem; }
+  .dot{ opacity:.35 }
+  .loc{ color:#a9b4cc }
+
+  .bio{ color:#e6eaf3; margin:.4rem 0 1rem 0; line-height:1.7; }
+
+  .cta{ display:flex; gap:.6rem; flex-wrap:wrap; }
+  .btn{
+    display:inline-block; font-weight:700; padding:.45rem .9rem; border-radius:10px;
+    border:1px solid #3a4056; background:#273043; color:#79e28a; text-decoration:none;
+    transition:.15s ease;
+  }
+  .btn.primary{ background:#2f3a55; color:#c6ffd0; }
+  .btn:hover{ transform:translateY(-1px); box-shadow:0 6px 16px rgba(0,0,0,.08); border-color:#49506a; }
+  
+  .left{ display:flex; justify-content:center; }
+</style>

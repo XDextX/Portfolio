@@ -1,0 +1,71 @@
+---
+export interface Props {
+	role: string;
+	company: string;
+	period: string;
+	location?: string;
+	bullets: string[];
+}
+
+const { role, company, period, location, bullets } = Astro.props;
+---
+
+<article class='exp-card' aria-labelledby={`${company}-title`}>
+	<h3 id={`${company}-title`} class='exp-title'>
+		<span class='role'>{role}</span>
+		<span class='sep'> · </span>
+		<span class='company'>{company}</span>
+		<span class='period'>({period})</span>
+	</h3>
+
+	{location && <p class='location'>{location}</p>}
+
+	<ul class='bullets'>
+		{bullets.map((b) => <li>{b}</li>)}
+	</ul>
+</article>
+
+<style>
+	.exp-card {
+		background: #2d3244; /* card dark */
+		border: 1px solid #3a4056;
+		border-radius: 12px;
+		padding: 1rem 1.25rem;
+		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+	}
+	.exp-title {
+		color: #a9f5a1; /* verde titular */
+		font-weight: 800;
+		margin: 0 0 0.25rem 0;
+		line-height: 1.3;
+	}
+	.role {
+		color: #b8f7b1;
+	}
+	.company {
+		color: #b8f7b1;
+	}
+	.period {
+		color: #9fc39a;
+		font-weight: 700;
+		margin-left: 0.4rem;
+	}
+	.location {
+		color: #cbd2e0;
+		margin: 0.1rem 0 0.6rem 0;
+		font-size: 0.95rem;
+	}
+	.bullets {
+		margin: 0;
+		padding-left: 1.2rem;
+		display: grid;
+		gap: 0.4rem;
+	}
+	.bullets li {
+		color: #e6eaf3;
+	}
+	.sep {
+		color: #7dcf86;
+		font-weight: 700;
+	}
+</style>

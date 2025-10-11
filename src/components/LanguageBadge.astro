@@ -1,0 +1,40 @@
+---
+export interface Props {
+	lang?: string | null;
+}
+const { lang = 'N/A' } = Astro.props;
+
+// mapa de colores por lenguaje (añade los que uses)
+const COLOR: Record<string, string> = {
+	TypeScript: '#3178c6',
+	JavaScript: '#f1e05a',
+	'C#': '#68217A',
+	Java: '#b07219',
+	Astro: '#ff5d01',
+	HTML: '#e34c26',
+	CSS: '#563d7c',
+	'N/A': '#6b7280',
+};
+const color = COLOR[lang ?? ''] ?? '#6b7280';
+---
+
+<span class='lang' style={`--c:${color}`}>{lang}</span>
+
+<style>
+	.lang {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		font-weight: 700;
+		font-size: 0.85rem;
+		color: #e6eaf3;
+	}
+	.lang::before {
+		content: '';
+		display: inline-block;
+		width: 0.65rem;
+		height: 0.65rem;
+		border-radius: 50%;
+		background: var(--c);
+	}
+</style>

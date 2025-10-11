@@ -1,0 +1,138 @@
+---
+import type { ContactItem } from '../types/contact';
+
+export interface Props {
+	item: ContactItem;
+}
+const { item } = Astro.props;
+
+// Accesibilidad y rel/attrs por tipo
+const rel =
+	item.kind === 'email' || item.kind === 'phone'
+		? undefined
+		: 'noopener noreferrer me'; // 'me' ayuda a verificación social
+
+const isExternal = item.kind !== 'email' && item.kind !== 'phone';
+const target = isExternal ? '_blank' : undefined;
+
+// ARIA
+const aria = `${item.label}: ${item.value}`;
+---
+
+<article
+	class='card'
+	aria-label={aria}
+	itemprop={item.sameAs ? 'sameAs' : undefined}
+>
+	<header class='head'>
+		{
+			item.icon && (
+				<img
+					class='icon'
+					src={item.icon}
+					alt=''
+					width='22'
+					height='22'
+					loading='lazy'
+				/>
+			)
+		}
+		<h3 class='title'>{item.label}</h3>
+	</header>
+
+	<p class='value'>
+		<a href={item.href} rel={rel} target={target}>{item.value}</a>
+	</p>
+
+	<div class='actions'>
+		<!-- Copiar -->
+		<button
+			class='btn ghost'
+			data-copy={item.value}
+			aria-label={`Copiar ${item.label}`}>Copiar</button
+		>
+
+		<!-- Abrir -->
+		<a class='btn link' href={item.href} rel={rel} target={target}>Abrir</a>
+	</div>
+</article>
+
+<script>
+	// Simple copy-to-clipboard
+	document.currentScript?.parentElement
+		?.querySelectorAll('button[data-copy]')
+		.forEach((btn) => {
+			btn.addEventListener('click', async () => {
+				const val = btn.getAttribute('data-copy') || '';
+				try {
+					await navigator.clipboard.writeText(val);
+					const prev = btn.textContent;
+					btn.textContent = 'Copiado ✓';
+					setTimeout(() => (btn.textContent = prev), 1200);
+				} catch {
+					btn.textContent = 'Error';
+					setTimeout(() => (btn.textContent = 'Copiar'), 1200);
+				}
+			});
+		});
+</script>
+
+<style>
+	.card {
+		background: #2d3244;
+		border: 1px solid #3a4056;
+		border-radius: 12px;
+		padding: 1rem 1.1rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+	}
+	.head {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+	.icon {
+		filter: brightness(1.1);
+		opacity: 0.95;
+	}
+	.title {
+		color: #7de089;
+		margin: 0;
+		font-size: 1.05rem;
+		font-weight: 800;
+	}
+	.value a {
+		color: #9be8a6;
+		word-break: break-all;
+	}
+	.actions {
+		display: flex;
+		gap: 0.6rem;
+		margin-top: auto;
+	}
+	.btn {
+		font-weight: 700;
+		padding: 0.35rem 0.7rem;
+		border-radius: 8px;
+		border: 1px solid #3a4056;
+		cursor: pointer;
+		transition: 0.15s ease;
+	}
+	.btn.ghost {
+		background: #272d3f;
+		color: #b9c3d9;
+	}
+	.btn.link {
+		background: #273043;
+		color: #79e28a;
+		text-decoration: none;
+		display: inline-block;
+	}
+	.btn:hover {
+		transform: translateY(-1px);
+		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+		border-color: #49506a;
+	}
+</style>
