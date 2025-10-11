@@ -38,8 +38,6 @@ export const GET: APIRoute = async () => {
             topics: r.topics || [], stargazers_count: r.stargazers_count,
             forks_count: r.forks_count, updated_at: r.updated_at
         }));
-        console.log(items);
-
 
         cache = { data: items, at: Date.now() };
         return new Response(JSON.stringify(items), { headers: { "Content-Type": "application/json" } });

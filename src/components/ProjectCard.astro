@@ -46,7 +46,6 @@ function k(n: number): string {
 	<p class='date'>Actualizado: {updated}</p>
 
 	<nav class='actions' aria-label='Acciones'>
-		<a class='btn' href={repo.html_url} target='_blank' rel='noopener'>Código</a>
 		{
 			hasDemo ? (
 				<a class='btn' href={demo} target='_blank' rel='noopener'>
@@ -58,6 +57,7 @@ function k(n: number): string {
 				</span>
 			)
 		}
+		<a class='btn' href={repo.html_url} target='_blank' rel='noopener'>Código</a>
 		<a class='btn ghost' href={`/proyectos/${repo.name}`}>Detalle</a>
 	</nav>
 </article>

@@ -10,7 +10,6 @@ const response = await fetch(`${Astro.url}api/github-list.json`);
 const repos: GitHubRepo[] = await response.json();
 ---
 
-
 <AboutSection lang='es' withJsonLd={true} />
 <HabilitiesSection />
 <ExperienceSection />
