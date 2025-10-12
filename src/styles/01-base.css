@@ -41,7 +41,7 @@ select {
 }
 
 a {
-    color: var(--brand-text, var(--color-brand-700));
+    color: var(--text-color, var(--color-brand-700));
     text-decoration: none;
 }
 

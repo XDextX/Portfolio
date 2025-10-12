@@ -1,45 +1,197 @@
 ---
-export interface Props {
+interface Props {
+	/** Ruta a la imagen principal */
 	src: string;
+
+	/** Texto alternativo. Si no lo pasas, será decorativo (aria-hidden) */
 	alt?: string;
-	size?: number; // px
-	ring?: boolean;
+
+	/** Imagen que aparece en hover (opcional) */
+	hoverSrc?: string;
+
+	/** Tamaños base en px (se pueden combinar con fluid) */
+	size?: number | string; // base (>= 0) — por defecto 96
+	sizeSm?: number; // ≥ 480px
+	sizeMd?: number; // ≥ 768px
+	sizeLg?: number; // ≥ 1024px
+
+	/** Activa tamaño fluido con clamp(min, vw, max) */
+	fluid?: boolean; // false por defecto
+	fluidMin?: number; // px, p.ej. 72
+	fluidMax?: number; // px, p.ej. 144
+	fluidViewport?: number; // número para vw, p.ej. 12 => 12vw
+
+	/** Borde y sombra */
+	border?: boolean; // true por defecto
+	ringWidth?: number; // px, por defecto 2
+
+	/** Si quieres que sea un link */
+	href?: string;
+	newTab?: boolean;
 }
 
-const { src, alt = 'Profile picture', size = 240, ring = true } = Astro.props;
----
+const {
+	src,
+	alt,
+	hoverSrc,
+	size = '100%',
+	sizeSm,
+	sizeMd,
+	sizeLg,
+	fluid = false,
+	fluidMin = 72,
+	fluidMax = 144,
+	fluidViewport = 12,
+	border = true,
+	ringWidth = 2,
+	href,
+	newTab = false,
+} = Astro.props;
 
-<div class={`avatar ${ring ? 'ring' : ''}`} style={`--size:${size}px`}>
-	<img
-		src={src}
-		alt={alt}
-		width={size}
-		height={size}
-		loading='lazy'
-		decoding='async'
-	/>
-</div>
+const isDecorative = !alt || alt.trim() === '';
+const Wrapper = href ? 'a' : 'div';
+const rel = newTab ? 'noopener noreferrer' : undefined;
+const target = newTab ? '_blank' : undefined;
+---
 
 <style>
 	.avatar {
-		width: var(--size);
-		height: var(--size);
+		position: relative;
+		inline-size: var(--size);
+		block-size: var(--size);
 		border-radius: 50%;
 		overflow: hidden;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		background: #22283a;
+		display: inline-grid;
+		place-items: center;
+		box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.06));
+		transition:
+			transform var(--dur, 200ms) var(--ease, cubic-bezier(0.2, 0.8, 0.2, 1)),
+			box-shadow var(--dur, 200ms) var(--ease, cubic-bezier(0.2, 0.8, 0.2, 1));
+		will-change: transform;
 	}
-	.avatar img {
-		width: 100%;
-		height: 100%;
+	.avatar:hover {
+		transform: translateY(-1px);
+		box-shadow: var(--shadow-md, 0 4px 10px rgba(0, 0, 0, 0.08));
+	}
+
+	/* Borde adaptable a tema */
+	.avatar.has-border {
+		border: var(--ring) solid var(--avatar-ring);
+	}
+	:root[data-theme='dark'] .avatar.has-border {
+		border-color: var(--avatar-ring-dark);
+	}
+
+	.img,
+	.img-hover {
+		inline-size: 100%;
+		block-size: 100%;
 		object-fit: cover;
 		display: block;
 	}
-	.avatar.ring {
-		outline: 4px solid #7de08955;
-		box-shadow: 0 0 0 2px #7de08920 inset;
-		border: 2px solid #7de089;
+
+	/* Efecto hover: imagen superior se desvanece/ aparece */
+	.stack {
+		position: relative;
+		inline-size: 100%;
+		block-size: 100%;
+	}
+	.img-hover {
+		position: absolute;
+		inset: 0;
+		opacity: 0;
+		transition: opacity var(--dur, 200ms)
+			var(--ease, cubic-bezier(0.2, 0.8, 0.2, 1));
+	}
+	.avatar:hover .img-hover {
+		opacity: 1;
+	}
+
+	/* Reduced motion: evita animaciones */
+	@media (prefers-reduced-motion: reduce) {
+		.avatar,
+		.img-hover {
+			transition: none !important;
+		}
+	}
+
+	/* Responsivo por breakpoints: se asignan variables si existen */
+	@media (min-width: 480px) {
+		.avatar[data-size-sm] {
+			--size: attr(data-size-sm px);
+		}
+	}
+	@media (min-width: 768px) {
+		.avatar[data-size-md] {
+			--size: attr(data-size-md px);
+		}
+	}
+	@media (min-width: 1024px) {
+		.avatar[data-size-lg] {
+			--size: attr(data-size-lg px);
+		}
+	}
+
+	/* Tamaño fluido con clamp(): si lleva data-fluid, ignora los fijos */
+	.avatar[data-fluid='true'] {
+		--size: clamp(var(--min, 72px), var(--vw, 12vw), var(--max, 144px));
+	}
+
+	/* Enlaces: foco accesible */
+	.avatar.is-link {
+		outline: none;
+	}
+	.avatar.is-link:focus-visible {
+		outline: 2px solid var(--avatar-ring);
+		outline-offset: 4px;
 	}
 </style>
+
+<Wrapper
+	class:list={['avatar', border && 'has-border', href && 'is-link']}
+	href={href}
+	target={target}
+	rel={rel}
+	style={{
+		'--ring': `${ringWidth}px`,
+		'--min': `${fluidMin}px`,
+		'--max': `${fluidMax}px`,
+		'--vw': `${fluidViewport}vw`,
+		'--size': `${size}`,
+	}}
+	{...fluid ? { 'data-fluid': fluid } : {}}
+	{...sizeSm ? { 'data-size-sm': sizeSm } : {}}
+	{...sizeMd ? { 'data-size-md': sizeMd } : {}}
+	{...sizeLg ? { 'data-size-lg': sizeLg } : {}}
+	aria-label={isDecorative ? undefined : alt}
+	aria-hidden={isDecorative ? 'true' : undefined}
+>
+	{
+		hoverSrc ? (
+			<div class='stack' role={isDecorative ? 'presentation' : 'img'}>
+				<img
+					class='img'
+					src={src}
+					alt={isDecorative ? '' : alt}
+					loading='lazy'
+					decoding='async'
+				/>
+				<img
+					class='img-hover'
+					src={hoverSrc}
+					alt=''
+					loading='lazy'
+					decoding='async'
+				/>
+			</div>
+		) : (
+			<img
+				class='img'
+				src={src}
+				alt={isDecorative ? '' : alt}
+				loading='lazy'
+				decoding='async'
+			/>
+		)
+	}
+</Wrapper>

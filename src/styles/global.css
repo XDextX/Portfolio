@@ -8,7 +8,7 @@
     --primary-color-dark: #1a1d2e;
 
     /* Cards */
-    --card-background: #3c405a;
+    --card-background: #2a2f41;
     /* fondo para cards de primer nivel */
     --nested-card-background: #2e3144;
     /* fondo para cards anidadas */
@@ -77,7 +77,6 @@ p {
 /* Listas */
 ul {
     list-style: none;
-    padding-left: 20px;
 }
 
 ul li {
@@ -93,10 +92,7 @@ ul ul {
 /* Imagen de perfil */
 
 /* Enlaces */
-a {
-    color: var(--accent-color);
-    font-weight: bold;
-}
+
 
 a:hover {
     color: var(--accent-color-dark);

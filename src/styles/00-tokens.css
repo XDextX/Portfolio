@@ -3,7 +3,8 @@
     --color-brand: #6e56cf;
     --color-brand-600: #5a45bd;
     --color-brand-700: #3a4056;
-
+    --avatar-ring: var(--color-brand, #6e56cf);
+    --avatar-ring-dark: var(--brand-text, #b9a7ff);
     --neutral-0: #ffffff;
     --neutral-50: #f8fafc;
     --neutral-100: #f1f5f9;
@@ -13,7 +14,7 @@
     --neutral-800: #1f2937;
     --neutral-900: #0f172a;
 
-    --success: #16a34a;
+    --success: #1d2520;
     --warning: #f59e0b;
     --danger: #dc2626;
 

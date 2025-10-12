@@ -5,7 +5,6 @@ import ProjectsSection from '../components/ProjectsSection.astro';
 import HabilitiesSection from '../components/HabilitiesSection.astro';
 import ContactSection from '../components/ContactSection.astro';
 import AboutSection from '../components/AboutSection.astro';
-let profileImg = 'https://github.com/xdextx.png';
 const response = await fetch(`${Astro.url}api/github-list.json`);
 const repos: GitHubRepo[] = await response.json();
 ---

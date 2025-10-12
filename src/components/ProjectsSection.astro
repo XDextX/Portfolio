@@ -9,6 +9,8 @@ export interface Props {
 
 const { repos, title = 'Proyectos' } = Astro.props;
 const titleId = 'projects-title';
+const columns = repos.length > 5 ? 5 : repos.length;
+console.log(columns);
 ---
 
 <section class='wrap' aria-labelledby={titleId}>
@@ -17,11 +19,11 @@ const titleId = 'projects-title';
 	{
 		repos.length === 0 ? (
 			<p class='empty'>
-				No hay proyectos para mostrar. Agrega el topic <code>portfolio</code> a tus
-				repos en GitHub.
+				No hay proyectos para mostrar. Agrega el topic{' '}
+				<code>portfolio-project</code> a tus repos en GitHub.
 			</p>
 		) : (
-			<div class='grid'>
+			<div class='grid' style={`--cols:${columns}`}>
 				{repos.map((r) => (
 					<ProjectCard repo={r} />
 				))}
@@ -33,19 +35,19 @@ const titleId = 'projects-title';
 <style>
 	.wrap {
 		border: 1px solid #3a4056;
-		background: #2a2f41;
+		background: var(--card-background);
 		border-radius: 12px;
 		padding: 1rem;
 	}
 	.wrap > h2 {
-		color: #7de089;
+		color: var(--accent-color);
 		margin: 0.25rem 0 1rem 0;
 		font-size: 1.2rem;
 	}
 	.grid {
 		display: grid;
 		gap: 1rem;
-		grid-template-columns: repeat(5, minmax(0, 1fr));
+		grid-template-columns: repeat(var(--cols, 5), minmax(0, 1fr));
 	}
 	@media (max-width: 1200px) {
 		.grid {
@@ -62,12 +64,12 @@ const titleId = 'projects-title';
 			grid-template-columns: repeat(2, 1fr);
 		}
 	}
-	@media (max-width: 480px) {
+	@media (max-width: 390px) {
 		.grid {
 			grid-template-columns: 1fr;
 		}
 	}
 	.empty {
-		color: #cfd6e6;
+		color: var(--text-color);
 	}
 </style>

@@ -19,9 +19,15 @@ function k(n: number): string {
 }
 ---
 
-<article class='card' aria-labelledby={`p-${repo.id}-title`}>
+<article class='card grid primary-bg' aria-labelledby={`p-${repo.id}-title`}>
 	<header class='flex justify-between items-center mb-4'>
-		<h3 id={`p-${repo.id}-title`} class='text-xl'>{repo.name}</h3>
+		<h3
+			id={`p-${repo.id}-title`}
+			class='text-xl'
+			style='color:var(--accent-color)'
+		>
+			{repo.name}
+		</h3>
 		{
 			hasDemo ? (
 				<a class='btn ghost' href={demo} target='_blank' rel='noopener'>
@@ -37,7 +43,7 @@ function k(n: number): string {
 		<LanguageBadge lang={lang} />
 	</p>
 
-	<ul class='meta' aria-label='Métricas'>
+	<ul class='flex' aria-label='Métricas'>
 		<li title='Stars'>⭐ {k(repo.stargazers_count)}</li>
 		<li title='Forks'>🍴 {k(repo.forks_count)}</li>
 	</ul>
@@ -54,85 +60,10 @@ function k(n: number): string {
 
 	<p class='date'>Actualizado: {updated}</p>
 
-	<nav class='actions' aria-label='Acciones'>
-		<a class='btn' href={repo.html_url} target='_blank' rel='noopener'>Código</a>
-		<a class='btn ghost' href={`/proyectos/${repo.name}`}>Detalle</a>
+	<nav class='flex gap-2 wrap' aria-label='Acciones'>
+		<a class='btn primary' href={repo.html_url} target='_blank' rel='noopener'
+			>Código</a
+		>
+		<a class='btn' href={`/proyectos/${repo.name}`}>Detalle</a>
 	</nav>
 </article>
-
-<style>
-	/* .card {
-		background: #2d3244;
-		border: 1px solid #3a4056;
-		border-radius: 12px;
-		padding: 1rem 1.1rem;
-		display: flex;
-		flex-direction: column;
-		gap: 0.45rem;
-		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-	}
-	.title {
-		color: #7de089;
-		margin: 0 0 0.2rem 0;
-		font-weight: 800;
-	}
-	.desc {
-		color: #e6eaf3;
-		margin: 0;
-		min-height: 3.2em;
-	}
-	.stack {
-		color: #cfd6e6;
-		margin: 0.15rem 0 0.2rem 0;
-	}
-	.meta {
-		display: flex;
-		gap: 1rem;
-		list-style: none;
-		padding: 0;
-		margin: 0.1rem 0;
-		color: #cfd6e6;
-	}
-	.topics {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.35rem;
-		margin-top: 0.2rem;
-	}
-	.date {
-		color: #a9b4cc;
-		font-size: 0.9rem;
-		margin: 0.2rem 0 0.5rem 0;
-	}
-	.actions {
-		margin-top: auto;
-		display: flex;
-		gap: 0.6rem;
-		flex-wrap: wrap;
-	}
-	.btn {
-		display: inline-block;
-		font-weight: 700;
-		color: #79e28a;
-		text-decoration: none;
-		border: 1px solid #3a4056;
-		background: #273043;
-		padding: 0.4rem 0.75rem;
-		border-radius: 8px;
-		transition: 0.15s ease;
-	}
-	.btn:hover {
-		transform: translateY(-1px);
-		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-		border-color: #49506a;
-	}
-	.btn.disabled {
-		color: #9aa6bf;
-		pointer-events: none;
-		background: #272d3f;
-	}
-	.btn.ghost {
-		background: transparent;
-		color: #b9c3d9;
-	} */
-</style>

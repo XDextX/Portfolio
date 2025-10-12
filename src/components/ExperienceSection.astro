@@ -5,10 +5,10 @@ import { EXPERIENCES } from '../data/experience';
 const titleId = 'work-exp-title';
 ---
 
-<section class='exp-section' aria-labelledby={titleId}>
+<section class='card exp-section' aria-labelledby={titleId}>
 	<h2 id={titleId}>Experiencia laboral</h2>
 
-	<div class='grid'>
+	<div class='grid grid-2 gap-2'>
 		{
 			EXPERIENCES.map((e) => (
 				<ExperienceCard
@@ -26,8 +26,7 @@ const titleId = 'work-exp-title';
 <style>
 	.exp-section {
 		border: 1px solid #3a4056;
-		background: #2a2f41;
-		border-radius: 12px;
+		background: var(--card-background);
 		padding: 1rem;
 	}
 	.exp-section > h2 {
@@ -35,11 +34,7 @@ const titleId = 'work-exp-title';
 		margin: 0.25rem 0 1rem 0;
 		font-size: 1.2rem;
 	}
-	.grid {
-		display: grid;
-		gap: 1rem;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-	}
+
 	@media (max-width: 980px) {
 		.grid {
 			grid-template-columns: 1fr;
