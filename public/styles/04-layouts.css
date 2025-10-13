@@ -21,10 +21,15 @@
 }
 
 .section {
-    padding-block: 3rem;
+    border: 1px solid #3a4056;
+    background: var(--card-background);
+    border-radius: 12px;
+    padding: 1rem;
 }
 
 .section__title {
     font-size: var(--fs-2xl);
     margin-bottom: var(--sp-4);
+    color: var(--accent-color);
+    /* font-size: 1.2rem; */
 }

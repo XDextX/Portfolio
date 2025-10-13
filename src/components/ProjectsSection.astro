@@ -1,6 +1,7 @@
 ---
 import ProjectCard from './ProjectCard.astro';
 import type { GitHubRepo } from '../types/github';
+const topic = import.meta.env.GITHUB_TOPIC;
 
 export interface Props {
 	repos: GitHubRepo[];
@@ -10,17 +11,16 @@ export interface Props {
 const { repos, title = 'Proyectos' } = Astro.props;
 const titleId = 'projects-title';
 const columns = repos.length > 5 ? 5 : repos.length;
-console.log(columns);
 ---
 
-<section class='wrap' aria-labelledby={titleId}>
-	<h2 id={titleId}>{title}</h2>
+<section class='section' aria-labelledby={titleId}>
+	<h2 class='section__title' id={titleId}>{title}</h2>
 
 	{
 		repos.length === 0 ? (
 			<p class='empty'>
-				No hay proyectos para mostrar. Agrega el topic{' '}
-				<code>portfolio-project</code> a tus repos en GitHub.
+				No hay proyectos para mostrar. Agrega el topic
+				<code>{topic}</code> a tus repos en GitHub.
 			</p>
 		) : (
 			<div class='grid' style={`--cols:${columns}`}>
@@ -33,12 +33,6 @@ console.log(columns);
 </section>
 
 <style>
-	.wrap {
-		border: 1px solid #3a4056;
-		background: var(--card-background);
-		border-radius: 12px;
-		padding: 1rem;
-	}
 	.wrap > h2 {
 		color: var(--accent-color);
 		margin: 0.25rem 0 1rem 0;

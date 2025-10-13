@@ -6,7 +6,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "lint": "eslint .",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@astrojs/node": "^9.1.3",

@@ -1,35 +1,22 @@
 ---
 import AvatarCircle from "./AvatarCircle.astro";
 import Pill from "./Pill.astro";
-import { ABOUT } from "../data/about";
-const GithubUser = import.meta.env.GITHUB_USERNAME || "XDextX";
+import { ABOUT,JsonLdAbout } from "../data/about";
 export interface Props {
   lang?: "es" | "en";
   withJsonLd?: boolean;
 }
-
 const { lang = "es", withJsonLd = true } = Astro.props;
-
-const personJsonLd = withJsonLd ? {
-  "@context": "https://schema.org",
-  "@type": "Person",
-  "name": ABOUT.name,
-  "jobTitle": ABOUT.title,
-  "url": "https://portfolio-dext.vercel.app",
-  "image": `https://portfolio-dext.vercel.app${ABOUT.avatar}`,
-  "sameAs": ABOUT.socials.filter(s => s.label !== "Email").map(s => s.href),
-  "email": "mailto:germonram@gmail.com",
-  "address": { "@type": "PostalAddress", "addressCountry": "Costa Rica" }
-} : null;
+const personJsonLd = withJsonLd ? JsonLdAbout : null;
 ---
 
-<section class="card about" aria-labelledby="about-title" >
+<section class="section about" aria-labelledby="about-title" >
   {personJsonLd && (
     <script type="application/ld+json">{JSON.stringify(personJsonLd)}</script>
   )}
 
   <div class="left">
-    <AvatarCircle  src=`https://github.com/${GithubUser}.png`  alt="German Montero Ramírez"  fluid={true}  fluidMin={800}  fluidMax={800}  fluidViewport={180}  border={true}  ringWidth={2}  />
+    <AvatarCircle  src={ABOUT.avatar}  alt="German Montero Ramírez"  fluid={true}  fluidMin={800}  fluidMax={800}  fluidViewport={180}  border={true}  ringWidth={2}  />
   </div>
 
   <div class="right">
@@ -45,7 +32,7 @@ const personJsonLd = withJsonLd ? {
     </p>
 
     <nav class="flex gap-2 wrap" aria-label={lang === "es" ? "Acciones" : "Actions"}>
-      <a class="btn primary" href={ABOUT.resumeUrl} target="_blank" rel="noopener">
+      <a class="btn primary" href={ABOUT.resumeUrl} target="_blank" download="German-Montero-Ramirez-CV.pdf" rel="noopener">
         {lang === "es" ? "Descargar CV" : "Download Resume"}
       </a>
       <a class="btn accent-color" href="mailto:germonram@gmail.com" target="_blank" rel="noopener me">Email</a>

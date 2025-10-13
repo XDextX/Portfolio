@@ -5,7 +5,7 @@ export const ABOUT = {
     title: "Full-Stack Developer",
     location: "Costa Rica",
     avatar: "https://github.com/XDextX.png",
-    resumeUrl: "/cv/German-Montero-Ramirez.pdf",
+    resumeUrl: "cv/German Montero CV EN.pdf",
     socials: [
         { label: "GitHub", href: "https://github.com/XDextX" },
         { label: "LinkedIn", href: "https://www.linkedin.com/in/german-montero-ramirez/" },
@@ -20,3 +20,15 @@ Experienced with .NET Core, Azure Functions, Angular, plus Java, TypeScript, C#,
 Currently sharpening Server-Sent Events (SSE), Jasmine, and Selenium.`
     }
 } as const;
+export const JsonLdAbout = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": ABOUT.name,
+    "jobTitle": ABOUT.title,
+    "url": "https://portfolio-dext.vercel.app",
+    "image": `${ABOUT.avatar}`,
+    "sameAs": ABOUT.socials.filter(s => s.label !== "Email").map(s => s.href),
+    "email": "mailto:germonram@gmail.com",
+    "address": { "@type": "PostalAddress", "addressCountry": "Costa Rica" }
+}
+
