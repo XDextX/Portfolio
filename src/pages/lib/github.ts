@@ -1,3 +1,5 @@
+import type { GitHubRepo } from "../../types/github";
+
 const USER = import.meta.env.GITHUB_USERNAME || "XDextX";
 const TOKEN = import.meta.env.GITHUB_TOKEN; // opcional
 
@@ -8,7 +10,7 @@ const baseHeaders: Record<string, string> = {
 };
 if (TOKEN) baseHeaders.Authorization = `Bearer ${TOKEN}`;
 
-export async function ghListByTopic({ topic = "", per_page = 50 }: { topic: string; per_page?: number; }) {
+export async function ghListByTopic({ topic = "", per_page = 50 }: { topic: string; per_page?: number; }): Promise<GitHubRepo[]> {
     const url = new URL("https://api.github.com/search/repositories");
     if (topic.trim() === "")
         url.searchParams.set("q", `user:${USER}`);
@@ -20,22 +22,25 @@ export async function ghListByTopic({ topic = "", per_page = 50 }: { topic: stri
 
     const r = await fetch(url, { headers: baseHeaders });
     if (!r.ok) throw new Error(`GitHub error ${r.status}`);
-    const { items = [] } = await r.json();
+    const json = await r.json();
+    const { items = [] } = json as { items?: GitHubRepo[] };
     return items;
 }
-export async function ghRepo({ user, name }: { user: string; name: string }) {
+export async function ghRepo({ user, name }: { user: string; name: string }): Promise<GitHubRepo | null> {
     const r = await fetch(`https://api.github.com/repos/${user}/${name}`, { headers: baseHeaders });
     if (r.status === 404) return null;
     if (!r.ok) throw new Error(`GitHub error ${r.status}`);
-    return r.json();
+    const json = await r.json();
+    return json as GitHubRepo;
 }
 
-export async function ghSearch(q: string) {
+export async function ghSearch(q: string): Promise<GitHubRepo[]> {
     if (!q.trim()) return [];
     const url = new URL("https://api.github.com/search/repositories");
     url.searchParams.set("q", q);
     url.searchParams.set("per_page", "10");
     const r = await fetch(url, { headers: baseHeaders });
     if (!r.ok) throw new Error(`GitHub error ${r.status}`);
-    return (await r.json()).items ?? [];
+    const json = await r.json();
+    return (json.items ?? []) as GitHubRepo[];
 }
