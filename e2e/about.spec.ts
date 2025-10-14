@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { spawn } from 'child_process';
 import fetch from 'node-fetch';
 
-const DEV_URL = 'http://localhost:3000';
+const DEV_URL = 'http://localhost:4321';
 
 function startDevServer() {
     const proc = spawn('npm', ['run', 'dev'], { shell: true, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -18,7 +18,6 @@ function startDevServer() {
     const readyPromise = new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(() => reject(new Error('Dev server start timed out')), 60000);
         const check = () => {
-            // Astro prints a local URL like "Local: http://localhost:3000"
             if (/https?:\/\/localhost:\d+/.test(stdout) || /Local:.*http/.test(stdout)) {
                 clearTimeout(timeout);
                 resolve();
@@ -57,13 +56,13 @@ async function waitForServer(url: string, timeout = 60000) {
 test.describe.serial('About section e2e', () => {
     let proc: any;
 
-    test.beforeAll(async () => {
+    test.beforeAll("Before all", async () => {
         const started = startDevServer();
         proc = started.proc;
         await started.readyPromise;
         // after stdout indicates ready, also poll the url
         await waitForServer(DEV_URL, 30000);
-    }, 70000);
+    });
 
     test.afterAll(() => {
         if (proc && !proc.killed) proc.kill();
