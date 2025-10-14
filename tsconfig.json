@@ -2,6 +2,7 @@
   "extends": "astro/tsconfigs/strict",
   "include": [
     "src",
+    "tests",
     ".astro/types.d.ts",
     "env.d.ts"
   ],
