@@ -16,7 +16,7 @@ const personJsonLd = withJsonLd ? JsonLdAbout : null;
   )}
 
   <div class="left">
-    <AvatarCircle  src={ABOUT.avatar}  alt="German Montero Ramírez"  fluid={true}  fluidMin={800}  fluidMax={800}  fluidViewport={180}  border={true}  ringWidth={2}  />
+    <AvatarCircle  src={ABOUT.avatar}  alt={ABOUT.name}  fluid={true}  fluidMin={800}  fluidMax={800}  fluidViewport={180}  border={true}  ringWidth={2}  />
   </div>
 
   <div class="right">
@@ -32,7 +32,7 @@ const personJsonLd = withJsonLd ? JsonLdAbout : null;
     </p>
 
     <nav class="flex gap-2 wrap" aria-label={lang === "es" ? "Acciones" : "Actions"}>
-      <a class="btn primary" href={ABOUT.resumeUrl} target="_blank" download="German-Montero-Ramirez-CV.pdf" rel="noopener">
+      <a class="btn primary" href={ABOUT.resumeUrl} target="_blank" download={ABOUT.resumeUrl.split('/').pop()} rel="noopener">
         {lang === "es" ? "Descargar CV" : "Download Resume"}
       </a>
       <a class="btn accent-color" href="mailto:germonram@gmail.com" target="_blank" rel="noopener me">Email</a>
