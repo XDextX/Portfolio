@@ -1,4 +1,5 @@
 ---
+import '../styles/global.css'; // estiliza todo el sitio
 const title =
 	'German Montero Ramirez - Full-Stack Developer (.NET, Angular, Java, SSE)';
 const desc =
@@ -33,7 +34,9 @@ const image = `${site}/og-cover.png`; // súbela a /public
 	<link rel='stylesheet' href='/styles/04-layouts.css' />
 	<link rel='stylesheet' href='/styles/themes/light.css' />
 </head>
-<slot />
+<main>
+	<slot />
+</main>
 <script is:inline>
 	const saved = localStorage.getItem('theme');
 	if (saved === 'dark')

@@ -10,7 +10,7 @@ const { lang = "es", withJsonLd = true } = Astro.props;
 const personJsonLd = withJsonLd ? JsonLdAbout : null;
 ---
 
-<section class="section about" aria-labelledby="about-title" >
+<section class="section about" aria-labelledby="about-title" id="About" >
   {personJsonLd && (
     <script type="application/ld+json">{JSON.stringify(personJsonLd)}</script>
   )}

@@ -1,19 +1,8 @@
 ---
 import Resume from './Resume.astro';
-import '../styles/global.css';
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout>
-	<main style='display: flex; flex-direction: column; gap: 1rem;'>
-		<Resume />
-	</main>
+	<Resume />
 </BaseLayout>
-
-<script>
-	const root = document.documentElement;
-	const next = root.getAttribute('data-theme') === 'dark' ? null : 'dark';
-	if (next) root.setAttribute('data-theme', next);
-	else root.removeAttribute('data-theme');
-	localStorage.setItem('theme', next ?? 'light');
-</script>

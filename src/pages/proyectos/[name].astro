@@ -1,0 +1,122 @@
+---
+// src/pages/proyectos/[name].astro
+import Chip from '../../components/Chip.astro';
+import Pill from '../../components/Pill.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { t } from '../../../i18n/i18n';
+
+const { name } = Astro.params; // p.ej. "Portfolio"
+const user = 'XDextX';
+
+const res = await fetch(`${Astro.url.origin}/api/v1/projects/${name}.json`);
+
+if (!res.ok) {
+	return Astro.redirect('/404'); // o renderiza un mensaje amable
+}
+// console.log(res);
+
+const repo = await res.json();
+
+const title = `${repo.name} – Project`;
+const desc = repo.description;
+const lang = repo.language ?? 'N/A';
+const hasDemo = !!repo.homepage && String(repo.homepage).trim() !== '';
+
+const topics: string[] = Array.isArray(repo.topics) ? repo.topics : [];
+const updated = new Date(repo.updated_at).toLocaleDateString();
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'SoftwareApplication',
+	name: repo.name,
+	url: `${Astro.url}/proyectos/${repo.name}`,
+	applicationCategory: 'DeveloperApplication',
+	operatingSystem: 'Any',
+	description: desc,
+};
+---
+
+<BaseLayout title={title} description={desc} jsonLd={jsonLd}>
+	<section class='wrap'>
+		<!-- Breadcrumbs -->
+		<nav class='crumbs' aria-label='Breadcrumb'>
+			<a href='/'>{t('nav.home')}</a>
+			<span>›</span>
+			<a href='/proyectos'>{t('nav.projects')}</a>
+			<span>›</span>
+			<span aria-current='page'>{repo.name}</span>
+		</nav>
+		<article>
+			<header class='header'>
+				<h1 class='title'>{repo.name}</h1>
+				<Pill text={lang} variant='success' outlined size='md' />
+			</header>
+			<p class='desc'>{desc}</p>
+			<!-- Métricas -->
+			<ul class='meta' aria-label='Métricas'>
+				<li title='Stars'>⭐ {repo.stargazers_count}</li>
+				<li title='Forks'>🍴 {repo.forks_count}</li>
+				<li title={t('meta.updated')}>
+					<svg class='dot' width='8' height='8'
+						><circle cx='4' cy='4' r='4' fill='#8aa0c7'></circle></svg
+					>
+					<span>{t('meta.updated', { date: updated })}</span>
+				</li>
+			</ul>
+			<!-- Topics -->
+			{
+				topics.length ? (
+					<div class='topics' aria-label='Etiquetas'>
+						{topics.map((t) => (
+							<Chip text={t} />
+						))}
+					</div>
+				) : null
+			}
+			<!-- Acciones -->
+			<div class='actions'>
+				<a class='btn' href={repo.html_url} target='_blank' rel='noopener'>{t('actions.code')}</a>
+				{
+					hasDemo ? (
+						<a
+							class='btn primary'
+							href={repo.homepage}
+							target='_blank'
+							rel='noopener'
+						>
+							{t('actions.liveDemo')}
+						</a>
+					) : (
+						<span class='btn disabled' aria-disabled='true'>
+							{t('actions.noDemo')}
+						</span>
+					)
+				}
+			</div>
+		</article>
+		<!-- Sección extra opcional: detalles -->
+		<section class='details'>
+			<div class='detail'>
+				<h3>{t('section.repo')}</h3>
+				<p>
+					<a href={repo.html_url} target='_blank' rel='noopener'>{repo.full_name}</a>
+				</p>
+			</div>
+			{
+				hasDemo && (
+					<div class='detail'>
+						<h3>{t('section.demo')}</h3>
+						<p>
+							<a href={repo.homepage} target='_blank' rel='noopener'>
+								{repo.homepage}
+							</a>
+						</p>
+					</div>
+				)
+			}
+			<div class='detail'>
+				<h3>{t('section.license')}</h3>
+				<p>{repo.license?.spdx_id ?? '—'}</p>
+			</div>
+		</section>
+	</section>
+</BaseLayout>
