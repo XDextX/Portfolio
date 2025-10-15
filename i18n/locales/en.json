@@ -1,11 +1,21 @@
 {
-  "project": {
-    "actions": { "liveDemo": "Live Demo", "code": "Code", "detail": "Detail" },
-    "label": { "stack": "Stack:" },
-    "meta": { "updated": "Updated:" }
-  },
-  "projects": {
-    "title": "Projects",
-    "empty": { "message": "No projects to show. Add the topic {{topic}} to your repos on GitHub." }
-  }
+    "project": {
+        "actions": {
+            "liveDemo": "Live Demo",
+            "code": "Code",
+            "detail": "Detail"
+        },
+        "label": {
+            "stack": "Stack:"
+        },
+        "meta": {
+            "updated": "Updated:"
+        }
+    },
+    "projects": {
+        "title": "Projects",
+        "empty": {
+            "message": "No projects to show. Add the topic {{topic}} to your repos on GitHub."
+        }
+    }
 }
