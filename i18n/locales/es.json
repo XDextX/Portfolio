@@ -1,0 +1,11 @@
+﻿{
+  "project": {
+    "actions": { "liveDemo": "Live Demo", "code": "Código", "detail": "Detalle" },
+    "label": { "stack": "Stack:" },
+    "meta": { "updated": "Actualizado:" }
+  },
+  "projects": {
+    "title": "Proyectos",
+    "empty": { "message": "No hay proyectos para mostrar. Agrega el topic {{topic}} a tus repos en GitHub." }
+  }
+}
