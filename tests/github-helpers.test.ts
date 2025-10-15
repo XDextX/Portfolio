@@ -1,8 +1,13 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { ghListByTopic, ghRepo } from '../src/pages/lib/github';
 import { mockGitHubSearchResponse, mockGitHubRepoResponse } from './helpers/github-mocks';
 
 describe('GitHub helpers', () => {
+    afterEach(() => {
+        // restore any stubbed globals
+        vi.unstubAllGlobals();
+    });
+
     it('ghListByTopic returns items when fetch is stubbed', async () => {
         const fake = [
             { id: 1, name: 'repo', full_name: 'XDextX/repo', description: 'desc', html_url: 'https://github.com/XDextX/repo', stargazers_count: 0, forks_count: 0, updated_at: new Date().toISOString() }
