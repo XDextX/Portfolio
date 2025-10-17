@@ -6,7 +6,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { t } from '../../../i18n/i18n';
 
 const { name } = Astro.params; // p.ej. "Portfolio"
-const user = 'XDextX';
 
 const res = await fetch(`${Astro.url.origin}/api/v1/projects/${name}.json`);
 
@@ -59,7 +58,7 @@ const jsonLd = {
 					<svg class='dot' width='8' height='8'
 						><circle cx='4' cy='4' r='4' fill='#8aa0c7'></circle></svg
 					>
-					<span>{t('meta.updated', { date: updated })}</span>
+					<span>{t('project.meta.updated', { date: updated })}</span>
 				</li>
 			</ul>
 			<!-- Topics -->
@@ -74,7 +73,9 @@ const jsonLd = {
 			}
 			<!-- Acciones -->
 			<div class='actions'>
-				<a class='btn' href={repo.html_url} target='_blank' rel='noopener'>{t('actions.code')}</a>
+				<a class='btn' href={repo.html_url} target='_blank' rel='noopener'
+					>{t('project.actions.code')}</a
+				>
 				{
 					hasDemo ? (
 						<a
@@ -83,11 +84,11 @@ const jsonLd = {
 							target='_blank'
 							rel='noopener'
 						>
-							{t('actions.liveDemo')}
+							{t('project.actions.liveDemo')}
 						</a>
 					) : (
 						<span class='btn disabled' aria-disabled='true'>
-							{t('actions.noDemo')}
+							{t('project.actions.noDemo')}
 						</span>
 					)
 				}
@@ -96,7 +97,7 @@ const jsonLd = {
 		<!-- Sección extra opcional: detalles -->
 		<section class='details'>
 			<div class='detail'>
-				<h3>{t('section.repo')}</h3>
+				<h3>{t('project.repo')}</h3>
 				<p>
 					<a href={repo.html_url} target='_blank' rel='noopener'>{repo.full_name}</a>
 				</p>
@@ -114,7 +115,7 @@ const jsonLd = {
 				)
 			}
 			<div class='detail'>
-				<h3>{t('section.license')}</h3>
+				<h3>{t('project.license')}</h3>
 				<p>{repo.license?.spdx_id ?? '—'}</p>
 			</div>
 		</section>

@@ -3,19 +3,24 @@
         "actions": {
             "liveDemo": "Live Demo",
             "code": "Código",
-            "detail": "Detalle"
-        },
-        "label": {
-            "stack": "Stack:"
+            "detail": "Detalle",
+            "noDemo": "No hay demo"
         },
         "meta": {
+            "stack": "Stack:",
             "updated": "Actualizado:"
-        }
+        },
+        "repo": "Repositorio:",
+        "license": "Licencia:"
     },
     "projects": {
         "title": "Proyectos",
         "empty": {
             "message": "No hay proyectos para mostrar. Agrega el topic {{topic}} a tus repos en GitHub."
         }
+    },
+    "nav": {
+        "home": "Inicio",
+        "projects": "Proyectos"
     }
 }
