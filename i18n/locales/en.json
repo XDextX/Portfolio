@@ -3,14 +3,15 @@
         "actions": {
             "liveDemo": "Live Demo",
             "code": "Code",
-            "detail": "Detail"
-        },
-        "label": {
-            "stack": "Stack:"
+            "detail": "Detail",
+            "noDemo": "No live demo"
         },
         "meta": {
+            "stack": "Stack:",
             "updated": "Updated:"
-        }
+        },
+        "repo": "Repository:",
+        "license": "License:"
     },
     "projects": {
         "title": "Projects",

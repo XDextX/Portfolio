@@ -3,6 +3,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 
 import { ABOUT } from '../src/data/about';
+import { CONTACTS } from '../src/data/contacts';
 
 describe('About data and assets', () => {
     it('ABOUT object has resumeUrl and avatar', () => {
@@ -15,6 +16,7 @@ describe('About data and assets', () => {
 
     it('CV file exists in public/cv folder', async () => {
         const resumePath = path.resolve(process.cwd(), 'public', ABOUT.resumeUrl);
+
         const stat = await fs.stat(resumePath);
         expect(stat.isFile()).toBe(true);
     });

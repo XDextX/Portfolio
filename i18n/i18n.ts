@@ -1,6 +1,8 @@
-export type Messages = Record<string, string>;
-export type LocaleMap = Record<string, Messages>;
+type DeepRecord<T = any> = {
+    [key: string]: T | DeepRecord<T>;
+};
 
+type LocaleMap = DeepRecord<string>;
 /**
  * Mensajes cargados en memoria.
  * En el futuro se puede cambiar a carga dinámica/asincrónica.
@@ -31,9 +33,31 @@ export function setLocale(locale: string) {
  * Traduce una clave; acepta plantillas estilo {{name}}.
  */
 export function t(key: string, vars?: Record<string, string>): string {
-    const msg = messages[currentLocale]?.[key] ?? key;
+    let chunk = messages[currentLocale];
+    for (const k of key.split('.')) {
+        if (typeof chunk !== 'object' || chunk === null || chunk[k] === undefined) {
+            console.warn(`i18n: key "${key}" no encontrado`);
+            return key;
+        }
+        chunk = chunk[k];
+    }
+    if (!chunk) return key;
+    // verify if chunk is a string
+    if (typeof chunk !== 'string') {
+        console.warn(`i18n: key "${key}" no es un string`);
+        return key;
+    }
+    const msg = chunk;
     if (!vars) return msg;
-    return msg.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, k) => vars[k] ?? '');
+
+    return msg.replace(/\{\{\s*(\w+)\s*\}\}/g, (_: string, k: string) => {
+        if (vars[k] !== undefined) {
+            return vars[k];
+        } else {
+            console.warn(`Missing replacement for variable: ${k}`);
+            return `{{${k}}}`; // Deja el marcador si falta el valor
+        }
+    });
 }
 
 /**
