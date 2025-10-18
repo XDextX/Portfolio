@@ -1,0 +1,20 @@
+---
+type directions = {
+	[key: string]: string;
+};
+interface Props {
+	directions: directions;
+}
+const { directions } = Astro.props;
+---
+
+<nav class='crumbs' aria-label='Breadcrumb'>
+	{
+		Object.entries(directions).map(([key, value]) => (
+			<>
+				<span>›</span>
+				<a href={value}>{key}</a>
+			</>
+		))
+	}
+</nav>

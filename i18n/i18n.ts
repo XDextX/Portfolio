@@ -41,6 +41,7 @@ export function t(key: string, vars?: Record<string, string>): string {
         }
         chunk = chunk[k];
     }
+
     if (!chunk) return key;
     // verify if chunk is a string
     if (typeof chunk !== 'string') {
