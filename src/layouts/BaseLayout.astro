@@ -1,19 +1,11 @@
 ---
-import { init } from '../../i18n/i18n';
 import '../styles/global.css'; // estiliza todo el sitio
-import en from '../../i18n/locales/en.json';
-import es from '../../i18n/locales/es.json';
 const title =
 	'German Montero Ramirez - Full-Stack Developer (.NET, Angular, Java, SSE)';
 const desc =
 	'Portafolio de German Montero Ramirez: .NET Core, Angular SSR, Java, SSE y optimización SQL. Proyectos, experiencia y contacto.';
 const site = 'https://portfolio-dext.vercel.app';
 const image = `${site}/og-cover.png`; // súbela a /public
-
-const locales = { en, es };
-init(locales, 'es');
-// console.clear();
-console.log('init done with', locales);
 ---
 
 <head>

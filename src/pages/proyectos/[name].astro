@@ -1,9 +1,10 @@
 ---
 // src/pages/proyectos/[name].astro
-import Chip from '../../components/Chip.astro';
-import Pill from '../../components/Pill.astro';
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import { t } from '../../../i18n/i18n';
+import Chip from '@components/Chip.astro';
+import Pill from '@components/Pill.astro';
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Crumbs from '@components/BreadCrumbs.astro';
+import { t } from '@i18n/index';
 
 const { name } = Astro.params; // p.ej. "Portfolio"
 
@@ -12,7 +13,6 @@ const res = await fetch(`${Astro.url.origin}/api/v1/projects/${name}.json`);
 if (!res.ok) {
 	return Astro.redirect('/404'); // o renderiza un mensaje amable
 }
-// console.log(res);
 
 const repo = await res.json();
 
@@ -23,6 +23,11 @@ const hasDemo = !!repo.homepage && String(repo.homepage).trim() !== '';
 
 const topics: string[] = Array.isArray(repo.topics) ? repo.topics : [];
 const updated = new Date(repo.updated_at).toLocaleDateString();
+const directions = {
+	home: '/',
+	projects: '/proyectos',
+	project: `/proyectos/${repo.name}`,
+};
 const jsonLd = {
 	'@context': 'https://schema.org',
 	'@type': 'SoftwareApplication',
@@ -37,13 +42,14 @@ const jsonLd = {
 <BaseLayout title={title} description={desc} jsonLd={jsonLd}>
 	<section class='wrap'>
 		<!-- Breadcrumbs -->
-		<nav class='crumbs' aria-label='Breadcrumb'>
+		<!-- <nav class='crumbs' aria-label='Breadcrumb'>
 			<a href='/'>{t('nav.home')}</a>
 			<span>›</span>
 			<a href='/proyectos'>{t('nav.projects')}</a>
 			<span>›</span>
 			<span aria-current='page'>{repo.name}</span>
-		</nav>
+		</nav> -->
+		<Crumbs directions={directions} />
 		<article>
 			<header class='header'>
 				<h1 class='title'>{repo.name}</h1>
@@ -54,7 +60,7 @@ const jsonLd = {
 			<ul class='meta' aria-label='Métricas'>
 				<li title='Stars'>⭐ {repo.stargazers_count}</li>
 				<li title='Forks'>🍴 {repo.forks_count}</li>
-				<li title={t('meta.updated')}>
+				<li class='flex gap-2 items-center'>
 					<svg class='dot' width='8' height='8'
 						><circle cx='4' cy='4' r='4' fill='#8aa0c7'></circle></svg
 					>
