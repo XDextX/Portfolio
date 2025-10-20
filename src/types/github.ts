@@ -10,4 +10,8 @@ export type GitHubRepo = {
     stargazers_count: number;
     forks_count: number;
     updated_at: string;     // ISO
+    owner: {
+        login: string;
+        avatar_url: string;
+    };
 };

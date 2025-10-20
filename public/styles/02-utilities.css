@@ -63,6 +63,22 @@
     margin-bottom: var(--sp-4);
 }
 
+.ml-4 {
+    margin-left: var(--sp-4);
+}
+
+.mr-4 {
+    margin-right: var(--sp-4);
+}
+
+.mx-4 {
+    margin-inline: var(--sp-4);
+}
+
+.my-4 {
+    margin-block: var(--sp-4);
+}
+
 .text-sm {
     font-size: var(--fs-sm);
 }

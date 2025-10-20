@@ -8,5 +8,5 @@ import node from '@astrojs/node';
 export default defineConfig({
   output: "server",
   base: '/',
-  adapter: vercel( {  }),
+  adapter: node({ mode: 'standalone' })// vercel( {  }),
 });

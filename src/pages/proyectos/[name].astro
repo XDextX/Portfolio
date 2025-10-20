@@ -3,127 +3,169 @@
 import Chip from '@components/Chip.astro';
 import Pill from '@components/Pill.astro';
 import BaseLayout from '@layouts/BaseLayout.astro';
-import Crumbs from '@components/BreadCrumbs.astro';
+import Breadcrumbs from '@components/Breadcrumbs.astro';
 import { t } from '@i18n/index';
+import Readme from '@components/Readme.astro';
+import type { GitHubRepo } from '@type/github';
 
-const { name } = Astro.params; // p.ej. "Portfolio"
+const { name } = Astro.params;
 
-const res = await fetch(`${Astro.url.origin}/api/v1/projects/${name}.json`);
-
-if (!res.ok) {
-	return Astro.redirect('/404'); // o renderiza un mensaje amable
+const repository = await fetch(
+	`${Astro.url.origin}/api/v1/projects/${name}.json`
+);
+if (!repository.ok) {
+	return Astro.redirect('/404');
 }
 
-const repo = await res.json();
+const repo = (await repository.json()) as GitHubRepo;
 
 const title = `${repo.name} – Project`;
-const desc = repo.description;
+const desc = repo.description!;
 const lang = repo.language ?? 'N/A';
 const hasDemo = !!repo.homepage && String(repo.homepage).trim() !== '';
-
 const topics: string[] = Array.isArray(repo.topics) ? repo.topics : [];
-const updated = new Date(repo.updated_at).toLocaleDateString();
+const updated = new Date(repo.updated_at);
+
 const directions = {
 	home: '/',
 	projects: '/proyectos',
-	project: `/proyectos/${repo.name}`,
+	[`${repo.name}`]: `/proyectos/${repo.name}`,
 };
+
 const jsonLd = {
 	'@context': 'https://schema.org',
 	'@type': 'SoftwareApplication',
 	name: repo.name,
-	url: `${Astro.url}/proyectos/${repo.name}`,
+	url: `${Astro.url}${directions.project}`,
 	applicationCategory: 'DeveloperApplication',
 	operatingSystem: 'Any',
 	description: desc,
 };
+
+// util fecha legible
+const fmtUpdated = updated.toLocaleDateString();
 ---
 
 <BaseLayout title={title} description={desc} jsonLd={jsonLd}>
-	<section class='wrap'>
-		<!-- Breadcrumbs -->
-		<!-- <nav class='crumbs' aria-label='Breadcrumb'>
-			<a href='/'>{t('nav.home')}</a>
-			<span>›</span>
-			<a href='/proyectos'>{t('nav.projects')}</a>
-			<span>›</span>
-			<span aria-current='page'>{repo.name}</span>
-		</nav> -->
-		<Crumbs directions={directions} />
-		<article>
-			<header class='header'>
-				<h1 class='title'>{repo.name}</h1>
+	<section class='wrap' style='max-height:80vh;'>
+		<Breadcrumbs directions={directions} />
+
+		<!-- HERO -->
+		<header class='' aria-labelledby='project-title'>
+			<div class='mb-4 mt-4'>
+				<h1 id='accent-color ' class='title'>
+					{repo.name}
+				</h1>
 				<Pill text={lang} variant='success' outlined size='md' />
-			</header>
-			<p class='desc'>{desc}</p>
-			<!-- Métricas -->
-			<ul class='meta' aria-label='Métricas'>
-				<li title='Stars'>⭐ {repo.stargazers_count}</li>
-				<li title='Forks'>🍴 {repo.forks_count}</li>
-				<li class='flex gap-2 items-center'>
-					<svg class='dot' width='8' height='8'
-						><circle cx='4' cy='4' r='4' fill='#8aa0c7'></circle></svg
-					>
-					<span>{t('project.meta.updated', { date: updated })}</span>
-				</li>
-			</ul>
-			<!-- Topics -->
-			{
-				topics.length ? (
-					<div class='topics' aria-label='Etiquetas'>
-						{topics.map((t) => (
-							<Chip text={t} />
-						))}
-					</div>
-				) : null
-			}
-			<!-- Acciones -->
-			<div class='actions'>
-				<a class='btn' href={repo.html_url} target='_blank' rel='noopener'
-					>{t('project.actions.code')}</a
-				>
-				{
-					hasDemo ? (
-						<a
-							class='btn primary'
-							href={repo.homepage}
-							target='_blank'
-							rel='noopener'
-						>
-							{t('project.actions.liveDemo')}
-						</a>
-					) : (
-						<span class='btn disabled' aria-disabled='true'>
-							{t('project.actions.noDemo')}
-						</span>
-					)
-				}
-			</div>
-		</article>
-		<!-- Sección extra opcional: detalles -->
-		<section class='details'>
-			<div class='detail'>
-				<h3>{t('project.repo')}</h3>
-				<p>
-					<a href={repo.html_url} target='_blank' rel='noopener'>{repo.full_name}</a>
-				</p>
 			</div>
 			{
-				hasDemo && (
-					<div class='detail'>
-						<h3>{t('section.demo')}</h3>
-						<p>
-							<a href={repo.homepage} target='_blank' rel='noopener'>
-								{repo.homepage}
-							</a>
-						</p>
+				desc && (
+					<div>
+						<h3 class='mb-4'>{t('project.meta.description')}</h3>
+						<p class='m'>{desc}</p>
 					</div>
 				)
 			}
-			<div class='detail'>
-				<h3>{t('project.license')}</h3>
-				<p>{repo.license?.spdx_id ?? '—'}</p>
+			<div class='flex gap-4' style='max-height: 60vh;'>
+				<div class='card' style='flex-basis: 20%;' aria-label='Métricas'>
+					<div class='flex items-center gap-2' class='updated'>
+						<span class='dot' aria-hidden='true'> </span>
+						<span>
+							{t('project.meta.updated', { date: fmtUpdated })}
+						</span>
+					</div>
+					<div class='flex gap-2 items-center'>
+						<span class='flex items-center' title='Stars' aria-label='Stars'>
+							⭐ {repo.stargazers_count}
+						</span>
+						<span class='flex items-center' title='Forks' aria-label='Forks'>
+							🍴 {repo.forks_count}
+						</span>
+					</div>
+					{
+						topics.length ? (
+							<div class='topics' aria-label='Etiquetas'>
+								{topics.map((tag) => (
+									<Chip text={tag} />
+								))}
+							</div>
+						) : null
+					}
+					<div class='actions'>
+						<a
+							class='btn btn--ghost'
+							href={repo.html_url}
+							target='_blank'
+							rel='noopener'
+						>
+							{t('project.actions.code')}
+						</a>
+
+						{
+							hasDemo ? (
+								<a
+									class='btn btn--primary'
+									href={repo.homepage}
+									target='_blank'
+									rel='noopener'
+								>
+									{t('project.actions.liveDemo')}
+								</a>
+							) : (
+								<span class='btn btn--disabled' aria-disabled='true'>
+									{t('project.actions.noDemo')}
+								</span>
+							)
+						}
+					</div>
+				</div>
+
+				<div style='overflow-y: scroll;'>
+					<Readme repo={repo} />
+				</div>
 			</div>
-		</section>
+		</header>
 	</section>
+
+	<style>
+		/* Hero */
+		.hero {
+		}
+		.hero__top {
+		}
+		.title {
+		}
+		.desc {
+		}
+
+		.hero__meta {
+		}
+		.metric {
+		}
+		.dot {
+			width: 6px;
+			height: 6px;
+			border-radius: 50%;
+			background: hsl(220 30% 60%);
+			display: inline-block;
+		}
+		.updated {
+			white-space: nowrap;
+		}
+
+		.topics {
+			display: flex;
+			gap: 0.5rem;
+			flex-wrap: wrap;
+			margin-top: 0.9rem;
+		}
+
+		/* Acciones */
+		.actions {
+			display: flex;
+			gap: 0.6rem;
+			margin-top: 1rem;
+			flex-wrap: wrap;
+		}
+	</style>
 </BaseLayout>

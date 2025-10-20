@@ -1,0 +1,14 @@
+---
+import type { GitHubRepo } from '@type/github';
+
+interface Props {
+	repo: GitHubRepo;
+}
+const { repo } = Astro.props;
+const readme = await fetch(
+	`${Astro.url.origin}/api/v1/projects/readme/${repo.owner.login}/${repo.name}/readme.json`
+);
+const readmeText = await readme.text();
+---
+
+<article set:html={readmeText} />
