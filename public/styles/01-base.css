@@ -53,7 +53,6 @@ h1,
 h2,
 h3 {
     line-height: var(--lh-tight);
-    margin: var(--sp-6) 0 var(--sp-3);
 }
 
 p {

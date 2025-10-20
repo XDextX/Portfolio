@@ -28,11 +28,14 @@
       "@utils/*": [
         "src/utils/*"
       ],
-      "@types/*": [
+      "@type/*": [
         "src/types/*"
       ],
       "@i18n/*": [
         "i18n/*"
+      ],
+      "@lib/*": [
+        "src/pages/lib/*"
       ]
     }
   }

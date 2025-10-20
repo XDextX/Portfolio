@@ -27,6 +27,7 @@ export async function ghListByTopic({ topic = "", per_page = 50 }: { topic: stri
     return items;
 }
 export async function ghRepo({ user, name }: { user: string; name: string }): Promise<GitHubRepo | null> {
+    console.info("Fetching repo", user, name);
     const r = await fetch(`https://api.github.com/repos/${user}/${name}`, { headers: baseHeaders });
     if (r.status === 404) return null;
     if (!r.ok) throw new Error(`GitHub error ${r.status}`);
@@ -35,6 +36,7 @@ export async function ghRepo({ user, name }: { user: string; name: string }): Pr
 }
 
 export async function ghSearch(q: string): Promise<GitHubRepo[]> {
+    console.info("Searching", q);
     if (!q.trim()) return [];
     const url = new URL("https://api.github.com/search/repositories");
     url.searchParams.set("q", q);
@@ -43,4 +45,34 @@ export async function ghSearch(q: string): Promise<GitHubRepo[]> {
     if (!r.ok) throw new Error(`GitHub error ${r.status}`);
     const json = await r.json();
     return (json.items ?? []) as GitHubRepo[];
+}
+
+export async function ghRepoReadme({ user, name }: { user: string; name: string }): Promise<string | null> {
+    console.info("Fetching readme", user, name);
+    const r = await fetch(`https://api.github.com/repos/${user}/${name}/readme`, {
+        headers: {
+            ...baseHeaders,
+            Accept: 'application/vnd.github.v3.html',
+        }
+    });
+    if (r.status === 404) return null;
+    if (!r.ok) throw new Error(`GitHub error ${r.status}`);
+    const response = await r.text();
+
+    return response;
+}
+function fixRelativeLinks(markdown: string, { owner, repo, branch = 'main' }: { owner: string; repo: string; branch?: string; }) {
+    const base = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/`;
+    // Imágenes ![alt](path) o ![alt](./path)
+    markdown = markdown.replace(/!\[([^\]]*)\]\((?!https?:\/\/)([^)]+)\)/g, (_, alt, path) => {
+        const clean = path.replace(/^\.?\//, '');
+        return `![${alt}](${base}${clean})`;
+    });
+    // Links [text](path) relativos → a GitHub file viewer
+    const ghBase = `https://github.com/${owner}/${repo}/blob/${branch}/`;
+    markdown = markdown.replace(/\[([^\]]+)\]\((?!https?:\/\/|#)([^)]+)\)/g, (_, text, path) => {
+        const clean = path.replace(/^\.?\//, '');
+        return `[${text}](${ghBase}${clean})`;
+    });
+    return markdown;
 }

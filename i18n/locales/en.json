@@ -8,7 +8,9 @@
         },
         "meta": {
             "stack": "Stack:",
-            "updated": "Updated:"
+            "updated": "Updated: {{date}}",
+            "description": "Descripción:",
+            "demo": "Demo:"
         },
         "repo": "Repository:",
         "license": "License:"
