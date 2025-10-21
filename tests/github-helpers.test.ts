@@ -1,6 +1,28 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { ghListByTopic, ghRepo } from '../src/pages/lib/github';
+import { ghListByTopic, ghRepo, ghSearch } from '../src/pages/lib/github';
 import { mockGitHubSearchResponse, mockGitHubRepoResponse } from './helpers/github-mocks';
+import type { GitHubRepo } from '@type/github';
+
+const defaultOwner: GitHubRepo['owner'] = {
+    login: 'XDextX',
+    avatar_url: 'https://avatars.githubusercontent.com/u/0?v=4'
+};
+
+function buildRepo(overrides: Partial<GitHubRepo> = {}): GitHubRepo {
+    const { owner, updated_at = new Date().toISOString(), ...rest } = overrides;
+    return {
+        id: 1,
+        name: 'repo',
+        full_name: 'XDextX/repo',
+        description: '',
+        html_url: 'https://github.com/XDextX/repo',
+        stargazers_count: 0,
+        forks_count: 0,
+        updated_at,
+        owner: { ...defaultOwner, ...(owner ?? {}) },
+        ...rest
+    };
+}
 
 describe('GitHub helpers', () => {
     afterEach(() => {
