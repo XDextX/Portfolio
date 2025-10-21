@@ -61,18 +61,4 @@ export async function ghRepoReadme({ user, name }: { user: string; name: string 
 
     return response;
 }
-function fixRelativeLinks(markdown: string, { owner, repo, branch = 'main' }: { owner: string; repo: string; branch?: string; }) {
-    const base = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/`;
-    // Imágenes ![alt](path) o ![alt](./path)
-    markdown = markdown.replace(/!\[([^\]]*)\]\((?!https?:\/\/)([^)]+)\)/g, (_, alt, path) => {
-        const clean = path.replace(/^\.?\//, '');
-        return `![${alt}](${base}${clean})`;
-    });
-    // Links [text](path) relativos → a GitHub file viewer
-    const ghBase = `https://github.com/${owner}/${repo}/blob/${branch}/`;
-    markdown = markdown.replace(/\[([^\]]+)\]\((?!https?:\/\/|#)([^)]+)\)/g, (_, text, path) => {
-        const clean = path.replace(/^\.?\//, '');
-        return `[${text}](${ghBase}${clean})`;
-    });
-    return markdown;
-}
+
