@@ -14,7 +14,6 @@ export const GET: APIRoute = async () => {
         cache = { data: items, at: Date.now(), key: GITHUB_TOPIC };
         return new Response(JSON.stringify(items), { headers: { "Content-Type": "application/json" } });
     } catch (e: any) {
-        console.error(e);
         return new Response(JSON.stringify({ error: "Unexpected error", detail: String(e) }), { status: 500 });
     }
 };

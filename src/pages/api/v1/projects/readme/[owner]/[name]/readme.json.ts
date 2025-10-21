@@ -53,7 +53,6 @@ export const GET: APIRoute = async ({ params }) => {
             },
         });
     } catch (e: any) {
-        console.error(e);
         return new Response(
             JSON.stringify({ error: "Unexpected error", detail: String(e) }),
             { status: 500, headers: { "Content-Type": "application/json" } }

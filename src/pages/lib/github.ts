@@ -27,7 +27,6 @@ export async function ghListByTopic({ topic = "", per_page = 50 }: { topic: stri
     return items;
 }
 export async function ghRepo({ user, name }: { user: string; name: string }): Promise<GitHubRepo | null> {
-    console.info("Fetching repo", user, name);
     const r = await fetch(`https://api.github.com/repos/${user}/${name}`, { headers: baseHeaders });
     if (r.status === 404) return null;
     if (!r.ok) throw new Error(`GitHub error ${r.status}`);
@@ -39,7 +38,6 @@ export async function ghSearch(
     q: string,
     { perPage = 10, restrictToUser = true }: { perPage?: number; restrictToUser?: boolean } = {}
 ): Promise<GitHubRepo[]> {
-    console.info("Searching", q);
     const trimmedQuery = q.trim();
     if (!trimmedQuery) return [];
     const url = new URL("https://api.github.com/search/repositories");
@@ -55,7 +53,6 @@ export async function ghSearch(
 }
 
 export async function ghRepoReadme({ user, name }: { user: string; name: string }): Promise<string | null> {
-    console.info("Fetching readme", user, name);
     const r = await fetch(`https://api.github.com/repos/${user}/${name}/readme`, {
         headers: {
             ...baseHeaders,

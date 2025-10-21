@@ -8,7 +8,6 @@ export const GET: APIRoute = async ({ params }) => {
         const name = params.name!;
         const data = cache[name];
         if (data && Date.now() - data.at < TTL_MS) {
-            console.info("cache hit");
             return new Response(JSON.stringify(data.data), { headers: { "Content-Type": "application/json" } });
         }
         const repo = await ghRepo({ user: "XDextX", name });
@@ -16,7 +15,6 @@ export const GET: APIRoute = async ({ params }) => {
         cache[name] = { data: repo, at: Date.now() };
         return new Response(JSON.stringify(repo), { headers: { "Content-Type": "application/json" } });
     } catch (e: any) {
-        console.error(e);
         return new Response(JSON.stringify({ error: "Unexpected error", detail: String(e) }), { status: 500 });
     }
 
