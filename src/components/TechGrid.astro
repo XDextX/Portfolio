@@ -12,30 +12,30 @@ export interface Props {
 	title?: string;
 	compact?: boolean;
 	columns?: number;
+	locale?: 'es' | 'en';
 }
 const {
 	items,
-	title = 'Technologies / Tecnologías',
+	title = 'Technologies',
 	compact = false,
 	columns = 5,
-} = Astro.props;
+	locale = 'es',
+} = Astro.props as Props;
 ---
 
 <section class='tech-grid'>
 	<h2>{title}</h2>
 	<div class='grid' style={`--cols:${columns}`}>
-		{
-			items.map((t) => (
-				<TechBadge
-					name={t.name}
-					logo={t.logo}
-					href={t.href}
-					level={t.level}
-					compact={compact}
-					locale='en'
-				/>
-			))
-		}
+		{items.map((tech) => (
+			<TechBadge
+				name={tech.name}
+				logo={tech.logo}
+				href={tech.href}
+				level={tech.level}
+				compact={compact}
+				locale={locale}
+			/>
+		))}
 	</div>
 </section>
 

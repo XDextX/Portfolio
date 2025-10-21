@@ -1,8 +1,16 @@
 ---
 import { TECH } from '../data/tech';
 import TechGrid from './TechGrid.astro';
+import { t } from '@i18n/index';
+
+export interface Props {
+	locale?: 'es' | 'en';
+}
+
+const { locale = 'es' } = Astro.props as Props;
+const title = t('skills.title');
 ---
 
-<section id='habilidades' class='section' data-label='Habilidades'>
-	<TechGrid items={TECH} title='Habilidades' columns={5} compact />
+<section id='skills' class='section' data-label={title}>
+	<TechGrid items={TECH} title={title} columns={5} compact locale={locale} />
 </section>
