@@ -1,31 +1,40 @@
 ---
 import ProjectCard from './ProjectCard.astro';
 import type { GitHubRepo } from '../types/github';
+import { t } from '@i18n/index';
 const topic = import.meta.env.GITHUB_TOPIC;
+const topicValue = topic && topic.trim().length > 0 ? topic : t('projects.topicLabel');
 
 export interface Props {
 	repos: GitHubRepo[];
 	title?: string;
+	hideTitle?: boolean;
+	locale?: 'es' | 'en';
 }
 
-const { repos, title = 'Proyectos' } = Astro.props;
-const titleId = 'projects-title';
+const {
+	repos,
+	title = t('projects.title'),
+	hideTitle = false,
+	locale = 'es',
+} = Astro.props as Props;
+const headingId = 'projects-title';
+const labelledAttrs = hideTitle ? { 'aria-label': title } : { 'aria-labelledby': headingId };
 const columns = repos.length > 5 ? 5 : repos.length;
 ---
 
-<section class='section' aria-labelledby={titleId} id='Projects'>
-	<h2 class='section__title' id={titleId}>{title}</h2>
+<section class='section' id='Projects' {...labelledAttrs}>
+	{!hideTitle && <h2 class='section__title' id={headingId}>{title}</h2>}
 
 	{
 		repos.length === 0 ? (
 			<p class='empty'>
-				No hay proyectos para mostrar. Agrega el topic
-				<code class='code'>{topic}</code> a tus repos en GitHub.
+				{t('projects.empty.message', { topic: topicValue })}
 			</p>
 		) : (
 			<div class='grid' style={`--cols:${columns}`}>
 				{repos.map((r) => (
-					<ProjectCard repo={r} />
+					<ProjectCard repo={r} locale={locale} />
 				))}
 			</div>
 		)

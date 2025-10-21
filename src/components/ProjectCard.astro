@@ -2,15 +2,24 @@
 import Chip from './Chip.astro';
 import LanguageBadge from './LanguageBadge.astro';
 import type { GitHubRepo } from '../types/github';
+import { t } from '@i18n/index';
 
 export interface Props {
 	repo: GitHubRepo;
+	locale?: 'es' | 'en';
 }
-const { repo } = Astro.props;
 
-const desc = repo.description ?? 'Sin descripción';
+const {
+	repo,
+	locale = 'es',
+} = Astro.props as Props;
+
+const intlLocale = locale === 'es' ? 'es-CR' : 'en-US';
+const desc = repo.description ?? t('project.meta.noDescription');
 const lang = repo.language ?? 'N/A';
-const updated = new Date(repo.updated_at).toLocaleDateString();
+const updated = new Date(repo.updated_at);
+const formattedDate = new Intl.DateTimeFormat(intlLocale, { dateStyle: 'medium' }).format(updated);
+const updatedLabel = t('project.meta.updated', { date: formattedDate });
 const hasDemo = !!repo.homepage && repo.homepage.trim() !== '';
 const demo = hasDemo ? repo.homepage! : '#';
 
@@ -24,42 +33,42 @@ function k(n: number): string {
 		<h3 id={`p-${repo.id}-title`} class='text-xl accent-color'>
 			{repo.name}
 		</h3>
-		{
-			hasDemo ? (
-				<a class='btn ghost' href={demo} target='_blank' rel='noopener'>
-					Live Demo
-				</a>
-			) : null
-		}
+		{hasDemo ? (
+			<a class='btn ghost' href={demo} target='_blank' rel='noopener'>
+				{t('project.actions.liveDemo')}
+			</a>
+		) : null}
 	</header>
 
 	<p class='mb-4'>{desc}</p>
 	<p class='stack'>
-		<strong>Stack:</strong>
+		<strong>{t('project.meta.stack')}</strong>
 		<LanguageBadge lang={lang} />
 	</p>
 
-	<ul class='flex' aria-label='Métricas'>
-		<li title='Stars'>⭐ {k(repo.stargazers_count)}</li>
-		<li title='Forks'>🍴 {k(repo.forks_count)}</li>
+	<ul class='flex' aria-label={t('project.meta.metrics')}>
+		<li title='Stars'>
+			{t('project.meta.starsLabel', { count: k(repo.stargazers_count) })}
+		</li>
+		<li title='Forks'>
+			{t('project.meta.forksLabel', { count: k(repo.forks_count) })}
+		</li>
 	</ul>
 
-	{
-		repo.topics?.length ? (
-			<div class='topics'>
-				{repo.topics.slice(0, 6).map((t) => (
-					<Chip text={t} />
-				))}
-			</div>
-		) : null
-	}
+	{repo.topics?.length ? (
+		<div class='topics'>
+			{repo.topics.slice(0, 6).map((topic) => (
+				<Chip text={topic} />
+			))}
+		</div>
+	) : null}
 
-	<p class='date'>Actualizado: {updated}</p>
+	<p class='date'>{updatedLabel}</p>
 
-	<nav class='flex gap-2 wrap' aria-label='Acciones'>
-		<a class='btn primary' href={repo.html_url} target='_blank' rel='noopener'
-			>Código</a
-		>
-		<a class='btn' href={`/proyectos/${repo.name}`}>Detalle</a>
+	<nav class='flex gap-2 wrap' aria-label={t('project.actions.section')}>
+		<a class='btn primary' href={repo.html_url} target='_blank' rel='noopener'>
+			{t('project.actions.code')}
+		</a>
+		<a class='btn' href={`/proyectos/${repo.name}`}>{t('project.actions.detail')}</a>
 	</nav>
 </article>
