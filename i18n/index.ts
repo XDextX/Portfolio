@@ -5,5 +5,5 @@ export const messages = {
     en,
     es
 };
-init(messages, 'en');
+init(messages, 'es');
 export { t, availableLocales, setLocale } from './i18n';
