@@ -23,9 +23,6 @@ export function init(locales: LocaleMap, defaultLocale = 'en') {
  * Cambia el locale actual.
  */
 export function setLocale(locale: string) {
-    if (!messages[locale]) {
-        console.warn(`i18n: locale "${locale}" no encontrado`);
-    }
     currentLocale = locale;
 }
 
@@ -36,7 +33,6 @@ export function t(key: string, vars?: Record<string, string>): string {
     let chunk = messages[currentLocale];
     for (const k of key.split('.')) {
         if (typeof chunk !== 'object' || chunk === null || chunk[k] === undefined) {
-            console.warn(`i18n: key "${key}" no encontrado`);
             return key;
         }
         chunk = chunk[k];
@@ -45,7 +41,6 @@ export function t(key: string, vars?: Record<string, string>): string {
     if (!chunk) return key;
     // verify if chunk is a string
     if (typeof chunk !== 'string') {
-        console.warn(`i18n: key "${key}" no es un string`);
         return key;
     }
     const msg = chunk;
@@ -55,7 +50,6 @@ export function t(key: string, vars?: Record<string, string>): string {
         if (vars[k] !== undefined) {
             return vars[k];
         } else {
-            console.warn(`Missing replacement for variable: ${k}`);
             return `{{${k}}}`; // Deja el marcador si falta el valor
         }
     });
