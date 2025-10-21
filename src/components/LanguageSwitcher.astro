@@ -15,9 +15,13 @@ const labelId = 'language-switcher';
 <div class='language-switcher'>
 	<label class='label' for={labelId}>{t('layout.language')}</label>
 	<select id={labelId} class='select' value={current}>
-		{locales.map((code) => (
-			<option value={code}>{code.toUpperCase()}</option>
-		))}
+		{
+			locales.map((code) => (
+				<option value={code} selected={code === current}>
+					{code.toUpperCase()}
+				</option>
+			))
+		}
 	</select>
 </div>
 
@@ -26,10 +30,10 @@ const labelId = 'language-switcher';
 	const select = container?.querySelector('select');
 	if (select) {
 		select.addEventListener('change', (event) => {
-			const value = (event.target as HTMLSelectElement).value;
+			const value = event.target.value;
 			const next = new URL(window.location.href);
 			next.searchParams.set('lang', value);
-			window.location.href = next.toString();
+			window.location.replace(next.toString());
 		});
 	}
 </script>
