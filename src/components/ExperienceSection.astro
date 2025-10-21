@@ -1,22 +1,29 @@
 ---
 import ExperienceCard from './ExperienceCard.astro';
 import { EXPERIENCES } from '../data/experience';
+import { t } from '@i18n/index';
 
+export interface Props {
+	locale?: 'es' | 'en';
+}
+
+const { locale = 'es' } = Astro.props as Props;
 const titleId = 'work-exp-title';
+const title = t('experience.title');
 ---
 
 <section class='card exp-section' aria-labelledby={titleId}>
-	<h2 id={titleId}>Experiencia laboral</h2>
+	<h2 id={titleId}>{title}</h2>
 
 	<div class='grid grid-2 gap-2'>
 		{
 			EXPERIENCES.map((e) => (
 				<ExperienceCard
-					role={e.role}
+					role={e.role[locale]}
 					company={e.company}
-					period={e.period}
-					location={e.location}
-					bullets={e.bullets}
+					period={e.period[locale]}
+					location={e.location?.[locale]}
+					bullets={e.bullets[locale]}
 				/>
 			))
 		}

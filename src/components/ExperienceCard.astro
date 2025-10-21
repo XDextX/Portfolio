@@ -7,7 +7,7 @@ export interface Props {
 	bullets: string[];
 }
 
-const { role, company, period, location, bullets } = Astro.props;
+const { role, company, period, location, bullets } = Astro.props as Props;
 ---
 
 <article class='card primary-bg' aria-labelledby={`${company}-title`}>
@@ -21,7 +21,7 @@ const { role, company, period, location, bullets } = Astro.props;
 	{location && <p class='location'>{location}</p>}
 
 	<ul class='bullets'>
-		{bullets.map((b) => <li>{b}</li>)}
+		{bullets.map((item) => <li>{item}</li>)}
 	</ul>
 </article>
 
