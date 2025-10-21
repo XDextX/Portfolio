@@ -1,0 +1,116 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Breadcrumbs from '@components/BreadCrumbs.astro';
+import ProjectsSection from '@components/ProjectsSection.astro';
+import { t } from '@i18n/index';
+import type { GitHubRepo } from '@type/github';
+import { applyLocale } from '@utils/locale';
+
+const locale = applyLocale(Astro);
+const topic = (import.meta.env.GITHUB_TOPIC ?? '').trim();
+const apiUrl = new URL('/api/github-list.json', Astro.url);
+
+let repos: GitHubRepo[] = [];
+let fetchError: string | null = null;
+
+try {
+	const response = await fetch(apiUrl);
+	if (!response.ok) {
+		throw new Error(`Request failed with status ${response.status}`);
+	}
+	const payload = await response.json();
+	const items: GitHubRepo[] = Array.isArray(payload)
+		? payload
+		: Array.isArray(payload?.items)
+			? payload.items
+			: [];
+
+	const filtered = topic
+		? items.filter((repo) => Array.isArray(repo.topics) && repo.topics.includes(topic))
+		: items;
+
+	repos = [...filtered].sort((a, b) => {
+		if (b.stargazers_count !== a.stargazers_count) {
+			return b.stargazers_count - a.stargazers_count;
+		}
+		if (b.forks_count !== a.forks_count) {
+			return b.forks_count - a.forks_count;
+		}
+		return a.name.localeCompare(b.name);
+	});
+} catch (error) {
+	fetchError = error instanceof Error ? error.message : 'Unknown error';
+	repos = [];
+}
+
+const pageTitle = `${t('projects.title')} - Portfolio`;
+const pageDescription = topic
+	? t('projects.description.withTopic', { topic })
+	: t('projects.description.default');
+const directions = {
+	[t('nav.home')]: '/',
+	[t('nav.projects')]: '/proyectos'
+};
+
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'CollectionPage',
+	name: t('projects.title'),
+	description: pageDescription,
+	url: Astro.url.href,
+	numberOfItems: repos.length,
+	about: topic ? `GitHub repositories tagged with ${topic}` : 'GitHub repositories'
+};
+---
+
+<BaseLayout title={pageTitle} description={pageDescription} jsonLd={jsonLd} locale={locale}>
+	<section class='wrap projects-page'>
+		<Breadcrumbs directions={directions} />
+
+		<header class='projects-page__header'>
+			<h1 class='projects-page__title'>{t('projects.title')}</h1>
+			{topic && (
+				<p class='projects-page__topic'>
+					{t('projects.topicLabel')}: <code>{topic}</code>
+				</p>
+			)}
+		</header>
+
+		{fetchError ? (
+			<p role='alert' class='projects-page__error'>
+				{t('projects.error', { detail: fetchError })}
+			</p>
+		) : (
+			<ProjectsSection repos={repos} title={t('projects.title')} hideTitle={true} locale={locale} />
+		)}
+	</section>
+
+	<style>
+		.projects-page {
+			display: grid;
+			gap: 1.25rem;
+		}
+
+		.projects-page__header {
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+		}
+
+		.projects-page__title {
+			margin: 0;
+			color: var(--accent-color);
+		}
+
+		.projects-page__topic code {
+			background: var(--surface-color);
+			border-radius: 0.25rem;
+			padding: 0.1rem 0.45rem;
+			font-family: var(--font-mono, 'Fira Code', monospace);
+		}
+
+		.projects-page__error {
+			color: var(--danger-color, #b00020);
+		}
+	</style>
+</BaseLayout>
