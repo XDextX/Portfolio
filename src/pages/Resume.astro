@@ -14,7 +14,8 @@ interface Props {
 
 const providedLocale = (Astro.props as Props | undefined)?.locale;
 const locale = providedLocale ?? applyLocale(Astro);
-const response = await fetch(`${Astro.url}api/github-list.json`);
+const apiUrl = new URL('/api/github-list.json', Astro.url);
+const response = await fetch(apiUrl);
 const repos: GitHubRepo[] = await response.json();
 const projectsTitle = t('projects.title');
 ---
