@@ -1,4 +1,4 @@
-import type { GitHubRepo } from "../../types/github";
+import type { GitHubRepo } from "@type/github";
 
 const USER = import.meta.env.GITHUB_USERNAME || "XDextX";
 const TOKEN = import.meta.env.GITHUB_TOKEN; // opcional
