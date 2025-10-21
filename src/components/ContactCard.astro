@@ -1,42 +1,34 @@
 ---
 import type { ContactItem } from '../types/contact';
+import { t } from '@i18n/index';
 
 export interface Props {
 	item: ContactItem;
 }
 const { item } = Astro.props;
 
-// Accesibilidad y rel/attrs por tipo
 const rel =
 	item.kind === 'email' || item.kind === 'phone'
 		? undefined
-		: 'noopener noreferrer me'; // 'me' ayuda a verificación social
+		: 'noopener noreferrer me';
 
 const isExternal = item.kind !== 'email' && item.kind !== 'phone';
 const target = isExternal ? '_blank' : undefined;
-
-// ARIA
 const aria = `${item.label}: ${item.value}`;
+
+const copyLabel = t('contact.actions.copy');
+const copyAria = t('contact.actions.copyAria', { label: item.label });
+const openLabel = t('contact.actions.open');
+const copiedLabel = t('contact.actions.copied');
+const errorLabel = t('contact.actions.error');
+const restoreLabel = t('contact.actions.restore');
 ---
 
-<article
-	class='card primary-bg'
-	aria-label={aria}
-	itemprop={item.sameAs ? 'sameAs' : undefined}
->
+<article class='card primary-bg' aria-label={aria} itemprop={item.sameAs ? 'sameAs' : undefined}>
 	<header class='flex gap-2 items-center'>
-		{
-			item.icon && (
-				<img
-					class='icon'
-					src={item.icon}
-					alt=''
-					width='22'
-					height='22'
-					loading='lazy'
-				/>
-			)
-		}
+		{item.icon && (
+			<img class='icon' src={item.icon} alt='' width='22' height='22' loading='lazy' />
+		)}
 		<h4 class='accent-color'>{item.label}</h4>
 	</header>
 
@@ -45,35 +37,41 @@ const aria = `${item.label}: ${item.value}`;
 	</p>
 
 	<div class='actions'>
-		<!-- Copiar -->
 		<button
 			class='btn primary'
 			data-copy={item.value}
-			aria-label={`Copiar ${item.label}`}>Copiar</button
+			data-copied={copiedLabel}
+			data-error={errorLabel}
+			data-restore={restoreLabel}
+			aria-label={copyAria}
 		>
+			{copyLabel}
+		</button>
 
-		<!-- Abrir -->
-		<a class='btn accent-color' href={item.href} rel={rel} target={target}
-			>Abrir</a
-		>
+		<a class='btn accent-color' href={item.href} rel={rel} target={target}>
+			{openLabel}
+		</a>
 	</div>
 </article>
 
-<script>
-	// Simple copy-to-clipboard
-	document.currentScript?.parentElement
+<script is:inline>
+	const container = document.currentScript?.parentElement;
+	container
 		?.querySelectorAll('button[data-copy]')
 		.forEach((btn) => {
 			btn.addEventListener('click', async () => {
 				const val = btn.getAttribute('data-copy') || '';
+				const original = btn.textContent || btn.dataset.restore || '';
+				const copied = btn.dataset.copied || original;
+				const error = btn.dataset.error || original;
+				const restore = btn.dataset.restore || original;
 				try {
 					await navigator.clipboard.writeText(val);
-					const prev = btn.textContent;
-					btn.textContent = 'Copiado ✓';
-					setTimeout(() => (btn.textContent = prev), 1200);
+					btn.textContent = copied;
+					setTimeout(() => (btn.textContent = restore), 1200);
 				} catch {
-					btn.textContent = 'Error';
-					setTimeout(() => (btn.textContent = 'Copiar'), 1200);
+					btn.textContent = error;
+					setTimeout(() => (btn.textContent = restore), 1200);
 				}
 			});
 		});

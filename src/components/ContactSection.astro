@@ -1,8 +1,10 @@
 ---
 import ContactCard from './ContactCard.astro';
 import { CONTACTS } from '../data/contacts';
+import { t } from '@i18n/index';
 
 const titleId = 'contact-title';
+const title = t('contact.title');
 ---
 
 <section
@@ -13,7 +15,7 @@ const titleId = 'contact-title';
 	id='Contact'
 >
 	<meta itemprop='name' content='German Montero Ramirez' />
-	<h2 id={titleId}>Contacto</h2>
+	<h2 id={titleId}>{title}</h2>
 
 	<div class='grid'>
 		{CONTACTS.map((c) => <ContactCard item={c} />)}
