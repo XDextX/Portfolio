@@ -1,24 +1,62 @@
+// src/pages/api/v1/projects/readme/[owner]/[name].ts
 import type { APIRoute } from "astro";
 import { ghRepoReadme } from "@lib/github";
 
-const cache: { [key: string]: { data: string; at: number } } = {};
-const TTL_MS = 30 * 60 * 1000;
+type CacheEntry = { data: string; at: number };
+const cache: Record<string, CacheEntry> = {};
+const TTL_MS = 30 * 60 * 1000; // 30 min
 
 export const GET: APIRoute = async ({ params }) => {
     try {
-        const { owner, name } = params;
-        if (!owner || !name) return new Response(JSON.stringify({ error: "Missing params" }), { status: 400 });
-        const key = owner + name;
-        const data = cache[key];
-        if (data && Date.now() - data.at < TTL_MS) {
-            console.info("cache hit");
-            return new Response(data.data, { headers: { "Content-Type": "text/plain" } });
-        } console.log(data);
+        const owner = String(params.owner || "");
+        const name = String(params.name || "");
+        if (!owner || !name) {
+            return new Response(
+                JSON.stringify({ error: "Missing params: owner/name" }),
+                { status: 400, headers: { "Content-Type": "application/json" } }
+            );
+        }
 
-        const readme = await ghRepoReadme({ user: owner, name: name });
-        return new Response(readme, { headers: { "Content-Type": "text/plain" } });
+        const key = `${owner}/${name}`;
+        const entry = cache[key];
+
+        // Cache HIT
+        if (entry && Date.now() - entry.at < TTL_MS) {
+            return new Response(entry.data, {
+                status: 200,
+                headers: {
+                    "Content-Type": "text/html; charset=utf-8",
+                    "Cache-Control": `public, max-age=${TTL_MS / 1000}`,
+                    "X-Cache": "HIT",
+                },
+            });
+        }
+
+        // Fetch desde GitHub
+        const readme = await ghRepoReadme({ user: owner, name });
+        if (readme === null) {
+            return new Response(
+                JSON.stringify({ error: "README not found" }),
+                { status: 404, headers: { "Content-Type": "application/json" } }
+            );
+        }
+
+        // Guardar en caché (MISS)
+        cache[key] = { data: readme, at: Date.now() };
+
+        return new Response(readme, {
+            status: 200,
+            headers: {
+                "Content-Type": "text/html; charset=utf-8",
+                "Cache-Control": `public, max-age=${TTL_MS / 1000}`,
+                "X-Cache": "MISS",
+            },
+        });
     } catch (e: any) {
         console.error(e);
-        return new Response(JSON.stringify({ error: "Unexpected error", detail: String(e) }), { status: 500 });
+        return new Response(
+            JSON.stringify({ error: "Unexpected error", detail: String(e) }),
+            { status: 500, headers: { "Content-Type": "application/json" } }
+        );
     }
 };
