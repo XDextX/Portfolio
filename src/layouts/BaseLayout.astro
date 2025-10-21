@@ -1,19 +1,23 @@
 ---
-import '../styles/global.css'; // estiliza todo el sitio
+import '../styles/global.css';
+import LanguageSwitcher from '@components/LanguageSwitcher.astro';
+
 interface Props {
 	title?: string;
 	description?: string;
 	jsonLd?: any;
+	locale?: 'es' | 'en';
 }
 
 const {
 	title = 'German Montero Ramirez - Full-Stack Developer (.NET, Angular, Java, SSE)',
-	description = 'Portafolio de German Montero Ramirez: .NET Core, Angular SSR, Java, SSE y optimización SQL. Proyectos, experiencia y contacto.',
+	description = 'Portafolio de German Montero Ramirez: .NET Core, Angular SSR, Java, SSE y optimizacion SQL. Proyectos, experiencia y contacto.',
 	jsonLd,
+	locale = 'es',
 } = Astro.props as Props;
 
 const site = 'https://portfolio-dext.vercel.app';
-const image = `${site}/og-cover.png`; // súbela a /public
+const image = `${site}/og-cover.png`;
 ---
 
 <head>
@@ -43,6 +47,9 @@ const image = `${site}/og-cover.png`; // súbela a /public
 	<link rel='stylesheet' href='/styles/themes/light.css' />
 </head>
 <main>
+	<header class='layout-topbar'>
+		<LanguageSwitcher locale={locale} />
+	</header>
 	<slot />
 </main>
 {jsonLd && (
@@ -53,3 +60,11 @@ const image = `${site}/og-cover.png`; // súbela a /public
 	if (saved === 'dark')
 		document.documentElement.setAttribute('data-theme', 'dark');
 </script>
+
+<style>
+	.layout-topbar {
+		display: flex;
+		justify-content: flex-end;
+		padding: 0.75rem 1rem;
+	}
+</style>

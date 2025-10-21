@@ -1,0 +1,57 @@
+---
+import { availableLocales, t } from '@i18n/index';
+import { isSupportedLocale } from '@utils/locale';
+
+export interface Props {
+	locale: string;
+}
+
+const { locale } = Astro.props;
+const locales = availableLocales().filter(isSupportedLocale);
+const current = isSupportedLocale(locale) ? locale : 'es';
+const labelId = 'language-switcher';
+---
+
+<div class='language-switcher'>
+	<label class='label' for={labelId}>{t('layout.language')}</label>
+	<select id={labelId} class='select' value={current}>
+		{locales.map((code) => (
+			<option value={code}>{code.toUpperCase()}</option>
+		))}
+	</select>
+</div>
+
+<script is:inline>
+	const container = document.currentScript?.parentElement;
+	const select = container?.querySelector('select');
+	if (select) {
+		select.addEventListener('change', (event) => {
+			const value = (event.target as HTMLSelectElement).value;
+			const next = new URL(window.location.href);
+			next.searchParams.set('lang', value);
+			window.location.href = next.toString();
+		});
+	}
+</script>
+
+<style>
+	.language-switcher {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 0.875rem;
+	}
+
+	.label {
+		color: var(--text-color, #f5f5f7);
+	}
+
+	.select {
+		background: var(--card-background, #2a2f41);
+		color: inherit;
+		border: 1px solid var(--border-color, #3a4056);
+		border-radius: 0.4rem;
+		padding: 0.25rem 0.75rem;
+		cursor: pointer;
+	}
+</style>
