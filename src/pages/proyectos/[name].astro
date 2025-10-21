@@ -1,5 +1,4 @@
 ---
-// src/pages/proyectos/[name].astro
 import Chip from '@components/Chip.astro';
 import Pill from '@components/Pill.astro';
 import BaseLayout from '@layouts/BaseLayout.astro';
@@ -76,55 +75,36 @@ const jsonLd = {
 						</span>
 					</div>
 
-					<div class='flex gap-4 items-center mt-2' aria-label='Estadísticas'>
-						<span title='Stars' aria-label='Stars'
-							>⭐ {fmtNum.format(repo.stargazers_count)}</span
-						>
-						<span title='Forks' aria-label='Forks'
-							>🍴 {fmtNum.format(repo.forks_count)}</span
-						>
+					<div class='flex gap-4 items-center mt-2' aria-label={t('project.meta.metrics')}>
+						<span title='Stars' aria-label='Stars'>{starsLabel}</span>
+						<span title='Forks' aria-label='Forks'>{forksLabel}</span>
 					</div>
 
-					{
-						topics.length ? (
-							<div class='topics' aria-label='Etiquetas'>
-								{topics.map((tag) => (
-									<Chip text={tag} />
-								))}
-							</div>
-						) : null
-					}
+					{topics.length ? (
+						<div class='topics' aria-label='Tags'>
+							{topics.map((tag) => (
+								<Chip text={tag} />
+							))}
+						</div>
+					) : null}
 
-					<nav class='actions' aria-label='Acciones'>
-						<a
-							class='btn btn--ghost'
-							href={repo.html_url}
-							target='_blank'
-							rel='noopener'
-						>
+					<nav class='actions' aria-label={t('project.actions.section')}>
+						<a class='btn btn--ghost' href={repo.html_url} target='_blank' rel='noopener'>
 							{t('project.actions.code')}
 						</a>
-						{
-							hasDemo ? (
-								<a
-									class='btn btn--primary'
-									href={repo.homepage}
-									target='_blank'
-									rel='noopener'
-								>
-									{t('project.actions.liveDemo')}
-								</a>
-							) : (
-								<span class='btn btn--disabled' aria-disabled='true'>
-									{t('project.actions.noDemo')}
-								</span>
-							)
-						}
+						{hasDemo ? (
+							<a class='btn btn--primary' href={repo.homepage} target='_blank' rel='noopener'>
+								{t('project.actions.liveDemo')}
+							</a>
+						) : (
+							<span class='btn btn--disabled' aria-disabled='true'>
+								{t('project.actions.noDemo')}
+							</span>
+						)}
 					</nav>
 				</aside>
 
-				<!-- CONTENIDO PRINCIPAL -->
-				<section class='readme' aria-label='Documentación'>
+				<section class='readme' aria-label='Documentation'>
 					<Readme repo={repo} />
 				</section>
 			</section>
@@ -132,9 +112,6 @@ const jsonLd = {
 	</section>
 
 	<style>
-		/* Layout principal */
-		.hero {
-		}
 		.hero__top {
 			display: flex;
 			align-items: center;
@@ -150,20 +127,17 @@ const jsonLd = {
 			min-height: 60vh;
 		}
 
-		/* La tarjeta lateral queda sticky */
 		.sidebar {
 			position: sticky;
 			top: 1rem;
 		}
 
-		/* Solo el README scrollable */
 		.readme {
 			overflow: auto;
 			max-height: calc(70vh - 2rem);
 			padding-right: 0.25rem;
 		}
 
-		/* Miscelánea / A11y */
 		.dot {
 			width: 6px;
 			height: 6px;
@@ -171,15 +145,18 @@ const jsonLd = {
 			background: hsl(220 30% 60%);
 			display: inline-block;
 		}
+
 		.updated {
 			white-space: nowrap;
 		}
+
 		.topics {
 			display: flex;
 			gap: 0.5rem;
 			flex-wrap: wrap;
 			margin-top: 0.9rem;
 		}
+
 		.actions {
 			display: flex;
 			gap: 0.6rem;
@@ -187,7 +164,6 @@ const jsonLd = {
 			flex-wrap: wrap;
 		}
 
-		/* Responsive */
 		@media (max-width: 900px) {
 			.grid {
 				grid-template-columns: 1fr;
