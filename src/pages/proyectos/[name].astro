@@ -7,72 +7,66 @@ import Breadcrumbs from '@components/BreadCrumbs.astro';
 import { t } from '@i18n/index';
 import Readme from '@components/Readme.astro';
 import type { GitHubRepo } from '@type/github';
+import { applyLocale } from '@utils/locale';
 
 const { name } = Astro.params;
+const locale = applyLocale(Astro);
 
-const repository = await fetch(
-	`${Astro.url.origin}/api/v1/projects/${name}.json`
-);
+const repository = await fetch(`${Astro.url.origin}/api/v1/projects/${name}.json`);
 if (!repository.ok) {
 	return Astro.redirect('/404');
 }
 
 const repo = (await repository.json()) as GitHubRepo;
 
-const title = `${repo.name} – Project`;
-const desc = repo.description!;
+const intlLocale = locale === 'es' ? 'es-CR' : 'en-US';
+const title = `${repo.name} - ${t('projects.title')}`;
+const desc = repo.description ?? t('project.meta.noDescription');
 const lang = repo.language ?? 'N/A';
 const hasDemo = !!repo.homepage && String(repo.homepage).trim() !== '';
 const topics: string[] = Array.isArray(repo.topics) ? repo.topics : [];
 const updated = new Date(repo.updated_at);
-const locale = 'es-CR'; // o el que uses desde tu sistema i18n
-const fmtDate = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
-const fmtNum = new Intl.NumberFormat(locale);
+const fmtDate = new Intl.DateTimeFormat(intlLocale, { dateStyle: 'medium' });
+const fmtNum = new Intl.NumberFormat(intlLocale);
+const starsLabel = t('project.meta.starsLabel', { count: fmtNum.format(repo.stargazers_count) });
+const forksLabel = t('project.meta.forksLabel', { count: fmtNum.format(repo.forks_count) });
 
 const directions = {
-	home: '/',
-	projects: '/proyectos',
-	[`${repo.name}`]: `/proyectos/${repo.name}`,
+	[t('nav.home')]: '/',
+	[t('nav.projects')]: '/proyectos',
+	[repo.name]: `/proyectos/${repo.name}`,
 };
 
 const jsonLd = {
 	'@context': 'https://schema.org',
 	'@type': 'SoftwareApplication',
 	name: repo.name,
-	url: `${Astro.url}${[`${repo.name}`]}`,
+	url: `${Astro.url.origin}/proyectos/${repo.name}`,
 	applicationCategory: 'DeveloperApplication',
 	operatingSystem: 'Any',
 	description: desc,
 };
-
-// util fecha legible
-const fmtUpdated = updated.toLocaleDateString();
 ---
 
-<BaseLayout title={title} description={desc} jsonLd={jsonLd}>
+<BaseLayout title={title} description={desc} jsonLd={jsonLd} locale={locale}>
 	<section class='wrap'>
 		<Breadcrumbs directions={directions} />
 
-		<!-- HERO -->
 		<header>
 			<div class='hero__top'>
 				<h1 id='project-title' class='title'>{repo.name}</h1>
 				<Pill text={lang} variant='success' outlined size='md' />
 			</div>
 
-			{
-				desc && (
-					<div class='desc' id='project-desc'>
-						<h3 class='mb-4'>{t('project.meta.description')}</h3>
-						<p class='m'>{desc}</p>
-					</div>
-				)
-			}
+			{desc && (
+				<div class='desc' id='project-desc'>
+					<h3 class='mb-4'>{t('project.meta.description')}</h3>
+					<p class='m'>{desc}</p>
+				</div>
+			)}
 
-			<!-- GRID LAYOUT -->
 			<section class='grid' aria-describedby='project-desc'>
-				<!-- SIDEBAR -->
-				<aside class='card sidebar' aria-label='Métricas y acciones'>
+				<aside class='card sidebar' aria-label={t('project.actions.section')}>
 					<div class='updated flex items-center gap-2'>
 						<span class='dot' aria-hidden='true'></span>
 						<span>

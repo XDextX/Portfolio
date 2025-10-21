@@ -5,13 +5,23 @@ import ProjectsSection from '../components/ProjectsSection.astro';
 import HabilitiesSection from '../components/HabilitiesSection.astro';
 import ContactSection from '../components/ContactSection.astro';
 import AboutSection from '../components/AboutSection.astro';
+import { applyLocale } from '@utils/locale';
+import { t } from '@i18n/index';
+
+interface Props {
+	locale?: 'es' | 'en';
+}
+
+const providedLocale = (Astro.props as Props | undefined)?.locale;
+const locale = providedLocale ?? applyLocale(Astro);
 const response = await fetch(`${Astro.url}api/github-list.json`);
 const repos: GitHubRepo[] = await response.json();
+const projectsTitle = t('projects.title');
 ---
 
-<AboutSection lang='es' withJsonLd={true} />
-<HabilitiesSection />
-<ExperienceSection />
-<ProjectsSection repos={repos} title='Proyectos' />
+<AboutSection lang={locale} withJsonLd={true} />
+<HabilitiesSection locale={locale} />
+<ExperienceSection locale={locale} />
+<ProjectsSection repos={repos} title={projectsTitle} locale={locale} />
 
-<ContactSection />
+<ContactSection locale={locale} />

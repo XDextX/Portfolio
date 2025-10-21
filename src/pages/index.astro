@@ -1,8 +1,11 @@
 ---
 import Resume from './Resume.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { applyLocale } from '@utils/locale';
+
+const locale = applyLocale(Astro);
 ---
 
-<BaseLayout>
-	<Resume />
+<BaseLayout locale={locale}>
+	<Resume locale={locale} />
 </BaseLayout>
