@@ -25,6 +25,9 @@ const lang = repo.language ?? 'N/A';
 const hasDemo = !!repo.homepage && String(repo.homepage).trim() !== '';
 const topics: string[] = Array.isArray(repo.topics) ? repo.topics : [];
 const updated = new Date(repo.updated_at);
+const locale = 'es-CR'; // o el que uses desde tu sistema i18n
+const fmtDate = new Intl.DateTimeFormat(locale, { dateStyle: 'medium' });
+const fmtNum = new Intl.NumberFormat(locale);
 
 const directions = {
 	home: '/',
