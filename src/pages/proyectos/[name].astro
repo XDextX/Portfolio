@@ -39,7 +39,7 @@ const jsonLd = {
 	'@context': 'https://schema.org',
 	'@type': 'SoftwareApplication',
 	name: repo.name,
-	url: `${Astro.url}${directions.project}`,
+	url: `${Astro.url}${[`${repo.name}`]}`,
 	applicationCategory: 'DeveloperApplication',
 	operatingSystem: 'Any',
 	description: desc,
