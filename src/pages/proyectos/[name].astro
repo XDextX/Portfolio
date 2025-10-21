@@ -50,41 +50,47 @@ const fmtUpdated = updated.toLocaleDateString();
 ---
 
 <BaseLayout title={title} description={desc} jsonLd={jsonLd}>
-	<section class='wrap' style='max-height:80vh;'>
+	<section class='wrap'>
 		<Breadcrumbs directions={directions} />
 
 		<!-- HERO -->
-		<header class='' aria-labelledby='project-title'>
-			<div class='mb-4 mt-4'>
-				<h1 id='accent-color ' class='title'>
-					{repo.name}
-				</h1>
+		<header>
+			<div class='hero__top'>
+				<h1 id='project-title' class='title'>{repo.name}</h1>
 				<Pill text={lang} variant='success' outlined size='md' />
 			</div>
+
 			{
 				desc && (
-					<div>
+					<div class='desc' id='project-desc'>
 						<h3 class='mb-4'>{t('project.meta.description')}</h3>
 						<p class='m'>{desc}</p>
 					</div>
 				)
 			}
-			<div class='flex gap-4' style='max-height: 60vh;'>
-				<div class='card' style='flex-basis: 20%;' aria-label='Métricas'>
-					<div class='flex items-center gap-2' class='updated'>
-						<span class='dot' aria-hidden='true'> </span>
+
+			<!-- GRID LAYOUT -->
+			<section class='grid' aria-describedby='project-desc'>
+				<!-- SIDEBAR -->
+				<aside class='card sidebar' aria-label='Métricas y acciones'>
+					<div class='updated flex items-center gap-2'>
+						<span class='dot' aria-hidden='true'></span>
 						<span>
-							{t('project.meta.updated', { date: fmtUpdated })}
+							<time datetime={updated.toISOString()}>
+								{t('project.meta.updated', { date: fmtDate.format(updated) })}
+							</time>
 						</span>
 					</div>
-					<div class='flex gap-2 items-center'>
-						<span class='flex items-center' title='Stars' aria-label='Stars'>
-							⭐ {repo.stargazers_count}
-						</span>
-						<span class='flex items-center' title='Forks' aria-label='Forks'>
-							🍴 {repo.forks_count}
-						</span>
+
+					<div class='flex gap-4 items-center mt-2' aria-label='Estadísticas'>
+						<span title='Stars' aria-label='Stars'
+							>⭐ {fmtNum.format(repo.stargazers_count)}</span
+						>
+						<span title='Forks' aria-label='Forks'
+							>🍴 {fmtNum.format(repo.forks_count)}</span
+						>
 					</div>
+
 					{
 						topics.length ? (
 							<div class='topics' aria-label='Etiquetas'>
@@ -94,7 +100,8 @@ const fmtUpdated = updated.toLocaleDateString();
 							</div>
 						) : null
 					}
-					<div class='actions'>
+
+					<nav class='actions' aria-label='Acciones'>
 						<a
 							class='btn btn--ghost'
 							href={repo.html_url}
@@ -103,7 +110,6 @@ const fmtUpdated = updated.toLocaleDateString();
 						>
 							{t('project.actions.code')}
 						</a>
-
 						{
 							hasDemo ? (
 								<a
@@ -120,31 +126,50 @@ const fmtUpdated = updated.toLocaleDateString();
 								</span>
 							)
 						}
-					</div>
-				</div>
+					</nav>
+				</aside>
 
-				<div style='overflow-y: scroll;'>
+				<!-- CONTENIDO PRINCIPAL -->
+				<section class='readme' aria-label='Documentación'>
 					<Readme repo={repo} />
-				</div>
-			</div>
+				</section>
+			</section>
 		</header>
 	</section>
 
 	<style>
-		/* Hero */
+		/* Layout principal */
 		.hero {
 		}
 		.hero__top {
-		}
-		.title {
-		}
-		.desc {
+			display: flex;
+			align-items: center;
+			gap: 0.75rem;
+			margin: 1rem 0;
 		}
 
-		.hero__meta {
+		.grid {
+			display: grid;
+			grid-template-columns: 320px 1fr;
+			gap: 1rem;
+			align-items: start;
+			min-height: 60vh;
 		}
-		.metric {
+
+		/* La tarjeta lateral queda sticky */
+		.sidebar {
+			position: sticky;
+			top: 1rem;
 		}
+
+		/* Solo el README scrollable */
+		.readme {
+			overflow: auto;
+			max-height: calc(70vh - 2rem);
+			padding-right: 0.25rem;
+		}
+
+		/* Miscelánea / A11y */
 		.dot {
 			width: 6px;
 			height: 6px;
@@ -155,20 +180,30 @@ const fmtUpdated = updated.toLocaleDateString();
 		.updated {
 			white-space: nowrap;
 		}
-
 		.topics {
 			display: flex;
 			gap: 0.5rem;
 			flex-wrap: wrap;
 			margin-top: 0.9rem;
 		}
-
-		/* Acciones */
 		.actions {
 			display: flex;
 			gap: 0.6rem;
 			margin-top: 1rem;
 			flex-wrap: wrap;
+		}
+
+		/* Responsive */
+		@media (max-width: 900px) {
+			.grid {
+				grid-template-columns: 1fr;
+			}
+			.sidebar {
+				position: static;
+			}
+			.readme {
+				max-height: none;
+			}
 		}
 	</style>
 </BaseLayout>
