@@ -35,12 +35,19 @@ export async function ghRepo({ user, name }: { user: string; name: string }): Pr
     return json as GitHubRepo;
 }
 
-export async function ghSearch(q: string): Promise<GitHubRepo[]> {
+export async function ghSearch(
+    q: string,
+    { perPage = 10, restrictToUser = true }: { perPage?: number; restrictToUser?: boolean } = {}
+): Promise<GitHubRepo[]> {
     console.info("Searching", q);
-    if (!q.trim()) return [];
+    const trimmedQuery = q.trim();
+    if (!trimmedQuery) return [];
     const url = new URL("https://api.github.com/search/repositories");
-    url.searchParams.set("q", q);
-    url.searchParams.set("per_page", "10");
+    const scopedQuery = restrictToUser && !trimmedQuery.includes("user:")
+        ? `user:${USER} ${trimmedQuery}`
+        : trimmedQuery;
+    url.searchParams.set("q", scopedQuery);
+    url.searchParams.set("per_page", String(perPage));
     const r = await fetch(url, { headers: baseHeaders });
     if (!r.ok) throw new Error(`GitHub error ${r.status}`);
     const json = await r.json();
