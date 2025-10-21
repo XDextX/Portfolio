@@ -3,7 +3,8 @@ import ProjectCard from './ProjectCard.astro';
 import type { GitHubRepo } from '../types/github';
 import { t } from '@i18n/index';
 const topic = import.meta.env.GITHUB_TOPIC;
-const topicValue = topic && topic.trim().length > 0 ? topic : t('projects.topicLabel');
+const topicValue =
+	topic && topic.trim().length > 0 ? topic : t('projects.topicLabel');
 
 export interface Props {
 	repos: GitHubRepo[];
@@ -19,18 +20,26 @@ const {
 	locale = 'es',
 } = Astro.props as Props;
 const headingId = 'projects-title';
-const labelledAttrs = hideTitle ? { 'aria-label': title } : { 'aria-labelledby': headingId };
+const labelledAttrs = hideTitle
+	? { 'aria-label': title }
+	: { 'aria-labelledby': headingId };
 const columns = repos.length > 5 ? 5 : repos.length;
 ---
 
 <section class='section' id='Projects' {...labelledAttrs}>
-	{!hideTitle && <h2 class='section__title' id={headingId}>{title}</h2>}
+	{
+		!hideTitle && (
+			<h2 class='section__title' id={headingId}>
+				<a class='accent-color ' href='/proyectos'>
+					{title}
+				</a>
+			</h2>
+		)
+	}
 
 	{
 		repos.length === 0 ? (
-			<p class='empty'>
-				{t('projects.empty.message', { topic: topicValue })}
-			</p>
+			<p class='empty'>{t('projects.empty.message', { topic: topicValue })}</p>
 		) : (
 			<div class='grid' style={`--cols:${columns}`}>
 				{repos.map((r) => (
