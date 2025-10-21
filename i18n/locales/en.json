@@ -1,24 +1,59 @@
 {
-    "project": {
-        "actions": {
-            "liveDemo": "Live Demo",
-            "code": "Code",
-            "detail": "Detail",
-            "noDemo": "No live demo"
-        },
-        "meta": {
-            "stack": "Stack:",
-            "updated": "Updated: {{date}}",
-            "description": "Descripción:",
-            "demo": "Demo:"
-        },
-        "repo": "Repository:",
-        "license": "License:"
-    },
-    "projects": {
-        "title": "Projects",
-        "empty": {
-            "message": "No projects to show. Add the topic {{topic}} to your repos on GitHub."
-        }
-    }
+	"layout": {
+		"language": "Language",
+		"languageSwitcher": "Select a language"
+	},
+	"project": {
+		"actions": {
+			"section": "Project actions",
+			"liveDemo": "Live demo",
+			"code": "Code",
+			"detail": "Detail",
+			"noDemo": "No live demo"
+		},
+		"meta": {
+			"stack": "Stack:",
+			"metrics": "Metrics",
+			"starsLabel": "Stars: {{count}}",
+			"forksLabel": "Forks: {{count}}",
+			"updated": "Updated: {{date}}",
+			"description": "Description:",
+			"noDescription": "No description provided"
+		},
+		"repo": "Repository:",
+		"license": "License:"
+	},
+	"projects": {
+		"title": "Projects",
+		"topicLabel": "Topic",
+		"description": {
+			"default": "Selected GitHub projects.",
+			"withTopic": "GitHub projects tagged with {{topic}}."
+		},
+		"error": "Could not load projects. Detail: {{detail}}",
+		"empty": {
+			"message": "No projects to show. Add the topic {{topic}} to your repos on GitHub."
+		}
+	},
+	"skills": {
+		"title": "Skills"
+	},
+	"experience": {
+		"title": "Work experience"
+	},
+	"contact": {
+		"title": "Contact",
+		"actions": {
+			"copy": "Copy",
+			"copyAria": "Copy {{label}}",
+			"open": "Open",
+			"copied": "Copied",
+			"error": "Error",
+			"restore": "Copy"
+		}
+	},
+	"nav": {
+		"home": "Home",
+		"projects": "Projects"
+	}
 }

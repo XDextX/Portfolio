@@ -1,27 +1,59 @@
-﻿{
-    "project": {
-        "actions": {
-            "liveDemo": "Live Demo",
-            "code": "Código",
-            "detail": "Detalle",
-            "noDemo": "No hay demo"
-        },
-        "meta": {
-            "stack": "Stack:",
-            "updated": "Actualizado: {{date}}",
-            "description": "Descripción:"
-        },
-        "repo": "Repositorio:",
-        "license": "Licencia:"
-    },
-    "projects": {
-        "title": "Proyectos",
-        "empty": {
-            "message": "No hay proyectos para mostrar. Agrega el topic {{topic}} a tus repos en GitHub."
-        }
-    },
-    "nav": {
-        "home": "Inicio",
-        "projects": "Proyectos"
-    }
+{
+	"layout": {
+		"language": "Idioma",
+		"languageSwitcher": "Selecciona un idioma"
+	},
+	"project": {
+		"actions": {
+			"section": "Acciones del proyecto",
+			"liveDemo": "Ver demo",
+			"code": "Codigo",
+			"detail": "Detalle",
+			"noDemo": "No hay demo"
+		},
+		"meta": {
+			"stack": "Stack:",
+			"metrics": "Metricas",
+			"starsLabel": "Stars: {{count}}",
+			"forksLabel": "Forks: {{count}}",
+			"updated": "Actualizado: {{date}}",
+			"description": "Descripcion:",
+			"noDescription": "Sin descripcion"
+		},
+		"repo": "Repositorio:",
+		"license": "Licencia:"
+	},
+	"projects": {
+		"title": "Proyectos",
+		"topicLabel": "Topic",
+		"description": {
+			"default": "Listado de proyectos destacados de GitHub.",
+			"withTopic": "Proyectos de GitHub con el topic {{topic}}."
+		},
+		"error": "No se pudieron cargar los proyectos. Detalle: {{detail}}",
+		"empty": {
+			"message": "No hay proyectos para mostrar. Agrega el topic {{topic}} a tus repos en GitHub."
+		}
+	},
+	"skills": {
+		"title": "Habilidades"
+	},
+	"experience": {
+		"title": "Experiencia laboral"
+	},
+	"contact": {
+		"title": "Contacto",
+		"actions": {
+			"copy": "Copiar",
+			"copyAria": "Copiar {{label}}",
+			"open": "Abrir",
+			"copied": "Copiado",
+			"error": "Error",
+			"restore": "Copiar"
+		}
+	},
+	"nav": {
+		"home": "Inicio",
+		"projects": "Proyectos"
+	}
 }
