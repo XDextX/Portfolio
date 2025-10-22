@@ -9,16 +9,15 @@ export interface Props {
 	locale?: 'es' | 'en';
 }
 
-const {
-	repo,
-	locale = 'es',
-} = Astro.props as Props;
+const { repo, locale = 'es' } = Astro.props as Props;
 
 const intlLocale = locale === 'es' ? 'es-CR' : 'en-US';
 const desc = repo.description ?? t('project.meta.noDescription');
 const lang = repo.language ?? 'N/A';
 const updated = new Date(repo.updated_at);
-const formattedDate = new Intl.DateTimeFormat(intlLocale, { dateStyle: 'medium' }).format(updated);
+const formattedDate = new Intl.DateTimeFormat(intlLocale, {
+	dateStyle: 'medium',
+}).format(updated);
 const updatedLabel = t('project.meta.updated', { date: formattedDate });
 const hasDemo = !!repo.homepage && repo.homepage.trim() !== '';
 const demo = hasDemo ? repo.homepage! : '#';

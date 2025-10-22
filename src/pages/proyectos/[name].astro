@@ -59,16 +59,22 @@ const jsonLd = {
 
 		<header>
 			<div class='hero__top'>
-				<h1 id='project-title' class='title'>{repo.name}</h1>
-				<Pill text={lang} variant='success' outlined size='md' />
+				<h1 id='project-title' class='title' transition:name=`p-${repo.id}-title`>
+					{repo.name}
+				</h1>
+				<p class='stack' transition:name={`p-${repo.id}-lang`}>
+					<LanguageBadge lang={lang} />
+				</p>
 			</div>
 
-			{desc && (
-				<div class='desc' id='project-desc'>
-					<h3 class='mb-4'>{t('project.meta.description')}</h3>
-					<p class='m'>{desc}</p>
-				</div>
-			)}
+			{
+				desc && (
+					<div class='desc' id='project-desc'>
+						<h3 class='mb-4'>{t('project.meta.description')}</h3>
+						<p class='m'>{desc}</p>
+					</div>
+				)
+			}
 
 			<section class='grid' aria-describedby='project-desc'>
 				<aside class='card sidebar' aria-label={t('project.actions.section')}>
