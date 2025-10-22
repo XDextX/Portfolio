@@ -59,30 +59,51 @@ const jsonLd = {
 	description: pageDescription,
 	url: Astro.url.href,
 	numberOfItems: repos.length,
-	about: topic ? `GitHub repositories tagged with ${topic}` : 'GitHub repositories'
+	about: topic
+		? `GitHub repositories tagged with ${topic}`
+		: 'GitHub repositories',
 };
 ---
 
-<BaseLayout title={pageTitle} description={pageDescription} jsonLd={jsonLd} locale={locale}>
+<BaseLayout
+	title={pageTitle}
+	description={pageDescription}
+	jsonLd={jsonLd}
+	locale={locale}
+>
 	<section class='wrap projects-page'>
 		<Breadcrumbs directions={directions} />
 
 		<header class='projects-page__header'>
-			<h1 class='projects-page__title'>{t('projects.title')}</h1>
-			{topic && (
-				<p class='projects-page__topic'>
-					{t('projects.topicLabel')}: <code>{topic}</code>
-				</p>
-			)}
+			<h1
+				transition:name={`p-${'projects-title'}-title`}
+				class='projects-page__title'
+			>
+				{t('projects.title')}
+			</h1>
+			{
+				topic && (
+					<p class='projects-page__topic'>
+						{t('projects.topicLabel')}: <code>{topic}</code>
+					</p>
+				)
+			}
 		</header>
 
-		{fetchError ? (
-			<p role='alert' class='projects-page__error'>
-				{t('projects.error', { detail: fetchError })}
-			</p>
-		) : (
-			<ProjectsSection repos={repos} title={t('projects.title')} hideTitle={true} locale={locale} />
-		)}
+		{
+			fetchError ? (
+				<p role='alert' class='projects-page__error'>
+					{t('projects.error', { detail: fetchError })}
+				</p>
+			) : (
+				<ProjectsSection
+					repos={repos}
+					title={t('projects.title')}
+					hideTitle={true}
+					locale={locale}
+				/>
+			)
+		}
 	</section>
 
 	<style>

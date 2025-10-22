@@ -26,10 +26,19 @@ const labelledAttrs = hideTitle
 const columns = repos.length > 5 ? 5 : repos.length;
 ---
 
-<section class='section' id='Projects' {...labelledAttrs}>
+<section
+	class='section'
+	id='Projects'
+	{...labelledAttrs}
+	transition:name={`p-${headingId}`}
+>
 	{
 		!hideTitle && (
-			<h2 class='section__title' id={headingId}>
+			<h2
+				class='section__title'
+				id={headingId}
+				transition:name={`p-${headingId}-title`}
+			>
 				<a class='accent-color ' href='/proyectos'>
 					{title}
 				</a>
