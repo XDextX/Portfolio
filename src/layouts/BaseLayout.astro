@@ -1,4 +1,5 @@
 ---
+import { ClientRouter } from 'astro:transitions';
 import '../styles/global.css';
 import LanguageSwitcher from '@components/LanguageSwitcher.astro';
 
@@ -43,8 +44,9 @@ const image = `${site}/og-cover.png`;
 	<link rel='stylesheet' href='/styles/03-components.css' />
 	<link rel='stylesheet' href='/styles/04-layouts.css' />
 	<link rel='stylesheet' href='/styles/themes/light.css' />
+	<ClientRouter />
 </head>
-<main>
+<main transition:animate="fade">
 	<header class='layout-topbar'>
 		<LanguageSwitcher locale={locale} />
 	</header>
