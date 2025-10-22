@@ -28,20 +28,36 @@ function k(n: number): string {
 }
 ---
 
-<article class='card grid primary-bg' aria-labelledby={`p-${repo.id}-title`}>
+<article
+	transition:name=`p-${repo.id}`
+	class='card grid primary-bg'
+	aria-labelledby={`p-${repo.id}-title`}
+>
 	<header class='flex justify-between items-center mb-4'>
-		<h3 id={`p-${repo.id}-title`} class='text-xl accent-color'>
+		<h3
+			transition:name=`p-${repo.id}-title`
+			id={`p-${repo.id}-title`}
+			class='text-xl accent-color'
+		>
 			{repo.name}
 		</h3>
-		{hasDemo ? (
-			<a class='btn ghost' href={demo} target='_blank' rel='noopener'>
-				{t('project.actions.liveDemo')}
-			</a>
-		) : null}
+		{
+			hasDemo ? (
+				<a
+					transition:name={`p-${repo.id}-demo`}
+					class='btn ghost'
+					href={demo}
+					target='_blank'
+					rel='noopener'
+				>
+					{t('project.actions.liveDemo')}
+				</a>
+			) : null
+		}
 	</header>
 
-	<p class='mb-4'>{desc}</p>
-	<p class='stack'>
+	<p class='mb-4' transition:name={`p-${repo.id}-desc`}>{desc}</p>
+	<p class='stack' transition:name={`p-${repo.id}-lang`}>
 		<strong>{t('project.meta.stack')}</strong>
 		<LanguageBadge lang={lang} />
 	</p>
@@ -55,20 +71,30 @@ function k(n: number): string {
 		</li>
 	</ul>
 
-	{repo.topics?.length ? (
-		<div class='topics'>
-			{repo.topics.slice(0, 6).map((topic) => (
-				<Chip text={topic} />
-			))}
-		</div>
-	) : null}
+	{
+		repo.topics?.length ? (
+			<div class='topics'>
+				{repo.topics.slice(0, 6).map((topic) => (
+					<Chip text={topic} />
+				))}
+			</div>
+		) : null
+	}
 
 	<p class='date'>{updatedLabel}</p>
 
 	<nav class='flex gap-2 wrap' aria-label={t('project.actions.section')}>
-		<a class='btn primary' href={repo.html_url} target='_blank' rel='noopener'>
+		<a
+			class='btn primary'
+			transition:name={`p-${repo.id}-code`}
+			href={repo.html_url}
+			target='_blank'
+			rel='noopener'
+		>
 			{t('project.actions.code')}
 		</a>
-		<a class='btn' href={`/proyectos/${repo.name}`}>{t('project.actions.detail')}</a>
+		<a class='btn' href={`/proyectos/${repo.name}`}
+			>{t('project.actions.detail')}</a
+		>
 	</nav>
 </article>
