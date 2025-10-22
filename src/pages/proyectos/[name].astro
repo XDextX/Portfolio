@@ -1,17 +1,19 @@
 ---
 import Chip from '@components/Chip.astro';
-import Pill from '@components/Pill.astro';
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Breadcrumbs from '@components/BreadCrumbs.astro';
 import { t } from '@i18n/index';
 import Readme from '@components/Readme.astro';
 import type { GitHubRepo } from '@type/github';
 import { applyLocale } from '@utils/locale';
+import LanguageBadge from '@components/LanguageBadge.astro';
 
 const { name } = Astro.params;
 const locale = applyLocale(Astro);
 
-const repository = await fetch(`${Astro.url.origin}/api/v1/projects/${name}.json`);
+const repository = await fetch(
+	`${Astro.url.origin}/api/v1/projects/${name}.json`
+);
 if (!repository.ok) {
 	return Astro.redirect('/404');
 }
@@ -27,8 +29,12 @@ const topics: string[] = Array.isArray(repo.topics) ? repo.topics : [];
 const updated = new Date(repo.updated_at);
 const fmtDate = new Intl.DateTimeFormat(intlLocale, { dateStyle: 'medium' });
 const fmtNum = new Intl.NumberFormat(intlLocale);
-const starsLabel = t('project.meta.starsLabel', { count: fmtNum.format(repo.stargazers_count) });
-const forksLabel = t('project.meta.forksLabel', { count: fmtNum.format(repo.forks_count) });
+const starsLabel = t('project.meta.starsLabel', {
+	count: fmtNum.format(repo.stargazers_count),
+});
+const forksLabel = t('project.meta.forksLabel', {
+	count: fmtNum.format(repo.forks_count),
+});
 
 const directions = {
 	[t('nav.home')]: '/',
@@ -75,32 +81,49 @@ const jsonLd = {
 						</span>
 					</div>
 
-					<div class='flex gap-4 items-center mt-2' aria-label={t('project.meta.metrics')}>
+					<div
+						class='flex gap-4 items-center mt-2'
+						aria-label={t('project.meta.metrics')}
+					>
 						<span title='Stars' aria-label='Stars'>{starsLabel}</span>
 						<span title='Forks' aria-label='Forks'>{forksLabel}</span>
 					</div>
 
-					{topics.length ? (
-						<div class='topics' aria-label='Tags'>
-							{topics.map((tag) => (
-								<Chip text={tag} />
-							))}
-						</div>
-					) : null}
+					{
+						topics.length ? (
+							<div class='topics' aria-label='Tags'>
+								{topics.map((tag) => (
+									<Chip text={tag} />
+								))}
+							</div>
+						) : null
+					}
 
 					<nav class='actions' aria-label={t('project.actions.section')}>
-						<a class='btn btn--ghost' href={repo.html_url} target='_blank' rel='noopener'>
+						<a
+							class='btn btn--ghost'
+							href={repo.html_url}
+							target='_blank'
+							rel='noopener'
+						>
 							{t('project.actions.code')}
 						</a>
-						{hasDemo ? (
-							<a class='btn btn--primary' href={repo.homepage} target='_blank' rel='noopener'>
-								{t('project.actions.liveDemo')}
-							</a>
-						) : (
-							<span class='btn btn--disabled' aria-disabled='true'>
-								{t('project.actions.noDemo')}
-							</span>
-						)}
+						{
+							hasDemo ? (
+								<a
+									class='btn btn--primary'
+									href={repo.homepage}
+									target='_blank'
+									rel='noopener'
+								>
+									{t('project.actions.liveDemo')}
+								</a>
+							) : (
+								<span class='btn btn--disabled' aria-disabled='true'>
+									{t('project.actions.noDemo')}
+								</span>
+							)
+						}
 					</nav>
 				</aside>
 
@@ -113,7 +136,6 @@ const jsonLd = {
 
 	<style>
 		.hero__top {
-			display: flex;
 			align-items: center;
 			gap: 0.75rem;
 			margin: 1rem 0;
