@@ -11,7 +11,7 @@ interface Props {
 }
 
 const {
-	title = 'German Montero Ramirez - Full-Stack Developer (.NET, Angular, Java, SSE)',
+	title = 'German Montero Ramirez - Full-Stack Developer',
 	description = 'Portafolio de German Montero Ramirez: .NET Core, Angular SSR, Java, SSE y optimizacion SQL. Proyectos, experiencia y contacto.',
 	jsonLd,
 	locale = 'es',
@@ -32,6 +32,7 @@ const image = `${site}/og-cover.png`;
 	<meta property='og:description' content={description} />
 	<meta property='og:url' content={site + Astro.url.pathname} />
 	<meta property='og:image' content={image} />
+	<meta property='og:author' content='German Montero Ramirez' />
 
 	<meta name='twitter:card' content='summary_large_image' />
 	<meta name='twitter:title' content={title} />

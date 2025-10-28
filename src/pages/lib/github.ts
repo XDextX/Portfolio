@@ -26,6 +26,7 @@ export async function ghListByTopic({ topic = "", per_page = 50 }: { topic: stri
     const { items = [] } = json as { items?: GitHubRepo[] };
     return items;
 }
+
 export async function ghRepo({ user, name }: { user: string; name: string }): Promise<GitHubRepo | null> {
     const r = await fetch(`https://api.github.com/repos/${user}/${name}`, { headers: baseHeaders });
     if (r.status === 404) return null;
