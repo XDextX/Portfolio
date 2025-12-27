@@ -2,6 +2,7 @@
 import ExperienceCard from './ExperienceCard.astro';
 import { EXPERIENCES } from '../data/experience';
 import { t } from '@i18n/index';
+import Section from './Section.astro';
 
 export interface Props {
 	locale?: 'es' | 'en';
@@ -12,10 +13,10 @@ const titleId = 'work-exp-title';
 const title = t('experience.title');
 ---
 
-<section class='card exp-section' aria-labelledby={titleId}>
+<Section class='section' aria-labelledby={titleId}>
 	<h2 id={titleId}>{title}</h2>
 
-	<div class='grid grid-2 gap-2'>
+	<div class='grid grid-2 gap-2 px-4 mt-4'>
 		{
 			EXPERIENCES.map((e) => (
 				<ExperienceCard
@@ -28,20 +29,9 @@ const title = t('experience.title');
 			))
 		}
 	</div>
-</section>
+</Section>
 
 <style>
-	.exp-section {
-		border: 1px solid #3a4056;
-		background: var(--card-background);
-		padding: 1rem;
-	}
-	.exp-section > h2 {
-		color: #7de089;
-		margin: 0.25rem 0 1rem 0;
-		font-size: 1.2rem;
-	}
-
 	@media (max-width: 980px) {
 		.grid {
 			grid-template-columns: 1fr;

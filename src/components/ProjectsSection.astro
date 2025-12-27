@@ -27,7 +27,7 @@ const columns = repos.length > 5 ? 5 : repos.length;
 ---
 
 <section
-	class='section'
+	class='section projects'
 	id='Projects'
 	{...labelledAttrs}
 	transition:name={`p-${headingId}`}
@@ -39,9 +39,7 @@ const columns = repos.length > 5 ? 5 : repos.length;
 				id={headingId}
 				transition:name={`p-${headingId}-title`}
 			>
-				<a class='accent-color ' href='/proyectos'>
-					{title}
-				</a>
+				<a href='/proyectos'>{title}</a>
 			</h2>
 		)
 	}
@@ -71,6 +69,10 @@ const columns = repos.length > 5 ? 5 : repos.length;
 			display: grid;
 			gap: 1rem;
 			grid-template-columns: repeat(var(--cols, 5), minmax(0, 1fr));
+		}
+		.projects {
+			max-height: 20vh 500px;
+			overflow: hidden;
 		}
 		@media (max-width: 1200px) {
 			.grid {

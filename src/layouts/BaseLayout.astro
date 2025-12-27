@@ -26,6 +26,7 @@ const image = `${site}/og-cover.png`;
 	<meta name='viewport' content='width=device-width, initial-scale=1' />
 	<title>{title}</title>
 	<meta name='description' content={description} />
+	<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
 	<meta property='og:type' content='website' />
 	<meta property='og:title' content={title} />
@@ -33,6 +34,9 @@ const image = `${site}/og-cover.png`;
 	<meta property='og:url' content={site + Astro.url.pathname} />
 	<meta property='og:image' content={image} />
 	<meta property='og:author' content='German Montero Ramirez' />
+	
+	<meta name="viewport" content="width=device-width" />
+
 
 	<meta name='twitter:card' content='summary_large_image' />
 	<meta name='twitter:title' content={title} />

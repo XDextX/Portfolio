@@ -134,11 +134,11 @@
 }
 
 .accent-color {
-    color: var(--accent-color);
+    color: var(--logo-yellow);
 }
 
 .primary-bg {
-    background-color: var(--primary-color);
+    background-color: var(--bg-color);
 }
 
 @media (max-width: 900px) {

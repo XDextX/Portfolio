@@ -21,9 +21,6 @@
 }
 
 .section {
-    border: 1px solid #3a4056;
-    background: var(--card-background);
-    border-radius: 12px;
     padding: 1rem;
 }
 
@@ -32,4 +29,8 @@
     margin-bottom: var(--sp-4);
     color: var(--accent-color);
     /* font-size: 1.2rem; */
+}
+
+.section+.section {
+    border-top: 1px solid var(--accent-color);
 }

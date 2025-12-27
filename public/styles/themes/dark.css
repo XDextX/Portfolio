@@ -1,15 +1,15 @@
 :root[data-theme="dark"] {
-    --bg: #0b1020;
-    --fg: #e5e7eb;
-    --brand-text: #b9a7ff;
+    --bg: var(--neutral-dark);
+    --fg: var(--text-main);
+    --brand-text: var(--brand-accent);
 
-    --neutral-0: #0f1324;
-    --neutral-50: #12162a;
-    --neutral-100: #1a2038;
-    --neutral-200: #232a44;
-    --neutral-600: #9aa3b2;
-    --neutral-800: #e5e7eb;
-    --neutral-900: #f3f4f6;
+    --neutral-0: var(--neutral-dark);
+    --neutral-50: #24263a;
+    --neutral-100: #2a2f41;
+    --neutral-200: #3a3b52;
+    --neutral-600: var(--text-secondary);
+    --neutral-800: var(--text-main);
+    --neutral-900: var(--neutral-light);
 
     color-scheme: dark;
 }

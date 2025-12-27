@@ -1,36 +1,18 @@
 ---
 import Pill from './Pill.astro';
+import { levelLabelMap, levelVariantMap, type Locale, type TechLevel } from '../data/levelLabels';
 
 export interface Props {
-	level: 'beginner' | 'intermediate' | 'advanced';
+	level: TechLevel;
 	size?: 'sm' | 'md' | 'xs' | 'lg' | 'xl' | '2xl' | '3xl';
 	outline?: boolean;
-	locale?: 'es' | 'en';
+	locale?: Locale;
 }
 
 const { level, size = 'sm', outline = false, locale = 'en' } = Astro.props;
 
-const labelMap = {
-	en: {
-		beginner: 'Beginner',
-		intermediate: 'Intermediate',
-		advanced: 'Advanced',
-	},
-	es: {
-		beginner: 'Principiante',
-		intermediate: 'Intermedio',
-		advanced: 'Avanzado',
-	},
-} as const;
-
-const variantMap = {
-	beginner: 'warning',
-	intermediate: 'info',
-	advanced: 'success',
-} as const;
-
-const label = labelMap[locale][level];
-const variant = variantMap[level] as 'warning' | 'info' | 'success';
+const label = levelLabelMap[locale][level];
+const variant = levelVariantMap[level];
 ---
 
 <Pill text={label} variant={variant} size={size} outline={outline} />

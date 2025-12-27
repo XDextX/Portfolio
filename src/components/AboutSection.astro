@@ -2,6 +2,7 @@
 import AvatarCircle from "./AvatarCircle.astro";
 import Pill from "./Pill.astro";
 import { ABOUT,JsonLdAbout } from "../data/about";
+import Section from "./Section.astro"
 export interface Props {
   lang?: "es" | "en";
   withJsonLd?: boolean;
@@ -10,7 +11,7 @@ const { lang = "es", withJsonLd = true } = Astro.props;
 const personJsonLd = withJsonLd ? JsonLdAbout : null;
 ---
 
-<section class="section about" aria-labelledby="about-title" id="About" >
+<Section class="section about flex gap-4" aria-labelledby="about-title" id="About" >
   {personJsonLd && (
     <script type="application/ld+json">{JSON.stringify(personJsonLd)}</script>
   )}
@@ -40,7 +41,7 @@ const personJsonLd = withJsonLd ? JsonLdAbout : null;
       <a class="btn accent-color" href="https://www.linkedin.com/in/german-montero-ramirez/" target="_blank" rel="noopener me">LinkedIn</a>
     </nav>
   </div>
-</section>
+</Section>
 
 <style>
   .about{

@@ -10,7 +10,7 @@ export interface Props {
 const { role, company, period, location, bullets } = Astro.props as Props;
 ---
 
-<article class='card primary-bg' aria-labelledby={`${company}-title`}>
+<article class='shadow p-4' aria-labelledby={`${company}-title`}>
 	<h3 id={`${company}-title`} class='exp-title'>
 		<span class='role'>{role}</span>
 		<span class='sep'> · </span>
@@ -26,15 +26,12 @@ const { role, company, period, location, bullets } = Astro.props as Props;
 </article>
 
 <style>
-	.exp-card {
-		background: var(--primary-color);
-		border: 1px solid #3a4056;
-		border-radius: 12px;
-		padding: 1rem 1.25rem;
+	.shadow {
+		border-bottom: 3px solid rgb(0, 0, 0, 0.2);
+		border-right: 3px solid rgb(0, 0, 0, 0.2);
 		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 	}
 	.exp-title {
-		color: var(--accent-color-darker);
 		font-weight: 800;
 		margin: 0 0 0.25rem 0;
 		line-height: 1.3;

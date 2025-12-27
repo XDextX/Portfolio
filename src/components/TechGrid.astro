@@ -1,5 +1,6 @@
 ---
 import TechBadge from './TechBadge.astro';
+import { levelLabelMap, type TechLevel } from '../data/levelLabels';
 
 export interface TechItem {
 	name: string;
@@ -21,21 +22,43 @@ const {
 	columns = 5,
 	locale = 'es',
 } = Astro.props as Props;
+
+const skills = Object.groupBy(
+	items,
+	({ level }) => level?.toString() ?? 'other'
+);
+const LabelMap:Record<TechLevel,string> = levelLabelMap[locale];
+// <TechBadge
+// 					name={tech.name}
+// 					logo={tech.logo}
+// 					href={tech.href}
+// 					level={tech.level}
+// 					compact={compact}
+// 					locale={locale}
+// 				/>
 ---
 
 <section class='tech-grid'>
 	<h2>{title}</h2>
-	<div class='grid' style={`--cols:${columns}`}>
-		{items.map((tech) => (
-			<TechBadge
-				name={tech.name}
-				logo={tech.logo}
-				href={tech.href}
-				level={tech.level}
-				compact={compact}
-				locale={locale}
-			/>
-		))}
+
+	<div >
+
+		{
+			Object.entries(skills).map(([level, techs]) => (
+				<h4>{LabelMap[level as TechLevel]}</h4>
+				<div class='grid px-4' style={`--cols:${columns}`}>
+				{techs?.map((tech) => (
+					<TechBadge
+					name={tech.name}
+					logo={tech.logo}
+					href={tech.href}
+					compact={compact}
+					locale={locale}
+					/>
+					))}
+				</div>
+			))
+		}
 	</div>
 </section>
 

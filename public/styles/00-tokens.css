@@ -1,18 +1,37 @@
 :root {
-    /* Color palette (neutrals + brand) */
-    --color-brand: #6e56cf;
-    --color-brand-600: #5a45bd;
-    --color-brand-700: #3a4056;
-    --avatar-ring: var(--color-brand, #6e56cf);
-    --avatar-ring-dark: var(--brand-text, #b9a7ff);
-    --neutral-0: #ffffff;
-    --neutral-50: #f8fafc;
-    --neutral-100: #f1f5f9;
-    --neutral-200: #e2e8f0;
-    --neutral-300: #cbd5e1;
-    --neutral-600: #475569;
-    --neutral-800: #1f2937;
-    --neutral-900: #0f172a;
+    /* Brand palette */
+    --brand-primary: #243972;
+    --brand-primary-light: #4B69B7;
+
+    --brand-accent: #E3C770;
+    --brand-accent-dark: #BFA258;
+
+    /* Neutrals */
+    --neutral-light: #F4EFD9;
+    --neutral-mid: #C3BBA8;
+    --neutral-dark: #1E1E2F;
+
+    /* Text */
+    --text-main: #FFFFFF;
+    --text-secondary: #C3BBA8;
+    --text-inverse: #1E1E2F;
+
+    /* Derived tokens for existing styles */
+    --color-brand: var(--brand-primary);
+    --color-brand-600: var(--brand-primary-light);
+    --color-brand-700: var(--brand-primary);
+
+    --bg-color: var(--brand-primary);
+
+    --neutral-0: var(--neutral-dark);
+    --neutral-50: #24263a;
+    --neutral-100: #2a2f41;
+    --neutral-200: #3a3b52;
+    --neutral-600: var(--text-secondary);
+    --neutral-800: var(--text-main);
+    --neutral-900: var(--neutral-light);
+
+    --text-color: var(--text-main);
 
     --success: #1d2520;
     --warning: #f59e0b;

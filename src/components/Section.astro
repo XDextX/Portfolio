@@ -1,0 +1,16 @@
+---
+export interface Props {
+	class?: string;
+	ariaLabel?: string;
+	id?: string;
+}
+const { class: className = '', ariaLabel = '', id = '' } = Astro.props as Props;
+---
+
+<section
+	class={className ?? '' + ' section'}
+	aria-labelledby={ariaLabel}
+	id={id}
+>
+	<slot />
+</section>

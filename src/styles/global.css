@@ -1,11 +1,45 @@
 /* Variables de colores */
 :root {
-    /* Base oscura elegante */
-    --background-color: #1e1e2f;
+    /* Brand */
+    --brand-primary: #243972;
+    --brand-primary-light: #4B69B7;
 
-    /* Color primario: gris azulado profesional */
-    --primary-color: #2d3142;
-    --primary-color-dark: #1a1d2e;
+    --brand-accent: #E3C770;
+    --brand-accent-dark: #BFA258;
+
+    /* Neutrals */
+    --neutral-light: #F4EFD9;
+    --neutral-mid: #C3BBA8;
+    --neutral-dark: #1E1E2F;
+
+    /* Text */
+    --text-main: #FFFFFF;
+    --text-secondary: #C3BBA8;
+    --text-inverse: #1E1E2F;
+
+    /* Base surfaces */
+    --color-bg: var(--neutral-dark);
+    --color-surface: #2E2F44;
+    --color-border: var(--neutral-mid);
+    --bg-color: var(--brand-primary);
+
+    --color-text-main: var(--text-main);
+    --color-text-secondary: var(--text-secondary);
+    --color-text-light: var(--neutral-light);
+
+    --color-accent: var(--brand-accent);
+    --color-accent-2: var(--brand-primary-light);
+    --color-accent-dark: var(--brand-accent-dark);
+
+    /* Logo optionals */
+    --logo-blue: var(--brand-primary);
+    --logo-yellow: var(--brand-accent);
+    /* Base oscura elegante */
+    --background-color: var(--neutral-dark);
+
+    /* Color primario */
+    --primary-color: var(--brand-primary);
+    --primary-color-dark: #1b2a59;
 
     /* Cards */
     --card-background: #2a2f41;
@@ -14,13 +48,13 @@
     /* fondo para cards anidadas */
 
     /* Acento fresco */
-    --accent-color: #7bd389;
-    /* verde lima suave */
-    --accent-color-dark: #65b077;
-    --accent-color-darker: #4c9e66;
+    --accent-color: var(--brand-accent);
+    /* amarillo calido */
+    --accent-color-dark: var(--brand-accent-dark);
+    --accent-color-darker: var(--brand-primary);
 
     /* Texto */
-    --text-color: #f1f1f1;
+    --text-color: var(--text-main);
 }
 
 /* Reset básico */
@@ -36,7 +70,7 @@ html {
 
 body {
     font-family: system-ui, sans-serif;
-    background-color: var(--background-color);
+    background-color: var(--color-bg);
     color: var(--text-color);
     margin: 0;
     padding: 0;
@@ -46,8 +80,9 @@ body {
 main {
     max-width: 80%;
     margin: 20px auto;
-    background-color: var(--primary-color);
-    padding: 20px;
+    background-color: var(--logo-blue);
+    padding-block: 20px;
+    padding-inline: 5%;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
