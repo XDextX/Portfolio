@@ -1,80 +1,37 @@
-/* Variables de colores */
+/* Semantic aliases — los valores base vienen de 00-tokens.css */
 :root {
-    /* Brand */
-    --brand-primary: #243972;
-    --brand-primary-light: #4B69B7;
-
-    --brand-accent: #E3C770;
-    --brand-accent-dark: #BFA258;
-
-    /* Neutrals */
-    --neutral-light: #F4EFD9;
-    --neutral-mid: #C3BBA8;
-    --neutral-dark: #1E1E2F;
-
-    /* Text */
-    --text-main: #FFFFFF;
-    --text-secondary: #C3BBA8;
-    --text-inverse: #1E1E2F;
-
-    /* Base surfaces */
+    /* Surfaces */
     --color-bg: var(--neutral-dark);
     --color-surface: #2E2F44;
     --color-border: var(--neutral-mid);
-    --bg-color: var(--brand-primary);
 
+    /* Text aliases */
     --color-text-main: var(--text-main);
     --color-text-secondary: var(--text-secondary);
     --color-text-light: var(--neutral-light);
 
+    /* Accent aliases */
     --color-accent: var(--brand-accent);
     --color-accent-2: var(--brand-primary-light);
     --color-accent-dark: var(--brand-accent-dark);
 
-    /* Logo optionals */
+    /* Logo references */
     --logo-blue: var(--brand-primary);
     --logo-yellow: var(--brand-accent);
-    /* Base oscura elegante */
-    --background-color: var(--neutral-dark);
 
-    /* Color primario */
+    /* Legacy aliases */
+    --background-color: var(--neutral-dark);
     --primary-color: var(--brand-primary);
     --primary-color-dark: #1b2a59;
 
     /* Cards */
     --card-background: #2a2f41;
-    /* fondo para cards de primer nivel */
     --nested-card-background: #2e3144;
-    /* fondo para cards anidadas */
 
-    /* Acento fresco */
+    /* Accent shortcuts */
     --accent-color: var(--brand-accent);
-    /* amarillo calido */
     --accent-color-dark: var(--brand-accent-dark);
     --accent-color-darker: var(--brand-primary);
-
-    /* Texto */
-    --text-color: var(--text-main);
-}
-
-/* Reset básico */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-html {
-    scroll-behavior: smooth;
-}
-
-body {
-    font-family: system-ui, sans-serif;
-    background-color: var(--color-bg);
-    color: var(--text-color);
-    margin: 0;
-    padding: 0;
-    line-height: 1.6;
 }
 
 main {
@@ -103,12 +60,6 @@ h4 {
     font-size: 1.2rem;
 }
 
-/* Párrafos */
-p {
-    margin-bottom: 10px;
-    font-size: 1rem;
-}
-
 /* Listas */
 ul {
     list-style: none;
@@ -124,24 +75,13 @@ ul ul {
     list-style-type: disc;
 }
 
-/* Imagen de perfil */
-
-/* Enlaces */
-
-
 a:hover {
     color: var(--accent-color-dark);
     text-decoration: underline;
 }
 
-/* Diseño responsivo */
 @media (max-width: 768px) {
     main {
-        width: 90%;
-    }
-
-    #intro img {
-        width: 120px;
-        height: 120px;
+        max-width: 90%;
     }
 }

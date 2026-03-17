@@ -11,7 +11,7 @@ const { lang = "es", withJsonLd = true } = Astro.props;
 const personJsonLd = withJsonLd ? JsonLdAbout : null;
 ---
 
-<Section class="section about flex gap-4" aria-labelledby="about-title" id="About" >
+<Section class="section about" aria-labelledby="about-title" id="About">
   {personJsonLd && (
     <script type="application/ld+json">{JSON.stringify(personJsonLd)}</script>
   )}
@@ -53,5 +53,5 @@ const personJsonLd = withJsonLd ? JsonLdAbout : null;
   .name{ color:var(--accent-color); margin:.2rem 0 .4rem 0; font-size:1.6rem; font-weight:800; }
   .row{ display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; color:var(--text-color); margin-bottom:.6rem; }
   .dot{ opacity:.35 }
-  .loc{ color:var(--neutral-300) }  
+  .loc{ color:var(--neutral-600) }
 </style>
