@@ -20,16 +20,15 @@ const formattedDate = new Intl.DateTimeFormat(intlLocale, {
 }).format(updated);
 const updatedLabel = t('project.meta.updated', { date: formattedDate });
 const hasDemo = !!repo.homepage && repo.homepage.trim() !== '';
-const demo = hasDemo ? repo.homepage! : '#';
 
-function k(n: number): string {
+function formatCount(n: number): string {
 	return n < 1000 ? String(n) : (n / 1000).toFixed(1) + 'k';
 }
 ---
 
 <article
 	transition:name=`p-${repo.id}`
-	class='card grid primary-bg shadow'
+	class='item card grid primary-bg shadow'
 	aria-labelledby={`p-${repo.id}-title`}
 >
 	<header class='flex justify-between items-center mb-4'>
@@ -40,19 +39,6 @@ function k(n: number): string {
 		>
 			{repo.name}
 		</h3>
-		{
-			hasDemo ? (
-				<a
-					transition:name={`p-${repo.id}-demo`}
-					class='btn ghost'
-					href={demo}
-					target='_blank'
-					rel='noopener'
-				>
-					{t('project.actions.liveDemo')}
-				</a>
-			) : null
-		}
 	</header>
 
 	<p class='mb-4' transition:name={`p-${repo.id}-desc`}>{desc}</p>
@@ -63,10 +49,10 @@ function k(n: number): string {
 
 	<ul class='flex' aria-label={t('project.meta.metrics')}>
 		<li title='Stars'>
-			{t('project.meta.starsLabel', { count: k(repo.stargazers_count) })}
-		</li>
+			{t('project.meta.starsLabel', { count: formatCount(repo.stargazers_count) })}
+</li>
 		<li title='Forks'>
-			{t('project.meta.forksLabel', { count: k(repo.forks_count) })}
+			{t('project.meta.forksLabel', { count: formatCount(repo.forks_count) })}
 		</li>
 	</ul>
 
@@ -88,13 +74,26 @@ function k(n: number): string {
 			transition:name={`p-${repo.id}-code`}
 			href={repo.html_url}
 			target='_blank'
-			rel='noopener'
+			rel='noopener noreferrer'
 		>
 			{t('project.actions.code')}
 		</a>
 		<a class='btn' href={`/proyectos/${repo.name}`}
 			>{t('project.actions.detail')}</a
 		>
+		{
+			hasDemo ? (
+				<a
+					transition:name={`p-${repo.id}-demo`}
+					class='btn ghost'
+					href={repo.homepage!}
+					target='_blank'
+					rel='noopener noreferrer'
+				>
+					{t('project.actions.liveDemo')}
+				</a>
+			) : null
+		}
 	</nav>
 </article>
 <style>
@@ -102,6 +101,5 @@ function k(n: number): string {
 		border-bottom: 3px solid rgb(0, 0, 0, 0.1);
 		border-right: 3px solid rgb(0, 0, 0, 0.1);
 		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-		
 	}
 </style>
