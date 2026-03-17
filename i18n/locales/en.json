@@ -6,7 +6,7 @@
 	"project": {
 		"actions": {
 			"section": "Project actions",
-			"liveDemo": "Live demo",
+			"liveDemo": "Demo",
 			"code": "Code",
 			"detail": "Detail",
 			"noDemo": "No live demo"
@@ -54,6 +54,7 @@
 	},
 	"nav": {
 		"home": "Home",
-		"projects": "Projects"
+		"projects": "Projects",
+		"back": "Back to projects"
 	}
 }

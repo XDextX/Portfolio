@@ -57,6 +57,11 @@ const jsonLd = {
 	<section class='wrap'>
 		<Breadcrumbs directions={directions} />
 
+		<a class='btn ghost back-btn' href='/proyectos'>
+			<span aria-hidden='true'>←</span>
+			{t('nav.back')}
+		</a>
+
 		<header>
 			<div class='hero__top'>
 				<h1 id='project-title' class='title' transition:name=`p-${repo.id}-title`>
@@ -141,6 +146,14 @@ const jsonLd = {
 	</section>
 
 	<style>
+		.back-btn {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.4rem;
+			margin-block: 0.75rem;
+			font-size: var(--fs-sm);
+		}
+
 		.hero__top {
 			align-items: center;
 			gap: 0.75rem;

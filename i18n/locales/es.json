@@ -6,19 +6,19 @@
 	"project": {
 		"actions": {
 			"section": "Acciones del proyecto",
-			"liveDemo": "Ver demo",
-			"code": "Codigo",
+			"liveDemo": "Demo",
+			"code": "Código",
 			"detail": "Detalle",
 			"noDemo": "No hay demo"
 		},
 		"meta": {
 			"stack": "Stack:",
-			"metrics": "Metricas",
+			"metrics": "Métricas",
 			"starsLabel": "Stars: {{count}}",
 			"forksLabel": "Forks: {{count}}",
 			"updated": "Actualizado: {{date}}",
-			"description": "Descripcion:",
-			"noDescription": "Sin descripcion"
+			"description": "Descripción:",
+			"noDescription": "Sin descripción"
 		},
 		"repo": "Repositorio:",
 		"license": "Licencia:"
@@ -54,6 +54,7 @@
 	},
 	"nav": {
 		"home": "Inicio",
-		"projects": "Proyectos"
+		"projects": "Proyectos",
+		"back": "Volver a proyectos"
 	}
 }
