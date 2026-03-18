@@ -43,13 +43,12 @@
 	},
 	"contact": {
 		"title": "Contact",
+		"tagline": "Open to new opportunities. Feel free to reach out.",
 		"actions": {
-			"copy": "Copy",
 			"copyAria": "Copy {{label}}",
-			"open": "Open",
-			"copied": "Copied",
-			"error": "Error",
-			"restore": "Copy"
+			"openAria": "Open {{label}}",
+			"copied": "Copied!",
+			"error": "Error"
 		}
 	},
 	"nav": {

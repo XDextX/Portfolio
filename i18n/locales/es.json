@@ -43,13 +43,12 @@
 	},
 	"contact": {
 		"title": "Contacto",
+		"tagline": "Abierto a nuevas oportunidades. No dudes en escribirme.",
 		"actions": {
-			"copy": "Copiar",
 			"copyAria": "Copiar {{label}}",
-			"open": "Abrir",
-			"copied": "Copiado",
-			"error": "Error",
-			"restore": "Copiar"
+			"openAria": "Abrir {{label}}",
+			"copied": "¡Copiado!",
+			"error": "Error"
 		}
 	},
 	"nav": {
