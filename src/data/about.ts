@@ -28,7 +28,7 @@ export const JsonLdAbout = {
     "url": "https://portfolio-dext.vercel.app",
     "image": `${ABOUT.avatar}`,
     "sameAs": ABOUT.socials.filter(s => s.label !== "Email").map(s => s.href),
-    "email": "mailto:germonram@gmail.com",
+    "email": "germonram@gmail.com",
     "address": { "@type": "PostalAddress", "addressCountry": "Costa Rica" }
 }
 

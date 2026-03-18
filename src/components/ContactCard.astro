@@ -5,81 +5,179 @@ import { t } from '@i18n/index';
 export interface Props {
 	item: ContactItem;
 }
+
 const { item } = Astro.props;
 
-const rel =
-	item.kind === 'email' || item.kind === 'phone'
-		? undefined
-		: 'noopener noreferrer me';
-
 const isExternal = item.kind !== 'email' && item.kind !== 'phone';
-const target = isExternal ? '_blank' : undefined;
-const aria = `${item.label}: ${item.value}`;
+const rel        = isExternal ? 'noopener noreferrer me' : undefined;
+const target     = isExternal ? '_blank' : undefined;
+const canCopy    = item.kind === 'email' || item.kind === 'phone';
 
-const copyLabel = t('contact.actions.copy');
 const copyAria = t('contact.actions.copyAria', { label: item.label });
-const openLabel = t('contact.actions.open');
-const copiedLabel = t('contact.actions.copied');
-const errorLabel = t('contact.actions.error');
-const restoreLabel = t('contact.actions.restore');
+const openAria = t('contact.actions.openAria', { label: item.label });
+const copied   = t('contact.actions.copied');
+const error    = t('contact.actions.error');
 ---
 
-<article class='card primary-bg' aria-label={aria} itemprop={item.sameAs ? 'sameAs' : undefined}>
-	<header class='flex gap-2 items-center'>
-		{item.icon && (
-			<img class='icon' src={item.icon} alt='' width='22' height='22' loading='lazy' />
+<article
+	class='contact-card'
+	aria-label={`${item.label}: ${item.value}`}
+	itemprop={item.sameAs ? 'sameAs' : undefined}
+>
+	<!-- Icon -->
+	{item.icon && (
+		<img class='contact-icon' src={item.icon} alt='' width='28' height='28' loading='lazy' />
+	)}
+
+	<!-- Info -->
+	<div class='contact-info'>
+		<span class='contact-label'>{item.label}</span>
+		<a class='contact-value' href={item.href} rel={rel} target={target}>
+			{item.value}
+		</a>
+	</div>
+
+	<!-- Actions -->
+	<div class='contact-actions'>
+		{canCopy && (
+			<button
+				class='icon-btn'
+				data-copy={item.value}
+				data-copied={copied}
+				data-error={error}
+				aria-label={copyAria}
+				title={copyAria}
+			>
+				<!-- Copy icon -->
+				<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'>
+					<rect x='9' y='9' width='13' height='13' rx='2' ry='2'/>
+					<path d='M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1'/>
+				</svg>
+			</button>
 		)}
-		<h4 class='accent-color'>{item.label}</h4>
-	</header>
 
-	<p>
-		<a href={item.href} rel={rel} target={target}>{item.value}</a>
-	</p>
-
-	<div class='actions'>
-		<button
-			class='btn primary'
-			data-copy={item.value}
-			data-copied={copiedLabel}
-			data-error={errorLabel}
-			data-restore={restoreLabel}
-			aria-label={copyAria}
+		<a
+			class='icon-btn'
+			href={item.href}
+			rel={rel}
+			target={target}
+			aria-label={openAria}
+			title={openAria}
 		>
-			{copyLabel}
-		</button>
-
-		<a class='btn accent-color' href={item.href} rel={rel} target={target}>
-			{openLabel}
+			<!-- External / arrow icon -->
+			<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'>
+				<line x1='7' y1='17' x2='17' y2='7'/><polyline points='7 7 17 7 17 17'/>
+			</svg>
 		</a>
 	</div>
 </article>
 
-<script is:inline>
-	const container = document.currentScript?.parentElement;
-	container
-		?.querySelectorAll('button[data-copy]')
-		.forEach((btn) => {
+<script>
+	document.addEventListener('astro:page-load', () => {
+		document.querySelectorAll<HTMLButtonElement>('button[data-copy]').forEach((btn) => {
 			btn.addEventListener('click', async () => {
-				const val = btn.getAttribute('data-copy') || '';
-				const original = btn.textContent || btn.dataset.restore || '';
-				const copied = btn.dataset.copied || original;
-				const error = btn.dataset.error || original;
-				const restore = btn.dataset.restore || original;
+				const val    = btn.dataset.copy ?? '';
+				const copied = btn.dataset.copied ?? '✓';
+				const err    = btn.dataset.error ?? '✗';
+				const icon   = btn.innerHTML;
 				try {
 					await navigator.clipboard.writeText(val);
 					btn.textContent = copied;
-					setTimeout(() => (btn.textContent = restore), 1200);
 				} catch {
-					btn.textContent = error;
-					setTimeout(() => (btn.textContent = restore), 1200);
+					btn.textContent = err;
 				}
+				setTimeout(() => (btn.innerHTML = icon), 1500);
 			});
 		});
+	});
 </script>
 
 <style>
-	.icon {
-		filter: brightness(1.1);
-		opacity: 0.95;
+	.contact-card {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		padding: 1rem 1.25rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		background: var(--card-background);
+		transition:
+			border-color var(--dur) var(--ease),
+			transform var(--dur) var(--ease);
+	}
+
+	.contact-card:hover {
+		border-color: var(--accent-color);
+		transform: translateY(-2px);
+	}
+
+	.contact-icon {
+		flex-shrink: 0;
+		opacity: 0.9;
+	}
+
+	.contact-info {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		flex: 1;
+		min-width: 0;
+	}
+
+	.contact-label {
+		font-size: var(--fs-xs);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--neutral-600);
+	}
+
+	.contact-value {
+		font-size: var(--fs-sm);
+		font-weight: 600;
+		color: var(--text-color);
+		text-decoration: none;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.contact-value:hover {
+		color: var(--accent-color);
+		text-decoration: underline;
+	}
+
+	.contact-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		flex-shrink: 0;
+	}
+
+	.icon-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		border-radius: var(--radius-md);
+		border: 1px solid var(--color-border);
+		background: transparent;
+		color: var(--neutral-600);
+		cursor: pointer;
+		text-decoration: none;
+		font-size: var(--fs-xs);
+		font-weight: 700;
+		transition:
+			background var(--dur) var(--ease),
+			color var(--dur) var(--ease),
+			border-color var(--dur) var(--ease);
+	}
+
+	.icon-btn:hover {
+		background: var(--accent-color);
+		color: #fff;
+		border-color: var(--accent-color);
+		text-decoration: none;
 	}
 </style>

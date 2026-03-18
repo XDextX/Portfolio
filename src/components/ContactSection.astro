@@ -2,8 +2,10 @@
 import ContactCard from './ContactCard.astro';
 import { CONTACTS } from '../data/contacts';
 import { t } from '@i18n/index';
+
 const titleId = 'contact-title';
-const title = t('contact.title');
+const title   = t('contact.title');
+const tagline = t('contact.tagline');
 ---
 
 <section
@@ -14,22 +16,39 @@ const title = t('contact.title');
 	class='section'
 >
 	<meta itemprop='name' content='German Montero Ramirez' />
-	<h2 id={titleId}>{title}</h2>
 
-	<div class='grid grid-3'>
-		{CONTACTS.map((c) => <ContactCard item={c} />)}
+	<div class='contact-header'>
+		<h2 id={titleId}>{title}</h2>
+		<p class='tagline'>{tagline}</p>
 	</div>
+
+	<ul class='contact-list'>
+		{CONTACTS.map((c) => (
+			<li>
+				<ContactCard item={c} />
+			</li>
+		))}
+	</ul>
 </section>
 
 <style>
-	@media (max-width: 1024px) {
-		.grid {
-			grid-template-columns: repeat(2, 1fr);
-		}
+	.contact-header {
+		margin-bottom: 1.75rem;
 	}
-	@media (max-width: 640px) {
-		.grid {
-			grid-template-columns: 1fr;
-		}
+
+	.tagline {
+		margin: 0.4rem 0 0;
+		color: var(--neutral-600);
+		font-size: var(--fs-base);
+	}
+
+	.contact-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		max-width: 520px;
 	}
 </style>
