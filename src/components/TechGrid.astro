@@ -1,99 +1,168 @@
 ---
-import TechBadge from './TechBadge.astro';
-import { levelLabelMap, type TechLevel } from '../data/levelLabels';
+import SkillBar from './SkillBar.astro';
+import SkillChip from './SkillChip.astro';
+import SkillViewToggle from './SkillViewToggle.astro';
+import { type TechLevel } from '../data/levelLabels';
 
 export interface TechItem {
 	name: string;
 	logo: string;
 	href?: string;
-	level?: 'beginner' | 'intermediate' | 'advanced';
+	level?: TechLevel;
+	category?: string;
 }
+
 export interface Props {
 	items: TechItem[];
-	title?: string;
-	compact?: boolean;
-	columns?: number;
 	locale?: 'es' | 'en';
 }
-const {
-	items,
-	title = 'Technologies',
-	compact = false,
-	columns = 5,
-	locale = 'es',
-} = Astro.props as Props;
 
-const skills = Object.groupBy(
-	items,
-	({ level }) => level?.toString() ?? 'other'
-);
-const LabelMap:Record<TechLevel,string> = levelLabelMap[locale];
-// <TechBadge
-// 					name={tech.name}
-// 					logo={tech.logo}
-// 					href={tech.href}
-// 					level={tech.level}
-// 					compact={compact}
-// 					locale={locale}
-// 				/>
+const { items, locale = 'es' } = Astro.props;
+
+function groupBy<T>(arr: T[], key: (item: T) => string): [string, T[]][] {
+	const map = new Map<string, T[]>();
+	for (const item of arr) {
+		const bucket = map.get(key(item)) ?? [];
+		bucket.push(item);
+		map.set(key(item), bucket);
+	}
+	return Array.from(map.entries());
+}
+
+const byCategory = groupBy(items, (t) => t.category ?? 'Other');
 ---
 
-<section class='tech-grid'>
-	<h2>{title}</h2>
-
-	<div >
-
-		{
-			Object.entries(skills).map(([level, techs]) => (
-				<h4>{LabelMap[level as TechLevel]}</h4>
-				<div class='grid px-4' style={`--cols:${columns}`}>
-				{techs?.map((tech) => (
-					<TechBadge
-					name={tech.name}
-					logo={tech.logo}
-					href={tech.href}
-					compact={compact}
-					locale={locale}
-					/>
-					))}
-				</div>
-			))
-		}
+<div class='tech-grid'>
+	<div class='grid-toolbar'>
+		<SkillViewToggle />
 	</div>
-</section>
+
+	<!-- BARS -->
+	<div data-panel='bars' class='panel'>
+		{byCategory.map(([cat, techs]) => (
+			<div class='cat-group'>
+				<h4 class='cat-label'>{cat}</h4>
+				<ul class='bars-list'>
+					{techs.map((tech) => (
+						<SkillBar
+							name={tech.name}
+							logo={tech.logo}
+							level={(tech.level ?? 'beginner') as TechLevel}
+							locale={locale}
+						/>
+					))}
+				</ul>
+			</div>
+		))}
+	</div>
+
+	<!-- LIST -->
+	<div data-panel='list' class='panel hidden'>
+		{byCategory.map(([cat, techs]) => (
+			<div class='cat-group'>
+				<h4 class='cat-label'>{cat}</h4>
+				<ul class='chip-list'>
+					{techs.map((tech) => (
+						<li>
+							<SkillChip
+								name={tech.name}
+								logo={tech.logo}
+								href={tech.href}
+								level={(tech.level ?? 'beginner') as TechLevel}
+								locale={locale}
+							/>
+						</li>
+					))}
+				</ul>
+			</div>
+		))}
+	</div>
+</div>
+
+<script>
+	const STORAGE_KEY = 'skills-view';
+
+	function activate(root: Element, view: string) {
+		root.querySelectorAll('[data-panel]').forEach((p) => {
+			(p as HTMLElement).classList.toggle(
+				'hidden',
+				(p as HTMLElement).dataset.panel !== view,
+			);
+		});
+		root.querySelectorAll('[data-view]').forEach((b) => {
+			const active = (b as HTMLElement).dataset.view === view;
+			b.setAttribute('aria-pressed', String(active));
+			b.classList.toggle('active', active);
+		});
+		localStorage.setItem(STORAGE_KEY, view);
+
+		if (view === 'bars') {
+			root.querySelectorAll('.bar-fill').forEach((el) => {
+				el.classList.remove('animated');
+				void (el as HTMLElement).offsetWidth;
+				el.classList.add('animated');
+			});
+		}
+	}
+
+	document.addEventListener('astro:page-load', () => {
+		const root = document.querySelector('.tech-grid');
+		if (!root) return;
+
+		activate(root, localStorage.getItem(STORAGE_KEY) ?? 'bars');
+
+		root.querySelectorAll('[data-view]').forEach((btn) =>
+			btn.addEventListener('click', () =>
+				activate(root, (btn as HTMLElement).dataset.view ?? 'bars'),
+			),
+		);
+	});
+</script>
 
 <style>
 	.tech-grid {
-		margin-block: 1.25rem 1.5rem;
-		color: var(--accent-color);
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
 	}
-	.tech-grid h2 {
-		font-size: 1.25rem;
-		margin-bottom: 0.75rem;
+
+	.grid-toolbar {
+		display: flex;
+		justify-content: flex-end;
 	}
-	.grid {
-		display: grid;
-		grid-template-columns: repeat(var(--cols, 5), minmax(0, 1fr));
-		gap: 12px;
+
+	.cat-group {
+		margin-bottom: 1.25rem;
 	}
-	@media (max-width: 1024px) {
-		.grid {
-			grid-template-columns: repeat(4, 1fr);
-		}
+
+	.cat-label {
+		font-size: var(--fs-sm);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--neutral-600);
+		margin: 0 0 0.6rem 0;
 	}
-	@media (max-width: 768px) {
-		.grid {
-			grid-template-columns: repeat(3, 1fr);
-		}
+
+	.panel.hidden {
+		display: none;
 	}
-	@media (max-width: 520px) {
-		.grid {
-			grid-template-columns: repeat(2, 1fr);
-		}
+
+	.bars-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.55rem;
 	}
-	@media (max-width: 390px) {
-		.grid {
-			grid-template-columns: repeat(1, 1fr);
-		}
+
+	.chip-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
 	}
 </style>

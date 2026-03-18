@@ -7,10 +7,12 @@ export interface Props {
 	locale?: 'es' | 'en';
 }
 
-const { locale = 'es' } = Astro.props as Props;
+const { locale = 'es' } = Astro.props;
+const titleId = 'skills-title';
 const title = t('skills.title');
 ---
 
-<section id='skills' class='section' data-label={title}>
-	<TechGrid items={TECH} title={title} columns={5} compact locale={locale} />
+<section class='section' id='skills' aria-labelledby={titleId}>
+	<h2 id={titleId}>{title}</h2>
+	<TechGrid items={TECH} locale={locale} />
 </section>

@@ -1,0 +1,84 @@
+---
+import { LEVEL_PCT, LEVEL_COLOR, levelLabelMap, type TechLevel } from '../data/levelLabels';
+
+export interface Props {
+	name: string;
+	logo: string;
+	level: TechLevel;
+	locale?: 'es' | 'en';
+}
+
+const { name, logo, level, locale = 'es' } = Astro.props;
+const pct   = LEVEL_PCT[level];
+const color = LEVEL_COLOR[level];
+const label = levelLabelMap[locale][level];
+---
+
+<li class='bar-row'>
+	<img src={logo} alt='' width='22' height='22' loading='lazy' />
+	<span class='bar-name'>{name}</span>
+	<div
+		class='bar-track'
+		role='progressbar'
+		aria-valuenow={pct}
+		aria-valuemin={0}
+		aria-valuemax={100}
+		aria-label={`${name}: ${label}`}
+	>
+		<div class='bar-fill' style={`--pct:${pct}%;--clr:${color}`} />
+	</div>
+	<span class='level-tag' style={`color:${color}`}>{label}</span>
+</li>
+
+<style>
+	.bar-row {
+		display: grid;
+		grid-template-columns: 22px 130px 1fr auto;
+		align-items: center;
+		gap: 0.6rem;
+	}
+
+	.bar-name {
+		font-size: var(--fs-sm);
+		font-weight: 600;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.bar-track {
+		height: 8px;
+		background: var(--neutral-200);
+		border-radius: 999px;
+		overflow: hidden;
+	}
+
+	.bar-fill {
+		height: 100%;
+		width: 0;
+		background: var(--clr);
+		border-radius: 999px;
+		transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.bar-fill.animated {
+		width: var(--pct);
+	}
+
+	.level-tag {
+		font-size: var(--fs-xs);
+		font-weight: 600;
+		white-space: nowrap;
+		min-width: 5rem;
+		text-align: right;
+	}
+
+	@media (max-width: 520px) {
+		.bar-row {
+			grid-template-columns: 22px 1fr 1fr;
+		}
+		.level-tag {
+			display: none;
+		}
+	}
+</style>

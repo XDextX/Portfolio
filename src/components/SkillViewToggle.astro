@@ -1,0 +1,102 @@
+---
+// No props — renders the 3 view-toggle buttons; TechGrid owns the JS logic.
+---
+
+<div class='view-toggle' role='group' aria-label='Vista'>
+	<button
+		class='toggle-btn'
+		data-view='bars'
+		aria-pressed='true'
+		title='Barras de progreso'
+	>
+		<svg
+			xmlns='http://www.w3.org/2000/svg'
+			width='16'
+			height='16'
+			viewBox='0 0 24 24'
+			fill='none'
+			stroke='currentColor'
+			stroke-width='2'
+			stroke-linecap='round'
+			stroke-linejoin='round'
+			aria-hidden='true'
+		>
+			<line x1='18' y1='20' x2='18' y2='10'></line><line
+				x1='12'
+				y1='20'
+				x2='12'
+				y2='4'></line><line x1='6' y1='20' x2='6' y2='14'></line>
+		</svg>
+	</button>
+
+	<button
+		class='toggle-btn'
+		data-view='list'
+		aria-pressed='false'
+		title='Lista compacta'
+	>
+		<svg
+			xmlns='http://www.w3.org/2000/svg'
+			width='16'
+			height='16'
+			viewBox='0 0 24 24'
+			fill='none'
+			stroke='currentColor'
+			stroke-width='2'
+			stroke-linecap='round'
+			stroke-linejoin='round'
+			aria-hidden='true'
+		>
+			<line x1='8' y1='6' x2='21' y2='6'></line><line
+				x1='8'
+				y1='12'
+				x2='21'
+				y2='12'></line><line x1='8' y1='18' x2='21' y2='18'></line><line
+				x1='3'
+				y1='6'
+				x2='3.01'
+				y2='6'></line><line x1='3' y1='12' x2='3.01' y2='12'></line><line
+				x1='3'
+				y1='18'
+				x2='3.01'
+				y2='18'></line>
+		</svg>
+	</button>
+</div>
+
+<style>
+	.view-toggle {
+		display: flex;
+		gap: 0.25rem;
+		background: var(--card-background);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: 0.2rem;
+	}
+
+	.toggle-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		border-radius: calc(var(--radius-md) - 2px);
+		border: none;
+		background: transparent;
+		color: var(--neutral-600);
+		cursor: pointer;
+		transition:
+			background var(--dur) var(--ease),
+			color var(--dur) var(--ease);
+	}
+
+	.toggle-btn:hover {
+		background: var(--neutral-200);
+		color: var(--text-color);
+	}
+
+	.toggle-btn.active {
+		background: var(--bg-color);
+		color: var(--accent-color);
+	}
+</style>
