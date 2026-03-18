@@ -13,37 +13,40 @@
 	</svg>
 </button>
 
-<script is:inline>
-	const btn = document.getElementById('theme-toggle');
-
+<script>
 	function getTheme() {
 		return document.documentElement.getAttribute('data-theme') ?? 'light';
 	}
 
-	function applyTheme(theme) {
+	function applyTheme(theme: string) {
 		if (theme === 'dark') {
 			document.documentElement.setAttribute('data-theme', 'dark');
 		} else {
 			document.documentElement.removeAttribute('data-theme');
 		}
 		localStorage.setItem('theme', theme);
-		updateAriaLabel(theme);
 	}
 
-	function updateAriaLabel(theme) {
+	function init() {
+		const btn = document.getElementById('theme-toggle');
 		if (!btn) return;
+
 		btn.setAttribute(
 			'aria-label',
-			theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme',
+			getTheme() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme',
 		);
-	}
 
-	if (btn) {
-		updateAriaLabel(getTheme());
 		btn.addEventListener('click', () => {
-			applyTheme(getTheme() === 'dark' ? 'light' : 'dark');
+			const next = getTheme() === 'dark' ? 'light' : 'dark';
+			applyTheme(next);
+			btn.setAttribute(
+				'aria-label',
+				next === 'dark' ? 'Switch to light theme' : 'Switch to dark theme',
+			);
 		});
 	}
+
+	document.addEventListener('astro:page-load', init);
 </script>
 
 <style>

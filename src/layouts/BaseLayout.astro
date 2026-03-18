@@ -18,30 +18,45 @@ const {
 	locale = 'es',
 } = Astro.props as Props;
 
-const site = 'https://portfolio-dext.vercel.app';
-const image = `${site}/og-cover.png`;
+const site      = 'https://portfolio-dext.vercel.app';
+const image     = `${site}/og-cover.png`;
+const canonical = `${site}${Astro.url.pathname}`;
+const htmlLang  = locale === 'es' ? 'es-CR' : 'en-US';
 ---
 
+<html lang={htmlLang}>
 <head>
 	<meta charset='utf-8' />
 	<meta name='viewport' content='width=device-width, initial-scale=1' />
 	<title>{title}</title>
 	<meta name='description' content={description} />
-	<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+	<link rel='canonical' href={canonical} />
+	<link rel='icon' type='image/svg+xml' href='/favicon.svg' />
 
-	<meta property='og:type' content='website' />
-	<meta property='og:title' content={title} />
+	<!-- Open Graph -->
+	<meta property='og:type'        content='website' />
+	<meta property='og:title'       content={title} />
 	<meta property='og:description' content={description} />
-	<meta property='og:url' content={site + Astro.url.pathname} />
-	<meta property='og:image' content={image} />
-	<meta property='og:author' content='German Montero Ramirez' />
+	<meta property='og:url'         content={canonical} />
+	<meta property='og:image'       content={image} />
+	<meta property='og:locale'      content={htmlLang.replace('-', '_')} />
+	<meta property='og:site_name'   content='German Montero – Portfolio' />
 
-
-	<meta name='twitter:card' content='summary_large_image' />
-	<meta name='twitter:title' content={title} />
+	<!-- Twitter / X -->
+	<meta name='twitter:card'        content='summary_large_image' />
+	<meta name='twitter:title'       content={title} />
 	<meta name='twitter:description' content={description} />
-	<meta name='twitter:image' content={image} />
+	<meta name='twitter:image'       content={image} />
 
+	<!-- hreflang -->
+	<link rel='alternate' hreflang='es-CR' href={`${site}${Astro.url.pathname}`} />
+	<link rel='alternate' hreflang='en-US' href={`${site}${Astro.url.pathname}?lang=en`} />
+	<link rel='alternate' hreflang='x-default' href={`${site}${Astro.url.pathname}`} />
+
+	<!-- Preconnect -->
+	<link rel='preconnect' href='https://avatars.githubusercontent.com' />
+
+	<!-- Styles -->
 	<link rel='stylesheet' href='/styles/00-tokens.css' />
 	<link rel='stylesheet' href='/styles/01-base.css' />
 	<link rel='stylesheet' href='/styles/02-utilities.css' />
@@ -49,23 +64,30 @@ const image = `${site}/og-cover.png`;
 	<link rel='stylesheet' href='/styles/04-layouts.css' />
 	<link rel='stylesheet' href='/styles/themes/light.css' />
 	<link rel='stylesheet' href='/styles/themes/dark.css' />
+
 	<ClientRouter />
 </head>
-<main >
-	<header class='layout-topbar'>
-		<LanguageSwitcher locale={locale} />
-		<ThemeSwitch />
-	</header>
-	<slot />
-</main>
-{jsonLd && (
-	<script type='application/ld+json'>{JSON.stringify(jsonLd)}</script>
-)}
-<script is:inline>
-	const saved = localStorage.getItem('theme');
-	if (saved === 'dark')
-		document.documentElement.setAttribute('data-theme', 'dark');
-</script>
+<body>
+	<!-- Anti-FOUC: apply saved theme before first paint -->
+	<script is:inline>
+		const saved = localStorage.getItem('theme');
+		if (saved === 'dark')
+			document.documentElement.setAttribute('data-theme', 'dark');
+	</script>
+
+	<main>
+		<header class='layout-topbar'>
+			<LanguageSwitcher locale={locale} />
+			<ThemeSwitch />
+		</header>
+		<slot />
+	</main>
+
+	{jsonLd && (
+		<script type='application/ld+json' is:inline>{JSON.stringify(jsonLd)}</script>
+	)}
+</body>
+</html>
 
 <style>
 	.layout-topbar {
