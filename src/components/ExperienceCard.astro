@@ -7,57 +7,130 @@ export interface Props {
 	bullets: string[];
 }
 
-const { role, company, period, location, bullets } = Astro.props as Props;
+const { role, company, period, location, bullets } = Astro.props;
 ---
 
-<article class='shadow p-4' aria-labelledby={`${company}-title`}>
-	<h3 id={`${company}-title`} class='exp-title'>
-		<span class='role'>{role}</span>
-		<span class='sep'> · </span>
-		<span class='company'>{company}</span>
-		<span class='period'>({period})</span>
-	</h3>
+<article class='exp-card' aria-labelledby={`${company}-title`}>
+	<header class='exp-header'>
+		<div class='exp-main'>
+			<h3 class='exp-role' id={`${company}-title`}>{role}</h3>
+			<span class='exp-company'>{company}</span>
+		</div>
 
-	{location && <p class='location'>{location}</p>}
+		<div class='exp-aside'>
+			<span class='exp-period'>{period}</span>
+			{location && (
+				<span class='exp-location'>
+					<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z'/><circle cx='12' cy='10' r='3'/></svg>
+					{location}
+				</span>
+			)}
+		</div>
+	</header>
 
-	<ul class='bullets'>
+	<ul class='exp-bullets'>
 		{bullets.map((item) => <li>{item}</li>)}
 	</ul>
 </article>
 
 <style>
-	.shadow {
-		border-bottom: 3px solid rgb(0, 0, 0, 0.2);
-		border-right: 3px solid rgb(0, 0, 0, 0.2);
-		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+	.exp-card {
+		display: flex;
+		flex-direction: column;
+		gap: 0.85rem;
+		padding: 1.25rem 1.25rem 1.25rem 1.5rem;
+		border: 1px solid var(--color-border);
+		border-left: 3px solid var(--accent-color);
+		border-radius: var(--radius-lg);
+		background: var(--card-background);
+		transition:
+			border-color var(--dur) var(--ease),
+			transform var(--dur) var(--ease);
 	}
-	.exp-title {
-		font-weight: 800;
-		margin: 0 0 0.25rem 0;
+
+	.exp-card:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+	}
+
+	/* Header */
+	.exp-header {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 1rem;
+		flex-wrap: wrap;
+	}
+
+	.exp-main {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+	}
+
+	.exp-role {
+		font-size: var(--fs-lg);
+		font-weight: 700;
+		color: var(--accent-color);
+		margin: 0;
 		line-height: 1.3;
 	}
-	.role {
-		color: var(--accent-color);
-	}
-	.period {
-		font-weight: 700;
-		margin-left: 0.4rem;
-	}
-	.location {
-		color: var(--accent-color-dark);
-		margin: 0.1rem 0 0.6rem 0;
-		font-size: 0.95rem;
-	}
-	.bullets {
-		margin: 0;
-		padding-left: 1.2rem;
-		display: grid;
-		gap: 0.4rem;
-	}
-	.bullets li {
+
+	.exp-company {
+		font-size: var(--fs-sm);
+		font-weight: 600;
 		color: var(--text-color);
 	}
-	.sep {
+
+	/* Aside: period + location */
+	.exp-aside {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: 0.3rem;
+		flex-shrink: 0;
+	}
+
+	.exp-period {
+		font-size: var(--fs-xs);
 		font-weight: 700;
+		color: var(--neutral-600);
+		white-space: nowrap;
+		background: var(--neutral-200);
+		padding: 0.2rem 0.55rem;
+		border-radius: 999px;
+	}
+
+	.exp-location {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		font-size: var(--fs-xs);
+		color: var(--neutral-600);
+		white-space: nowrap;
+	}
+
+	/* Bullets */
+	.exp-bullets {
+		margin: 0;
+		padding-left: 1.1rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+	}
+
+	.exp-bullets li {
+		font-size: var(--fs-sm);
+		color: var(--neutral-600);
+		line-height: 1.6;
+	}
+
+	@media (max-width: 520px) {
+		.exp-header {
+			flex-direction: column;
+		}
+		.exp-aside {
+			align-items: flex-start;
+		}
 	}
 </style>
