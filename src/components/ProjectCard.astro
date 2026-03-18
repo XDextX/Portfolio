@@ -9,97 +9,227 @@ export interface Props {
 	locale?: 'es' | 'en';
 }
 
-const { repo, locale = 'es' } = Astro.props as Props;
+const { repo, locale = 'es' } = Astro.props;
 
-const intlLocale = locale === 'es' ? 'es-CR' : 'en-US';
-const desc = repo.description ?? t('project.meta.noDescription');
-const lang = repo.language ?? 'N/A';
-const updated = new Date(repo.updated_at);
-const formattedDate = new Intl.DateTimeFormat(intlLocale, {
-	dateStyle: 'medium',
-}).format(updated);
-const updatedLabel = t('project.meta.updated', { date: formattedDate });
-const hasDemo = !!repo.homepage && repo.homepage.trim() !== '';
+const intlLocale     = locale === 'es' ? 'es-CR' : 'en-US';
+const desc           = repo.description ?? t('project.meta.noDescription');
+const lang           = repo.language ?? 'N/A';
+const hasDemo        = !!repo.homepage?.trim();
+const formattedDate  = new Intl.DateTimeFormat(intlLocale, { dateStyle: 'medium' }).format(new Date(repo.updated_at));
 
-function formatCount(n: number): string {
+function formatCount(n: number) {
 	return n < 1000 ? String(n) : (n / 1000).toFixed(1) + 'k';
 }
 ---
 
 <article
-	transition:name=`p-${repo.id}`
-	class='item card grid primary-bg shadow'
+	class='project-card'
+	transition:name={`p-${repo.id}`}
 	aria-labelledby={`p-${repo.id}-title`}
 >
-	<header class='flex justify-between items-center mb-4'>
+	<!-- Header -->
+	<header class='card-header'>
 		<h3
-			transition:name=`p-${repo.id}-title`
+			class='card-title'
 			id={`p-${repo.id}-title`}
-			class='text-xl accent-color'
+			transition:name={`p-${repo.id}-title`}
 		>
-			{repo.name}
+			<a href={`/proyectos/${repo.name}`}>{repo.name}</a>
 		</h3>
+		<LanguageBadge lang={lang} />
 	</header>
 
-	<p class='mb-4' transition:name={`p-${repo.id}-desc`}>{desc}</p>
-	<p class='stack' transition:name={`p-${repo.id}-lang`}>
-		<strong>{t('project.meta.stack')}</strong>
-		<LanguageBadge lang={lang} />
-	</p>
+	<!-- Description -->
+	<p class='card-desc' transition:name={`p-${repo.id}-desc`}>{desc}</p>
 
-	<ul class='flex' aria-label={t('project.meta.metrics')}>
-		<li title='Stars'>
-			{t('project.meta.starsLabel', { count: formatCount(repo.stargazers_count) })}
-</li>
-		<li title='Forks'>
-			{t('project.meta.forksLabel', { count: formatCount(repo.forks_count) })}
-		</li>
-	</ul>
+	<!-- Topics -->
+	{repo.topics?.length ? (
+		<div class='card-topics'>
+			{repo.topics.slice(0, 5).map((topic) => <Chip text={topic} />)}
+		</div>
+	) : null}
 
-	{
-		repo.topics?.length ? (
-			<div class='topics'>
-				{repo.topics.slice(0, 6).map((topic) => (
-					<Chip text={topic} />
-				))}
-			</div>
-		) : null
-	}
+	<!-- Footer -->
+	<footer class='card-footer'>
+		<div class='card-meta'>
+			<span title='Stars' aria-label={t('project.meta.starsLabel', { count: String(repo.stargazers_count) })}>
+				<svg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'><path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/></svg>
+				{formatCount(repo.stargazers_count)}
+			</span>
+			<span title='Forks' aria-label={t('project.meta.forksLabel', { count: String(repo.forks_count) })}>
+				<svg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx='12' cy='18' r='3'/><circle cx='6' cy='6' r='3'/><circle cx='18' cy='6' r='3'/><path d='M18 9v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9'/><line x1='12' y1='12' x2='12' y2='15'/></svg>
+				{formatCount(repo.forks_count)}
+			</span>
+			<time class='card-date' datetime={repo.updated_at}>{formattedDate}</time>
+		</div>
 
-	<p class='date'>{updatedLabel}</p>
+		<nav class='card-actions' aria-label={t('project.actions.section')}>
+			<a
+				class='btn-action'
+				href={repo.html_url}
+				target='_blank'
+				rel='noopener noreferrer'
+				transition:name={`p-${repo.id}-code`}
+			>
+				{t('project.actions.code')}
+				<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><line x1='7' y1='17' x2='17' y2='7'/><polyline points='7 7 17 7 17 17'/></svg>
+			</a>
 
-	<nav class='flex gap-2 wrap' aria-label={t('project.actions.section')}>
-		<a
-			class='btn primary'
-			transition:name={`p-${repo.id}-code`}
-			href={repo.html_url}
-			target='_blank'
-			rel='noopener noreferrer'
-		>
-			{t('project.actions.code')}
-		</a>
-		<a class='btn' href={`/proyectos/${repo.name}`}
-			>{t('project.actions.detail')}</a
-		>
-		{
-			hasDemo ? (
+			<a class='btn-action primary' href={`/proyectos/${repo.name}`}>
+				{t('project.actions.detail')}
+			</a>
+
+			{hasDemo && (
 				<a
-					transition:name={`p-${repo.id}-demo`}
-					class='btn ghost'
+					class='btn-action'
 					href={repo.homepage!}
 					target='_blank'
 					rel='noopener noreferrer'
+					transition:name={`p-${repo.id}-demo`}
 				>
 					{t('project.actions.liveDemo')}
+					<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><line x1='7' y1='17' x2='17' y2='7'/><polyline points='7 7 17 7 17 17'/></svg>
 				</a>
-			) : null
-		}
-	</nav>
+			)}
+		</nav>
+	</footer>
 </article>
+
 <style>
-	.shadow {
-		border-bottom: 3px solid rgb(0, 0, 0, 0.1);
-		border-right: 3px solid rgb(0, 0, 0, 0.1);
-		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+	.project-card {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		padding: 1.25rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		background: var(--card-background);
+		transition:
+			border-color var(--dur) var(--ease),
+			transform var(--dur) var(--ease),
+			box-shadow var(--dur) var(--ease);
+	}
+
+	.project-card:hover {
+		border-color: var(--accent-color);
+		transform: translateY(-2px);
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+	}
+
+	/* Header */
+	.card-header {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 0.5rem;
+	}
+
+	.card-title {
+		font-size: var(--fs-lg);
+		font-weight: 700;
+		margin: 0;
+		line-height: 1.3;
+	}
+
+	.card-title a {
+		color: var(--accent-color);
+		text-decoration: none;
+	}
+
+	.card-title a:hover {
+		text-decoration: underline;
+	}
+
+	/* Description */
+	.card-desc {
+		font-size: var(--fs-sm);
+		color: var(--neutral-600);
+		line-height: 1.6;
+		margin: 0;
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		flex: 1;
+	}
+
+	/* Topics */
+	.card-topics {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+	}
+
+	/* Footer */
+	.card-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+		margin-top: auto;
+		padding-top: 0.75rem;
+		border-top: 1px solid var(--color-border);
+	}
+
+	.card-meta {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		font-size: var(--fs-xs);
+		color: var(--neutral-600);
+	}
+
+	.card-meta span {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+	}
+
+	.card-date {
+		color: var(--neutral-600);
+	}
+
+	/* Actions */
+	.card-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		flex-wrap: wrap;
+	}
+
+	.btn-action {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		padding: 0.3rem 0.7rem;
+		border-radius: var(--radius-md);
+		border: 1px solid var(--color-border);
+		background: transparent;
+		color: var(--text-color);
+		font-size: var(--fs-xs);
+		font-weight: 600;
+		text-decoration: none;
+		transition:
+			border-color var(--dur) var(--ease),
+			background var(--dur) var(--ease),
+			color var(--dur) var(--ease);
+	}
+
+	.btn-action:hover {
+		border-color: var(--accent-color);
+		color: var(--accent-color);
+		text-decoration: none;
+	}
+
+	.btn-action.primary {
+		background: var(--accent-color);
+		border-color: var(--accent-color);
+		color: #fff;
+	}
+
+	.btn-action.primary:hover {
+		opacity: 0.88;
+		color: #fff;
 	}
 </style>

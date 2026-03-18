@@ -27,7 +27,7 @@ try {
 
 	const filtered = topic
 		? items.filter(
-				(repo) => Array.isArray(repo.topics) && repo.topics.includes(topic)
+				(repo) => Array.isArray(repo.topics) && repo.topics.includes(topic),
 			)
 		: items;
 
