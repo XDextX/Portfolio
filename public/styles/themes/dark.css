@@ -1,17 +1,40 @@
 :root[data-theme="dark"] {
-    --bg: var(--neutral-dark);
-    --fg: var(--text-main);
+    --bg: #151520;
+    --fg: #F4EFD9;
+
+    --text-main: #F4EFD9;
+    --text-secondary: #C3BBA8;
+    --text-color: #F4EFD9;
+    /* ← fix: .chip usa esta variable */
+
     --brand-text: var(--brand-accent);
 
-    --neutral-0: var(--neutral-dark);
+    --neutral-0: #1E1E2F;
     --neutral-50: #24263a;
     --neutral-100: #2a2f41;
     --neutral-200: #3a3b52;
-    --neutral-600: var(--text-secondary);
-    --neutral-800: var(--text-main);
-    --neutral-900: var(--neutral-light);
+    --neutral-600: #C3BBA8;
+    --neutral-800: #F4EFD9;
+    --neutral-900: #FFFFFF;
+
+    --card-background: #2a2f41;
+    /* ← fix: fondo del .chip */
+    --nested-card-background: #2e3144;
+    --color-border: #3a3b52;
+
+    --main-bg: var(--brand-primary);
 
     color-scheme: dark;
+}
+
+:root[data-theme="dark"] body {
+    background: var(--bg);
+    color: var(--fg);
+}
+
+:root[data-theme="dark"] main {
+    background-color: var(--main-bg);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
 :root[data-theme="dark"] .card {
@@ -28,4 +51,14 @@
 :root[data-theme="dark"] .btn.ghost {
     color: var(--brand-text);
     border-color: var(--brand-text);
+}
+
+:root[data-theme="dark"] .theme-btn {
+    background: var(--neutral-100);
+    color: var(--neutral-800);
+    border-color: var(--neutral-200);
+}
+
+:root[data-theme="dark"] .theme-btn:hover {
+    background: var(--neutral-200);
 }
