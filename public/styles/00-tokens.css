@@ -2,40 +2,13 @@
     /* Brand palette */
     --brand-primary: #243972;
     --brand-primary-light: #4B69B7;
-
     --brand-accent: #E3C770;
     --brand-accent-dark: #BFA258;
 
-    /* Neutrals */
+    /* Neutrals (raw values — themes override the scale) */
     --neutral-light: #F4EFD9;
     --neutral-mid: #C3BBA8;
     --neutral-dark: #1E1E2F;
-
-    /* Text */
-    --text-main: #FFFFFF;
-    --text-secondary: #C3BBA8;
-    --text-inverse: #1E1E2F;
-
-    /* Derived tokens for existing styles */
-    --color-brand: var(--brand-primary);
-    --color-brand-600: var(--brand-primary-light);
-    --color-brand-700: var(--brand-primary);
-
-    --bg-color: var(--brand-primary);
-
-    --neutral-0: var(--neutral-dark);
-    --neutral-50: #24263a;
-    --neutral-100: #2a2f41;
-    --neutral-200: #3a3b52;
-    --neutral-600: var(--text-secondary);
-    --neutral-800: var(--text-main);
-    --neutral-900: var(--neutral-light);
-
-    --text-color: var(--text-main);
-
-    --success: #1d2520;
-    --warning: #f59e0b;
-    --danger: #dc2626;
 
     /* Typography */
     --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
