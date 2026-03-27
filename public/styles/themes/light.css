@@ -1,11 +1,92 @@
-:root {
-    --bg: var(--neutral-0);
-    --fg: var(--neutral-900);
-    --brand-text: var(--color-brand-700);
+/* Light theme — applied when data-theme is absent or explicitly "light" */
+:root,
+:root:not([data-theme]),
+:root[data-theme="light"] {
+
+    /* Backgrounds */
+    --bg: #F4EFD9;
+    --bg-color: #F4EFD9;
+
+    /* Foreground / text */
+    --fg: #1E1E2F;
+    --text-color: #1E1E2F;
+    /* ← asegura que .chip tenga texto oscuro en light */
+    --text-main: #1E1E2F;
+    --text-secondary: #4B5070;
+    --text-inverse: #FFFFFF;
+
+    /* Brand */
+    --brand-text: var(--brand-primary);
+    --color-brand: var(--brand-primary);
+    --color-brand-600: var(--brand-primary-light);
+    --color-brand-700: var(--brand-primary);
+
+    /* Neutral scale */
+    --neutral-0: #FFFFFF;
+    --neutral-50: #F4EFD9;
+    --neutral-100: #E8E2CC;
+    --neutral-200: #C3BBA8;
+    --neutral-600: #4B5070;
+    --neutral-800: #1E1E2F;
+    --neutral-900: #0D0D1A;
+
+    /* Borders & surfaces */
+    --color-border: #C3BBA8;
+    --card-background: #FFFFFF;
+    /* ← fondo blanco para .chip en light */
+
+    /* Main container — crema claro en lugar del azul oscuro */
+    --main-bg: #EDE8D0;
+
     color-scheme: light;
 }
 
-body {
+/* ── Body ── */
+:root:not([data-theme]) body,
+:root[data-theme="light"] body {
     background: var(--bg);
     color: var(--fg);
+}
+
+/* ── Main container ── */
+:root:not([data-theme]) main,
+:root[data-theme="light"] main {
+    background-color: var(--main-bg);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Cards ── */
+:root:not([data-theme]) .card,
+:root[data-theme="light"] .card {
+    background: var(--neutral-0);
+    border-color: var(--neutral-200);
+    box-shadow: var(--shadow-md);
+}
+
+/* ── Pills / chips ── */
+:root:not([data-theme]) .pill,
+:root[data-theme="light"] .pill {
+    background: var(--neutral-100);
+    color: var(--neutral-800);
+    border-color: var(--neutral-200);
+}
+
+/* ── Ghost button ── */
+:root:not([data-theme]) .btn.ghost,
+:root[data-theme="light"] .btn.ghost {
+    color: var(--brand-text);
+    border-color: var(--brand-text);
+}
+
+/* ── Theme toggle ── */
+:root:not([data-theme]) .theme-btn,
+:root[data-theme="light"] .theme-btn {
+    background: var(--neutral-0);
+    color: var(--neutral-800);
+    border-color: var(--neutral-200);
+}
+
+:root:not([data-theme]) .theme-btn:hover,
+:root[data-theme="light"] .theme-btn:hover {
+    background: var(--neutral-100);
 }
