@@ -117,7 +117,9 @@ const viewAll = t('projects.viewAll');
 
 <script>
 	document.addEventListener('astro:page-load', () => {
-		const toggle = document.getElementById('projects-toggle') as HTMLButtonElement | null;
+		const toggle = document.getElementById(
+			'projects-toggle',
+		) as HTMLButtonElement | null;
 		const extra = document.getElementById('projects-extra');
 		if (!toggle || !extra) return;
 
