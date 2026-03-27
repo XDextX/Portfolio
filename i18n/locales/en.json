@@ -33,7 +33,10 @@
 		"error": "Could not load projects. Detail: {{detail}}",
 		"empty": {
 			"message": "No projects to show. Add the topic {{topic}} to your repos on GitHub."
-		}
+		},
+		"showMore": "Show more projects",
+		"showLess": "Show less",
+		"viewAll": "View all →"
 	},
 	"skills": {
 		"title": "Skills"

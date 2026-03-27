@@ -31,9 +31,9 @@ const topicValue = topic?.trim() || t('projects.topicLabel');
 const visible = preview ? repos.slice(0, preview) : repos;
 const extra = preview ? repos.slice(preview) : [];
 
-const showMore = locale === 'es' ? 'Ver más proyectos' : 'Show more projects';
-const showLess = locale === 'es' ? 'Ver menos' : 'Show less';
-const viewAll = locale === 'es' ? 'Ver todos →' : 'View all →';
+const showMore = t('projects.showMore');
+const showLess = t('projects.showLess');
+const viewAll = t('projects.viewAll');
 ---
 
 <section

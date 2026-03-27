@@ -33,7 +33,10 @@
 		"error": "No se pudieron cargar los proyectos. Detalle: {{detail}}",
 		"empty": {
 			"message": "No hay proyectos para mostrar. Agrega el topic {{topic}} a tus repos en GitHub."
-		}
+		},
+		"showMore": "Ver más proyectos",
+		"showLess": "Ver menos",
+		"viewAll": "Ver todos →"
 	},
 	"skills": {
 		"title": "Habilidades"
