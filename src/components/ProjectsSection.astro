@@ -1,5 +1,6 @@
 ---
 import ProjectCard from './ProjectCard.astro';
+import ProjectsFooter from './ProjectsFooter.astro';
 import type { GitHubRepo } from '../types/github';
 import { t } from '@i18n/index';
 
@@ -59,56 +60,28 @@ const viewAll = t('projects.viewAll');
 			<p class='empty'>{t('projects.empty.message', { topic: topicValue })}</p>
 		) : (
 			<>
-				<div class='projects-grid'>
-					{visible.map((r) => (
-						<ProjectCard repo={r} locale={locale} />
+				<div
+					class='projects-grid'
+					id='projects-grid'
+					data-preview={preview ?? repos.length}
+				>
+					{repos.map((r, i) => (
+						<div
+							class={`project-item${preview && i >= preview ? ' project-item--hidden' : ''}`}
+							aria-hidden={preview && i >= preview ? 'true' : 'false'}
+						>
+							<ProjectCard repo={r} locale={locale} />
+						</div>
 					))}
 				</div>
 
-				{extra.length > 0 && (
-					<div class='projects-extra' id='projects-extra' aria-hidden='true'>
-						<div class='projects-grid'>
-							{extra.map((r) => (
-								<ProjectCard repo={r} locale={locale} />
-							))}
-						</div>
-					</div>
-				)}
-
 				{(extra.length > 0 || preview) && (
-					<div class='projects-footer'>
-						{extra.length > 0 && (
-							<button
-								class='btn-toggle'
-								id='projects-toggle'
-								data-more={showMore}
-								data-less={showLess}
-								aria-expanded='false'
-								aria-controls='projects-extra'
-							>
-								{showMore}
-								<svg
-									xmlns='http://www.w3.org/2000/svg'
-									width='14'
-									height='14'
-									viewBox='0 0 24 24'
-									fill='none'
-									stroke='currentColor'
-									stroke-width='2.5'
-									stroke-linecap='round'
-									stroke-linejoin='round'
-									class='chevron'
-									aria-hidden='true'
-								>
-									<polyline points='6 9 12 15 18 9' />
-								</svg>
-							</button>
-						)}
-
-						<a class='btn-all' href='/proyectos'>
-							{viewAll}
-						</a>
-					</div>
+					<ProjectsFooter
+						showToggle={extra.length > 0}
+						showMore={showMore}
+						showLess={showLess}
+						viewAll={viewAll}
+					/>
 				)}
 			</>
 		)
