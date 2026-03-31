@@ -17,12 +17,29 @@ const locale = providedLocale ?? applyLocale(Astro);
 const apiUrl = new URL('/api/github-list.json', Astro.url);
 const response = await fetch(apiUrl);
 const repos: GitHubRepo[] = await response.json();
+
+const sortedRepos = [...repos].sort((a, b) => {
+	// 1. Most starred first
+	if (b.stargazers_count !== a.stargazers_count) {
+		return b.stargazers_count - a.stargazers_count;
+	}
+	// 2. Repos with demo (homepage) before those without
+	const aHasDemo = a.homepage ? 1 : 0;
+	const bHasDemo = b.homepage ? 1 : 0;
+	return bHasDemo - aHasDemo;
+});
+
 const projectsTitle = t('projects.title');
 ---
 
 <AboutSection lang={locale} withJsonLd={true} />
 <HabilitiesSection locale={locale} />
 <ExperienceSection locale={locale} />
-<ProjectsSection repos={repos} title={projectsTitle} locale={locale} preview={4} />
+<ProjectsSection
+	repos={sortedRepos}
+	title={projectsTitle}
+	locale={locale}
+	preview={4}
+/>
 
 <ContactSection locale={locale} />
