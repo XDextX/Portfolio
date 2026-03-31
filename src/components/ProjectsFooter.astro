@@ -1,0 +1,117 @@
+---
+/**
+ * ProjectsFooter component — footer actions for the projects section.
+ * @typedef {{ showToggle?: boolean, showMore?: string, showLess?: string, viewAll?: string, class?: string }} Props
+ */
+interface Props {
+	/** Whether to render the show more/less toggle button. @default false */
+	showToggle?: boolean;
+	/** Label for the "show more" state. @default 'Ver más' */
+	showMore?: string;
+	/** Label for the "show less" state. @default 'Ver menos' */
+	showLess?: string;
+	/** Label for the "view all" link. @default 'Ver todos' */
+	viewAll?: string;
+	/** Additional CSS classes. */
+	class?: string;
+}
+
+const {
+	showToggle = false,
+	showMore = 'Ver más',
+	showLess = 'Ver menos',
+	viewAll = 'Ver todos',
+	class: className = '',
+} = Astro.props;
+---
+
+<footer class={`projects-footer ${className}`}>
+	{
+		showToggle && (
+			<button
+				id='projects-toggle'
+				class='btn-action projects-footer__toggle'
+				aria-expanded='false'
+				data-more={showMore}
+				data-less={showLess}
+			>
+				{showMore}
+				<span class='projects-footer__chevron' aria-hidden='true'>
+					<svg
+						xmlns='http://www.w3.org/2000/svg'
+						width='12'
+						height='12'
+						viewBox='0 0 24 24'
+						fill='none'
+						stroke='currentColor'
+						stroke-width='2.5'
+						stroke-linecap='round'
+						stroke-linejoin='round'
+					>
+						<polyline points='6 9 12 15 18 9' />
+					</svg>
+				</span>
+			</button>
+		)
+	}
+	<a href='/proyectos' class='btn-action primary' aria-label={viewAll}>
+		{viewAll}
+	</a>
+</footer>
+
+<style>
+	.projects-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--sp-4);
+		margin-top: var(--sp-6);
+	}
+
+	/* Reuse btn-action pattern from ProjectCard */
+	.btn-action {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		padding: 0.3rem 0.7rem;
+		border-radius: var(--radius-md);
+		border: 1px solid var(--color-border);
+		background: transparent;
+		color: var(--text-color);
+		font-size: var(--fs-xs);
+		font-weight: 600;
+		text-decoration: none;
+		cursor: pointer;
+		font-family: inherit;
+		transition:
+			border-color var(--dur) var(--ease),
+			background var(--dur) var(--ease),
+			color var(--dur) var(--ease);
+	}
+
+	.btn-action:hover {
+		border-color: var(--accent-color);
+		color: var(--accent-color);
+		text-decoration: none;
+	}
+
+	.btn-action.primary {
+		background: var(--accent-color);
+		border-color: var(--accent-color);
+		color: #fff;
+	}
+
+	.btn-action.primary:hover {
+		opacity: 0.88;
+		color: #fff;
+	}
+
+	.projects-footer__chevron {
+		display: inline-flex;
+		transition: transform var(--dur) var(--ease);
+	}
+
+	.projects-footer__toggle.open .projects-footer__chevron {
+		transform: rotate(180deg);
+	}
+</style>
