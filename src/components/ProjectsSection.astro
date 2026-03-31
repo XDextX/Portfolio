@@ -93,18 +93,45 @@ const viewAll = t('projects.viewAll');
 		const toggle = document.getElementById(
 			'projects-toggle',
 		) as HTMLButtonElement | null;
-		const extra = document.getElementById('projects-extra');
-		if (!toggle || !extra) return;
+		const grid = document.getElementById('projects-grid');
+		if (!toggle || !grid) return;
+
+		const hiddenItems = Array.from(
+			grid.querySelectorAll<HTMLElement>('.project-item--hidden'),
+		);
 
 		toggle.addEventListener('click', () => {
 			const expanded = toggle.getAttribute('aria-expanded') === 'true';
-			toggle.setAttribute('aria-expanded', String(!expanded));
-			extra.setAttribute('aria-hidden', String(expanded));
-			extra.classList.toggle('open', !expanded);
-			toggle.classList.toggle('open', !expanded);
-			toggle.childNodes[0].textContent = !expanded
+			const willExpand = !expanded;
+
+			toggle.setAttribute('aria-expanded', String(willExpand));
+			toggle.classList.toggle('open', willExpand);
+			toggle.childNodes[0].textContent = willExpand
 				? (toggle.dataset.less ?? '') + ' '
 				: (toggle.dataset.more ?? '') + ' ';
+
+			hiddenItems.forEach((item, i) => {
+				if (willExpand) {
+					item.classList.remove('project-item--hidden');
+					item.classList.remove('project-item--closing');
+					item.style.animationDelay = `${i * 60}ms`;
+					item.classList.add('project-item--opening');
+					item.removeAttribute('aria-hidden');
+				} else {
+					item.classList.remove('project-item--opening');
+					item.style.animationDelay = `${(hiddenItems.length - 1 - i) * 40}ms`;
+					item.classList.add('project-item--closing');
+					item.setAttribute('aria-hidden', 'true');
+					item.addEventListener(
+						'animationend',
+						() => {
+							item.classList.add('project-item--hidden');
+							item.classList.remove('project-item--closing');
+						},
+						{ once: true },
+					);
+				}
+			});
 		});
 	});
 </script>
@@ -116,82 +143,38 @@ const viewAll = t('projects.viewAll');
 		gap: 1rem;
 	}
 
-	/* Extra repos — collapsed by default */
-	.projects-extra {
-		display: grid;
-		grid-template-rows: 0fr;
-		overflow: hidden;
-		transition: grid-template-rows 0.4s ease;
+	.project-item--hidden {
+		display: none;
 	}
 
-	.projects-extra > .projects-grid {
-		min-height: 0;
+	@keyframes fadeSlideIn {
+		from {
+			opacity: 0;
+			transform: translateY(12px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
 	}
 
-	.projects-extra.open {
-		grid-template-rows: 1fr;
+	@keyframes fadeSlideOut {
+		from {
+			opacity: 1;
+			transform: translateY(0);
+		}
+		to {
+			opacity: 0;
+			transform: translateY(12px);
+		}
 	}
 
-	/* Footer */
-	.projects-footer {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		margin-top: 1rem;
-		flex-wrap: wrap;
+	.project-item--opening {
+		animation: fadeSlideIn 0.3s ease both;
 	}
 
-	.btn-toggle {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.35rem;
-		padding: 0.45rem 1rem;
-		border-radius: var(--radius-md);
-		border: 1px solid var(--color-border);
-		background: var(--card-background);
-		color: var(--text-color);
-		font-size: var(--fs-sm);
-		font-weight: 600;
-		cursor: pointer;
-		transition:
-			border-color var(--dur) var(--ease),
-			color var(--dur) var(--ease);
-	}
-
-	.btn-toggle:hover {
-		border-color: var(--accent-color);
-		color: var(--accent-color);
-	}
-
-	.btn-toggle .chevron {
-		transition: transform 0.3s ease;
-	}
-
-	.btn-toggle.open .chevron {
-		transform: rotate(180deg);
-	}
-
-	.btn-all {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.3rem;
-		padding: 0.45rem 1rem;
-		border-radius: var(--radius-md);
-		border: 1px solid var(--accent-color);
-		background: transparent;
-		color: var(--accent-color);
-		font-size: var(--fs-sm);
-		font-weight: 600;
-		text-decoration: none;
-		transition:
-			background var(--dur) var(--ease),
-			color var(--dur) var(--ease);
-	}
-
-	.btn-all:hover {
-		background: var(--accent-color);
-		color: #fff;
-		text-decoration: none;
+	.project-item--closing {
+		animation: fadeSlideOut 0.2s ease both;
 	}
 
 	.empty {
