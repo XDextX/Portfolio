@@ -14,7 +14,7 @@ const labelId = 'language-switcher';
 
 <div class='language-switcher'>
 	<label class='label' for={labelId}>{t('layout.language')}</label>
-	<select id={labelId} class='select' value={current}>
+	<select id={labelId} class='select' data-lang-switcher value={current}>
 		{
 			locales.map((code) => (
 				<option value={code} selected={code === current}>
@@ -25,17 +25,21 @@ const labelId = 'language-switcher';
 	</select>
 </div>
 
-<script is:inline>
-	const container = document.currentScript?.parentElement;
-	const select = container?.querySelector('select');
-	if (select) {
-		select.addEventListener('change', (event) => {
-			const value = event.target.value;
-			const next = new URL(window.location.href);
-			next.searchParams.set('lang', value);
-			window.location.replace(next.toString());
-		});
-	}
+<script>
+	// Se re-vincula en cada navegación: con <ClientRouter /> el DOM se reemplaza
+	// y un listener ligado una sola vez moriría en la primera transición.
+	document.addEventListener('astro:page-load', () => {
+		document
+			.querySelectorAll<HTMLSelectElement>('[data-lang-switcher]')
+			.forEach((select) => {
+				select.addEventListener('change', (event) => {
+					const value = (event.target as HTMLSelectElement).value;
+					const next = new URL(window.location.href);
+					next.searchParams.set('lang', value);
+					window.location.replace(next.toString());
+				});
+			});
+	});
 </script>
 
 <style>
