@@ -6,8 +6,10 @@ import { CONTACTS } from '../src/data/contacts';
 
 
 describe('CONTACTS array', () => {
-    it('should have the correct number of contacts', () => {
-        expect(CONTACTS.length).toBe(3);
+    it('should have at least one contact with a unique id', () => {
+        // No fijamos el número: agregar un canal no debe romper la suite.
+        expect(CONTACTS.length).toBeGreaterThan(0);
+        expect(new Set(CONTACTS.map((c) => c.id)).size).toBe(CONTACTS.length);
     });
 
     it('should contain valid contact objects', () => {
