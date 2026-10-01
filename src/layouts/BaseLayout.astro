@@ -84,7 +84,7 @@ const htmlLang  = locale === 'es' ? 'es-CR' : 'en-US';
 	</main>
 
 	{jsonLd && (
-		<script type='application/ld+json' is:inline>{JSON.stringify(jsonLd)}</script>
+		<script type='application/ld+json' set:html={JSON.stringify(jsonLd)} />
 	)}
 </body>
 </html>

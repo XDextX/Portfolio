@@ -34,6 +34,11 @@
     --sp-6: 1.5rem;
     --sp-8: 2rem;
 
+    /* Skill level colors — consumidas por src/data/levelLabels.ts */
+    --clr-advanced: #22c55e;
+    --clr-intermediate: #3b82f6;
+    --clr-beginner: #f59e0b;
+
     /* Radii & shadows */
     --radius-sm: 0.375rem;
     --radius-md: 0.75rem;

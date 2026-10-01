@@ -1,12 +1,10 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
-import vercel from "@astrojs/vercel/serverless";
-
-import node from '@astrojs/node';
+import vercel from "@astrojs/vercel";
 
 // https://astro.build/config
 export default defineConfig({
   output: "server",
-  base: '/',
-  adapter: vercel( {  }),
+  site: "https://portfolio-dext.vercel.app",
+  adapter: vercel(),
 });
