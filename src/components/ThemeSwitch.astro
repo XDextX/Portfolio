@@ -8,7 +8,7 @@
 	type='button'
 	aria-label='Switch theme'
 >
-	<!-- Sun icon — visible in dark mode -->
+	<!-- Sun: shown in dark mode, meaning "switch to light" -->
 	<svg
 		class='icon icon--sun'
 		xmlns='http://www.w3.org/2000/svg'
@@ -27,7 +27,7 @@
 			d='M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41'
 		></path>
 	</svg>
-	<!-- Moon icon — visible in light mode -->
+	<!-- Moon: shown in light mode, meaning "switch to dark" -->
 	<svg
 		class='icon icon--moon'
 		xmlns='http://www.w3.org/2000/svg'
@@ -42,6 +42,10 @@
 		aria-hidden='true'
 	>
 		<path d='M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z'></path>
+		<!-- Craters, so the shape reads as a moon rather than a plain circle at 18px -->
+		<circle cx='15.5' cy='8' r='1.1' fill='currentColor' stroke='none' opacity='0.45'></circle>
+		<circle cx='8' cy='13.5' r='1.4' fill='currentColor' stroke='none' opacity='0.35'></circle>
+		<circle cx='12' cy='18' r='0.9' fill='currentColor' stroke='none' opacity='0.3'></circle>
 	</svg>
 </button>
 
@@ -101,7 +105,9 @@
 		background: var(--neutral-200, #3a3b52);
 	}
 
-	/* Light mode (default): show moon to switch to dark */
+	/* The icon shows the theme you are switching TO, not the current one.
+   Light theme -> moon (going to dark). Dark theme -> sun (going to light).
+   This matches GitHub, Tailwind and Material. */
 	.icon--sun {
 		display: none;
 	}
@@ -109,7 +115,6 @@
 		display: block;
 	}
 
-	/* Dark mode: show sun to switch to light */
 	:global([data-theme='dark']) .icon--sun {
 		display: block;
 	}

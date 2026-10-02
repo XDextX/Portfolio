@@ -27,6 +27,9 @@ pnpm-debug.log*
 opencode.json
 opencode.jsonc
 
+# Memory.md: estado de trabajo del agente, personal y efimero. No se versiona.
+Memory.md
+
 .vscode/
 .vercel/
 .playwright-report/
