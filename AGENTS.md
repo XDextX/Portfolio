@@ -75,6 +75,88 @@ duplicated `/Resume` route.
   evaluation, so `{JSON.stringify(x)}` was emitted as literal text. Both sites are fixed in
   `AboutSection.astro` and `BaseLayout.astro`; do not reintroduce the old pattern.
 
+## Design tokens are an invariant, not a convention
+
+A custom property that is read but never defined **fails silently**. `var(--missing)` makes the
+whole declaration "invalid at computed-value time", so the browser drops it and falls back to the
+initial value with nothing in the console. `AvatarCircle` shipped
+`border: var(--ring) solid var(--avatar-ring)` for weeks against a token that existed nowhere, and
+the avatar rendered as `0px none`.
+
+- **Never write `var(--x)` for a token you have not defined in `00-tokens.css` or `themes/*.css`.**
+  If a fallback is genuinely needed, say why in a comment.
+- **A hardcoded colour as the only fallback is a bug**, not a safety net: it never follows the
+  theme. That is how `var(--border-color, #3a4056)` ended up dark-grey in both themes.
+- `tests/tokens.test.ts` enforces all of this: no undefined-and-unfallbacked `var()`, no token kept
+  alive only by a hardcoded colour, no duplicate declaration inside one rule. **Run it before
+  claiming a styling change is done.** It fails on a typo (`--color-bordr`), so it is not vacuous.
+- Alias a token when a component needs a theme-aware value: `--avatar-ring: var(--color-border)`
+  resolves correctly in both themes because both redefine `--color-border`. That avoids a
+  `--x` / `--x-dark` pair and any per-theme override inside a component.
+- Prefer `!important` on a custom property in a media query when the base value is set inline —
+  it is the only way an author rule can beat the inline declaration.
+
+## CSS that silently does nothing
+
+- **`attr()` only works for `content` properties.** `attr(data-size px)` in a size declaration is
+  invalid everywhere. If a prop must change at a breakpoint, emit it as a custom property and read
+  it from the media query.
+- **Check `grid-template-columns` arithmetic against the real container width.** `SkillBar` spent
+  ~260px on fixed columns inside a `repeat(2, 1fr)` column, leaving the progress track 31px at
+  929px of viewport and **0px** below ~546px of content. A `1fr` track silently collapses to zero
+  when the fixed columns exceed the row. Give the flexible track a `minmax(<floor>, 1fr)` and use
+  `repeat(auto-fit, minmax(min(<needed>, 100%), 1fr))` so the column count adapts to real space.
+- **Fixed-size decorative markup is a duplicate waiting to happen.** When you catch one, say so.
+
+## Structured data: one entity, one format
+
+- **Never mix microdata (`itemscope`) and JSON-LD for the same entity on one page.** Search engines
+  read that as two conflicting entities. `AboutSection` owns the `Person` JSON-LD; do not add an
+  `itemscope` wrapper elsewhere for the same person.
+- **Person identity lives in `src/data/about.ts` only.** A literal name inside a component is a
+  duplicate source, even in a `<meta itemprop>`.
+- Prefer an explicit `sameAs: true` flag on a contact over re-deriving "is this publishable?"
+  from another field. One flag, read by whoever needs it.
+
+## Public asset paths
+
+Root-absolute, always: `"/icons/gmail.svg"`, `"/tech/react.svg"`, `"/cv/file.pdf"`.
+
+A relative `src="icons/x.svg"` resolves against the *current route*, so it works on `/` and
+`/proyectos` but 404s on `/proyectos/<name>`. This is the `resumeUrl` bug again. `tests/contact.test.ts`
+asserts the leading slash and that the file exists, for every contact.
+
+## Interactive markup needs a stable hook, not a positional one
+
+- **Never index into `childNodes` to swap a label.** `toggle.childNodes[0].textContent = …` breaks
+  silently the moment someone adds whitespace or wraps the text. Give the label its own element
+  (`data-projects-toggle-label`) and target that.
+- **Do not emit an attribute nobody reads.** `data-preview` was written on every projects grid and
+  consumed by nothing. Grep before adding one.
+- **Do not pass a prop a component does not declare.** `Resume` sent `locale` to a `ContactSection`
+  with no `Props`, where it was dropped without a word.
+- Prefer the implicit `<label><select/></label>` association over a `for`/`id` pair: it needs no id,
+  so it cannot collide.
+- Render a non-interactive element when there is nothing to interact with. `SkillChip` emitted
+  `<a href="#">` for techs with no link — a focusable element that only jumps the page to the top.
+- Translations must go through `t()`. Inline `lang === 'es' ? '…' : '…'` and literals like
+  `aria-label='Vista'` survive a locale switch and ship Spanish to English readers.
+- `title` is a weak accessible name. Pair it with `aria-label`.
+
+## Comments do not belong in the template
+
+**Anything between the frontmatter fences and the markup is not a comment.** Astro emits it
+verbatim into the response, so a `//` note in the template ships to every visitor as a stray HTML
+comment and shows up in view-source and DevTools. Put implementation notes in the **frontmatter**,
+where they never leave the build.
+
+- Short HTML labels (`<!-- Header -->`, `<!-- BARS -->`) in the markup are the existing style and
+  are fine. A prose note is not.
+- `tests/comments.test.ts` enforces both halves: no `//` line in the markup region, and no HTML
+  comment longer than 90 characters.
+- Inside `<script>` and `<style>`, `//` is a real comment and is stripped at build. Only the
+  markup region leaks.
+
 ## Client scripts under `<ClientRouter />`
 
 `<ClientRouter />` (view transitions) is **enabled on purpose and stays**. Mandatory rules:
@@ -144,7 +226,22 @@ helpers; on components, a typed `interface Props`. Examples: `src/data/levelLabe
 | `src/components/ProjectsSection.astro` | projects grid, `preview`, show-more toggle |
 | `src/components/ProjectCard.astro` | card carrying `transition:name` `p-${repo.id}-*` |
 | `src/data/*.ts` | editable content, no markup changes needed |
+| `src/pages/lib/github.ts` | also holds `sortRepos()`, the single repo ranking used by `/` and `/proyectos` |
 | `i18n/locales/{es,en}.json` | UI strings; edit **both together** |
+
+## Tests
+
+`npm test` = `vitest --run tests`. Do **not** run bare `npx vitest --run`: without the `tests`
+filter it also picks up `e2e/about.spec.ts` and fails on a missing Playwright runtime.
+
+| File | Guards |
+|---|---|
+| `tests/tokens.test.ts` | every `var(--x)` resolves; no token alive only on a hardcoded fallback; no duplicate declaration per rule |
+| `tests/comments.test.ts` | no `//` in the markup region and no HTML comment over 90 chars — a comment there ships to the visitor |
+| `tests/viewtransitions.test.ts` | client scripts re-bind on `astro:page-load`; no `is:inline`, no `currentScript`, no global id in any component |
+| `tests/contact.test.ts` | contact shape; **icon paths are root-absolute and exist in `public/`** |
+| `tests/notfound.test.ts` | the `/404` redirect target exists and its keys are in both locales |
+| `tests/about.test.ts`, `tests/aboutsection.test.ts`, `tests/github-helpers.test.ts` | data invariants and GitHub helper behaviour |
 
 ## Never document sensitive data
 
