@@ -23,6 +23,10 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
+# opencode: config por maquina (rutas de navegador, providers locales)
+opencode.json
+opencode.jsonc
+
 .vscode/
 .vercel/
 .playwright-report/
