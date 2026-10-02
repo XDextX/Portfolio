@@ -6,30 +6,39 @@ import HabilitiesSection from './HabilitiesSection.astro';
 import ContactSection from './ContactSection.astro';
 import AboutSection from './AboutSection.astro';
 import { applyLocale } from '@utils/locale';
+import { sortRepos } from '@lib/github';
 import { t } from '@i18n/index';
 
 interface Props {
 	locale?: 'es' | 'en';
 }
 
-const providedLocale = (Astro.props as Props | undefined)?.locale;
+const providedLocale = Astro.props.locale;
 const locale = providedLocale ?? applyLocale(Astro);
 const apiUrl = new URL('/api/github-list.json', Astro.url);
-const response = await fetch(apiUrl);
-const repos: GitHubRepo[] = await response.json();
 
-const sortedRepos = [...repos].sort((a, b) => {
-	// 1. Most starred first
-	if (b.stargazers_count !== a.stargazers_count) {
-		return b.stargazers_count - a.stargazers_count;
+// A GitHub outage must degrade the projects block, not 500 the whole page —
+// so the fetch is guarded exactly like it is in /proyectos.
+let repos: GitHubRepo[] = [];
+let fetchError: string | null = null;
+
+try {
+	const response = await fetch(apiUrl);
+	if (!response.ok) {
+		throw new Error(`Request failed with status ${response.status}`);
 	}
-	// 2. Repos with demo (homepage) before those without
-	const aHasDemo = a.homepage ? 1 : 0;
-	const bHasDemo = b.homepage ? 1 : 0;
-	return bHasDemo - aHasDemo;
-});
+	repos = await response.json();
+} catch (error) {
+	fetchError = error instanceof Error ? error.message : 'Unknown error';
+	repos = [];
+}
+
+const sortedRepos = sortRepos(repos);
 
 const projectsTitle = t('projects.title');
+
+// ContactSection gets no locale prop: its strings come from t(), which reads the
+// module-level locale that applyLocale() already set for this request.
 ---
 
 <AboutSection lang={locale} withJsonLd={true} />
@@ -40,6 +49,7 @@ const projectsTitle = t('projects.title');
 	title={projectsTitle}
 	locale={locale}
 	preview={4}
+	error={fetchError}
 />
 
-<ContactSection locale={locale} />
+<ContactSection />

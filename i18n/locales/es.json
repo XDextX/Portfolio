@@ -21,7 +21,10 @@
 			"noDescription": "Sin descripción"
 		},
 		"repo": "Repositorio:",
-		"license": "Licencia:"
+		"license": "Licencia:",
+		"readme": {
+			"missing": "Este repositorio no tiene README."
+		}
 	},
 	"projects": {
 		"title": "Proyectos",

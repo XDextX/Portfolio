@@ -1,14 +1,44 @@
 ---
 import type { GitHubRepo } from '@type/github';
+import { t } from '@i18n/index';
 
 interface Props {
 	repo: GitHubRepo;
 }
 const { repo } = Astro.props;
-const readme = await fetch(
-	`${Astro.url.origin}/api/v1/projects/readme/${repo.owner.login}/${repo.name}/readme.json`
-);
-const readmeText = await readme.text();
+
+// A repo without a README answers 404 with a JSON error body. Reading that as
+// text would print `{"error":"README not found"}` inside the article, so the
+// status is checked and a missing README gets its own message instead.
+let readmeText = '';
+let available = false;
+
+try {
+	const res = await fetch(
+		`${Astro.url.origin}/api/v1/projects/readme/${repo.owner.login}/${repo.name}/readme.json`
+	);
+	if (res.ok) {
+		readmeText = await res.text();
+		available = true;
+	}
+} catch {
+	readmeText = '';
+	available = false;
+}
 ---
 
-<article set:html={readmeText} />
+{
+	available ? (
+		<article class='readme-body' set:html={readmeText} />
+	) : (
+		<p class='readme-missing'>{t('project.readme.missing')}</p>
+	)
+}
+
+<style>
+	.readme-missing {
+		color: var(--neutral-600);
+		font-size: var(--fs-sm);
+		margin: 0;
+	}
+</style>

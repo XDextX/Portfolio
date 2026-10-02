@@ -11,6 +11,12 @@ export interface Props {
 	locale?: 'es' | 'en';
 	/** Max repos shown initially. Omit to show all. */
 	preview?: number;
+	/**
+	 * Reason the fetch failed, if it did. When set, the section renders an
+	 * alert instead of the grid, so an API outage is never mistaken for
+	 * "you have no projects".
+	 */
+	error?: string | null;
 }
 
 const {
@@ -19,6 +25,7 @@ const {
 	hideTitle = false,
 	locale = 'es',
 	preview,
+	error = null,
 } = Astro.props;
 
 const headingId = 'projects-title';
@@ -56,15 +63,13 @@ const viewAll = t('projects.viewAll');
 	}
 
 	{
-		repos.length === 0 ? (
+		error ? (
+			<p class='empty' role='alert'>{t('projects.error', { detail: error })}</p>
+		) : repos.length === 0 ? (
 			<p class='empty'>{t('projects.empty.message', { topic: topicValue })}</p>
 		) : (
 			<>
-				<div
-					class='projects-grid'
-					data-projects-grid
-					data-preview={preview ?? repos.length}
-				>
+				<div class='projects-grid' data-projects-grid>
 					{repos.map((r, i) => (
 						<div
 							class={`project-item${preview && i >= preview ? ' project-item--hidden' : ''}`}
@@ -100,7 +105,13 @@ const viewAll = t('projects.viewAll');
 					'[data-projects-toggle]',
 				);
 				const grid = root.querySelector<HTMLElement>('[data-projects-grid]');
-				if (!toggle || !grid) return;
+				// The label lives in its own element: rewriting childNodes[0]
+				// depended on the button's first child being a text node, which
+				// any whitespace or markup change would silently break.
+				const label = root.querySelector<HTMLElement>(
+					'[data-projects-toggle-label]',
+				);
+				if (!toggle || !grid || !label) return;
 
 				const hiddenItems = Array.from(
 					grid.querySelectorAll<HTMLElement>('.project-item--hidden'),
@@ -112,9 +123,9 @@ const viewAll = t('projects.viewAll');
 
 					toggle.setAttribute('aria-expanded', String(willExpand));
 					toggle.classList.toggle('open', willExpand);
-					toggle.childNodes[0].textContent = willExpand
-						? (toggle.dataset.less ?? '') + ' '
-						: (toggle.dataset.more ?? '') + ' ';
+					label.textContent = willExpand
+						? (toggle.dataset.less ?? '')
+						: (toggle.dataset.more ?? '');
 
 					hiddenItems.forEach((item, i) => {
 						if (willExpand) {
@@ -187,6 +198,10 @@ const viewAll = t('projects.viewAll');
 	.empty {
 		color: var(--neutral-600);
 		font-size: var(--fs-sm);
+	}
+
+	.empty[role='alert'] {
+		color: var(--danger-color);
 	}
 
 	@media (max-width: 600px) {
