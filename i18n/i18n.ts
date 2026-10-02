@@ -50,7 +50,7 @@ export function t(key: string, vars?: Record<string, string>): string {
         if (vars[k] !== undefined) {
             return vars[k];
         } else {
-            return `{{${k}}}`; // Deja el marcador si falta el valor
+            return `{{${k}}}`; // Leave the placeholder when the value is missing
         }
     });
 }

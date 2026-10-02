@@ -26,8 +26,8 @@ const labelId = 'language-switcher';
 </div>
 
 <script>
-	// Se re-vincula en cada navegación: con <ClientRouter /> el DOM se reemplaza
-	// y un listener ligado una sola vez moriría en la primera transición.
+	// Re-bound on every navigation: with <ClientRouter /> the DOM is replaced,
+	// so a listener bound once would die on the first transition.
 	document.addEventListener('astro:page-load', () => {
 		document
 			.querySelectorAll<HTMLSelectElement>('[data-lang-switcher]')

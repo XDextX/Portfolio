@@ -14,7 +14,7 @@ describe('About data and assets', () => {
     });
 
     it('CV file exists in public/cv folder', async () => {
-        // resumeUrl es una URL pública con barra inicial; se quita para locate en disco.
+        // resumeUrl is a root-absolute URL; strip the leading slash to locate it on disk.
         const relative = ABOUT.resumeUrl.replace(/^\/+/, '');
         const resumePath = path.resolve(process.cwd(), 'public', relative);
 

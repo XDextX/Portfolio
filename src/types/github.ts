@@ -3,8 +3,8 @@ export type GitHubRepo = {
     name: string;
     full_name: string;
     description: string | null;
-    html_url: string;       // código
-    homepage?: string | null; // demo (si viene en el repo)
+    html_url: string;       // source
+    homepage?: string | null; // demo, when the repo provides one
     language?: string | null;
     topics?: string[];
     stargazers_count: number;

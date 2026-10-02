@@ -28,8 +28,8 @@ export const GET: APIRoute = async ({ site }) => {
         { loc: `${origin}/proyectos`, changefreq: "weekly", priority: "0.8" },
     ];
 
-    // Si el listado de repos falla, el sitemap sigue siendo válido con las
-    // rutas estáticas: una API caída no debe convertir esto en un 500.
+    // If the repo listing fails the sitemap is still valid with the static
+    // routes: a dead API must not turn this into a 500.
     try {
         const res = await fetch(new URL("/api/github-list.json", site ?? origin));
         if (res.ok) {
@@ -50,7 +50,7 @@ export const GET: APIRoute = async ({ site }) => {
             }
         }
     } catch {
-        // sin detalle de proyectos; se emiten solo las rutas estáticas
+        // no project detail; emit the static routes only
     }
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>` +

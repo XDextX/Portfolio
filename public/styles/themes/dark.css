@@ -5,15 +5,15 @@
     --text-main: #F4EFD9;
     --text-secondary: #C3BBA8;
     --text-color: #F4EFD9;
-    /* ← fix: .chip usa esta variable */
+    /* <- fix: .chip uses this variable */
 
     --brand-text: var(--brand-accent);
 
-    /* Sobre fondo oscuro el dorado de marca ya da 6.66:1 — se usa tal cual. */
+    /* On a dark background the brand gold already gives 6.66:1 — use as is. */
     --accent-text: var(--brand-accent);
 
-    /* Los tonos de barra no funcionan como texto en oscuro (1.2-1.5:1).
-       Variantes claras: 8.6:1 / 7.4:1 / 7.9:1 */
+    /* The bar tones do not work as text on dark (1.2-1.5:1).
+       Lighter variants: 8.6:1 / 7.4:1 / 7.9:1 */
     --clr-beginner-text: #FBBF24;
     --clr-intermediate-text: #7DA9F5;
     --clr-advanced-text: #6EE7A8;
@@ -27,7 +27,7 @@
     --neutral-900: #FFFFFF;
 
     --card-background: #2a2f41;
-    /* ← fix: fondo del .chip */
+    /* <- fix: .chip background */
     --nested-card-background: #2e3144;
     --color-border: #3a3b52;
 

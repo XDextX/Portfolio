@@ -5,14 +5,14 @@
     --brand-accent: #E3C770;
     --brand-accent-dark: #BFA258;
 
-    /* Acento para TEXTO. El dorado de marca (#E3C770) sobre crema da solo
-       1.35:1 y es ilegible; los temas bajan este valor a un tono oscuro.
-       Usar --accent-text para color de texto y --brand-accent para
-       superficies (fondo de boton, borde, barra). */
+    /* Accent for TEXT. The brand gold (#E3C770) on cream gives only
+       1.35:1 and is unreadable; the themes lower this to a dark tone.
+       Use --accent-text for text colour and --brand-accent for
+       surfaces (button fill, border, bar). */
     --accent-text: #BFA258;
 
-    /* Fondo de boton primario con texto blanco encima. El dorado de marca
-       solo da 1.66:1 con blanco, asi que en tema claro se oscurece. */
+    /* Primary button fill with white text on top. The brand gold only
+       gives 1.66:1 against white, so the light theme darkens it. */
     --accent-surface: #E3C770;
 
     /* Neutrals (raw values — themes override the scale) */
@@ -66,11 +66,10 @@
     --max-w: 72rem;
 }
 
-/* ── Transicion del cambio de tema ──
-   Solo color/background-color/border-color: usar `all` arrastraria
-   tambien width/transform de las barras de skills y las animaciones de
-   apertura de tarjetas, provocando animaciones no deseadas al cambiar de
-   tema. */
+/* ── Theme change transition ──
+   Only color/background-color/border-color: using `all` would also drag in
+   width/transform from the skill bars and the card open animations,
+   causing unwanted motion on every theme switch. */
 :root,
 :root *,
 :root *::before,

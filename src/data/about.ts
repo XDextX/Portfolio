@@ -4,8 +4,8 @@ import type { ContactItem } from "../types/contact";
 export type Lang = "es" | "en";
 
 /**
- * Orden en que se muestran los botones sociales en la sección About.
- * Los ids referencian `CONTACTS`; los datos no se duplican aquí.
+ * Order the social buttons appear in on the About section.
+ * The ids reference `CONTACTS`; the data is not duplicated here.
  */
 const SOCIAL_ORDER = ["github", "linkedin", "email"] as const;
 
@@ -20,7 +20,7 @@ export const ABOUT = {
     title: "Full-Stack Developer",
     location: "Costa Rica",
     avatar: "https://github.com/XDextX.png",
-    // Raíz-absoluta: una ruta relativa rompería en /proyectos y /proyectos/[name].
+    // Root-absolute: a relative path breaks on /proyectos and /proyectos/[name].
     resumeUrl: "/cv/German Montero CV EN.pdf",
     socials,
     bio: {
@@ -40,7 +40,7 @@ export const JsonLdAbout = {
     jobTitle: ABOUT.title,
     url: "https://portfolio-dext.vercel.app",
     image: `${ABOUT.avatar}`,
-    // Los perfiles publicables (sin mailto:) alimentan sameAs / rel=me.
+    // Publishable profiles (excluding mailto:) feed sameAs / rel=me.
     sameAs: ABOUT.socials
         .filter((s) => s.kind !== "email")
         .map((s) => s.href),

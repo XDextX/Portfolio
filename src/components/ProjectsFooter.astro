@@ -6,11 +6,15 @@
 interface Props {
 	/** Whether to render the show more/less toggle button. @default false */
 	showToggle?: boolean;
-	/** Label for the "show more" state. @default 'Ver más' */
+	/**
+	 * Label for the "show more" state. @default 'Ver más'
+	 * NOTE: the default is a user-visible Spanish string, not a comment.
+	 * Do not translate it; callers pass translated labels via ProjectsSection.
+	 */
 	showMore?: string;
-	/** Label for the "show less" state. @default 'Ver menos' */
+	/** Label for the "show less" state. @default 'Ver menos' (user-visible) */
 	showLess?: string;
-	/** Label for the "view all" link. @default 'Ver todos' */
+	/** Label for the "view all" link. @default 'Ver todos' (user-visible) */
 	viewAll?: string;
 	/** Additional CSS classes. */
 	class?: string;

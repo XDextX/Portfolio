@@ -89,9 +89,9 @@ const viewAll = t('projects.viewAll');
 </section>
 
 <script>
-	// Re-vinculado en cada navegación (ClientRouter reemplaza el DOM).
-	// Todo se resuelve relativo a la sección: sin IDs globales, así varias
-	// instancias en la misma página funcionan de forma independiente.
+	// Re-bound on every navigation (ClientRouter replaces the DOM).
+	// Everything resolves relative to the section: no global ids, so several
+	// instances on the same page work independently.
 	document.addEventListener('astro:page-load', () => {
 		document
 			.querySelectorAll<HTMLElement>('[data-projects-root]')

@@ -10,15 +10,15 @@ describe('AboutSection component source checks', () => {
     it('renders the avatar and the CV/social actions', () => {
         const src = fs.readFileSync(filePath, 'utf-8');
 
-        // El CV se enlaza por prop desde ABOUT.resumeUrl y los sociales se
-        // iteran desde ABOUT.socials, así que no buscamos literales aquí.
+        // The CV links via a prop from ABOUT.resumeUrl and the socials are iterated
+        // from ABOUT.socials, so we do not grep for literals here.
         expect(src).toMatch(/href=\{ABOUT\.resumeUrl\}/);
         expect(src).toMatch(/ABOUT\.socials\.map/);
         expect(src).toContain('AvatarCircle');
     });
 
     it('exposes a working mailto link through the About socials', () => {
-        // El href de mailto vive en los datos, no en el markup del componente.
+        // The mailto href lives in the data, not in the component markup.
         const mailto = ABOUT.socials.find((s) => s.href.startsWith('mailto:'));
 
         expect(mailto).toBeDefined();

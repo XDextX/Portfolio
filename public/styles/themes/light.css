@@ -10,7 +10,7 @@
     /* Foreground / text */
     --fg: #1E1E2F;
     --text-color: #1E1E2F;
-    /* ← asegura que .chip tenga texto oscuro en light */
+    /* <- ensures .chip has dark text in light */
     --text-main: #1E1E2F;
     --text-secondary: #4B5070;
     --text-inverse: #FFFFFF;
@@ -33,29 +33,29 @@
     /* Borders & surfaces */
     --color-border: #C3BBA8;
     --card-background: #FFFFFF;
-    /* ← fondo blanco para .chip en light */
+    /* <- white background for .chip in light */
 
-    /* Acento legible sobre crema (#EDE8D0): 5.01:1 — pasa AA.
-       El dorado de marca se reserva para superficies. */
+    /* Accent legible on cream (#EDE8D0): 5.01:1 — passes AA.
+       The brand gold is reserved for surfaces. */
     --accent-text: #7A5D10;
 
-    /* Boton primario dorado con texto blanco: 6.18:1 — pasa AA. */
+    /* Gold primary button with white text: 6.18:1 — passes AA. */
     --accent-surface: #7A5D10;
 
-    /* Niveles de skill oscurecidos para crema: 5.76:1 (principiante),
-       ~4.9:1 (intermedio y avanzado). Los originales (#F59E0B, #3B82F6,
-       #22C55E) dan 1.7-3.0:1 y son ilegibles en tema claro. */
+    /* Skill levels darkened for cream: 5.76:1 (beginner), ~4.9:1
+       (intermediate and advanced). The originals (#F59E0B, #3B82F6,
+       #22C55E) give 1.7-3.0:1 and are unreadable in the light theme. */
     --clr-beginner: #92400E;
     --clr-intermediate: #2C5FB8;
     --clr-advanced: #1F7A38;
 
-    /* Texto de nivel (12px, weight 600): necesita 4.5:1, no basta 3:1 como
-       las barras. Los tonos de barra quedan entre 4.3 y 4.5. */
+    /* Level text (12px, weight 600): needs 4.5:1, where 3:1 is enough for
+       the bars. The bar tones land between 4.3 and 4.5. */
     --clr-beginner-text: #7A3208;
     --clr-intermediate-text: #1F4494;
     --clr-advanced-text: #14572A;
 
-    /* Main container — crema claro en lugar del azul oscuro */
+    /* Main container — light cream instead of the dark blue */
     --main-bg: #EDE8D0;
 
     color-scheme: light;

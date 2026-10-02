@@ -1,31 +1,31 @@
 ---
 interface Props {
-	/** Ruta a la imagen principal */
+	/** Path to the main image */
 	src: string;
 
-	/** Texto alternativo. Si no lo pasas, será decorativo (aria-hidden) */
+	/** Alt text. Omit it and the image becomes decorative (aria-hidden) */
 	alt?: string;
 
-	/** Imagen que aparece en hover (opcional) */
+	/** Image shown on hover (optional) */
 	hoverSrc?: string;
 
-	/** Tamaños base en px (se pueden combinar con fluid) */
-	size?: number | string; // base (>= 0) — por defecto 96
-	sizeSm?: number; // ≥ 480px
-	sizeMd?: number; // ≥ 768px
-	sizeLg?: number; // ≥ 1024px
+	/** Base sizes in px (can be combined with fluid) */
+	size?: number | string; // base (>= 0) — defaults to 96
+	sizeSm?: number; // >= 480px
+	sizeMd?: number; // >= 768px
+	sizeLg?: number; // >= 1024px
 
-	/** Activa tamaño fluido con clamp(min, vw, max) */
-	fluid?: boolean; // false por defecto
-	fluidMin?: number; // px, p.ej. 72
-	fluidMax?: number; // px, p.ej. 144
-	fluidViewport?: number; // número para vw, p.ej. 12 => 12vw
+	/** Enables fluid sizing with clamp(min, vw, max) */
+	fluid?: boolean; // false by default
+	fluidMin?: number; // px, e.g. 72
+	fluidMax?: number; // px, e.g. 144
+	fluidViewport?: number; // number used as vw, e.g. 12 => 12vw
 
-	/** Borde y sombra */
-	border?: boolean; // true por defecto
-	ringWidth?: number; // px, por defecto 2
+	/** Border and shadow */
+	border?: boolean; // true by default
+	ringWidth?: number; // px, defaults to 2
 
-	/** Si quieres que sea un link */
+	/** Renders the image as a link */
 	href?: string;
 	newTab?: boolean;
 }
@@ -74,7 +74,7 @@ const target = newTab ? '_blank' : undefined;
 		box-shadow: var(--shadow-md, 0 4px 10px rgba(0, 0, 0, 0.08));
 	}
 
-	/* Borde adaptable a tema */
+	/* Theme-aware border */
 	.avatar.has-border {
 		border: var(--ring) solid var(--avatar-ring);
 	}
@@ -90,7 +90,7 @@ const target = newTab ? '_blank' : undefined;
 		display: block;
 	}
 
-	/* Efecto hover: imagen superior se desvanece/ aparece */
+	/* Hover effect: top image fades in */
 	.stack {
 		position: relative;
 		inline-size: 100%;
@@ -107,7 +107,7 @@ const target = newTab ? '_blank' : undefined;
 		opacity: 1;
 	}
 
-	/* Reduced motion: evita animaciones */
+	/* Reduced motion: skip animations */
 	@media (prefers-reduced-motion: reduce) {
 		.avatar,
 		.img-hover {
@@ -115,7 +115,7 @@ const target = newTab ? '_blank' : undefined;
 		}
 	}
 
-	/* Responsivo por breakpoints: se asignan variables si existen */
+	/* Responsive: variables are assigned per breakpoint if present */
 	@media (min-width: 480px) {
 		.avatar[data-size-sm] {
 			--size: attr(data-size-sm px);
@@ -132,12 +132,12 @@ const target = newTab ? '_blank' : undefined;
 		}
 	}
 
-	/* Tamaño fluido con clamp(): si lleva data-fluid, ignora los fijos */
+	/* Fluid size with clamp(): data-fluid ignores the fixed sizes */
 	.avatar[data-fluid='true'] {
 		--size: clamp(var(--min, 72px), var(--vw, 12vw), var(--max, 144px));
 	}
 
-	/* Enlaces: foco accesible */
+	/* Links: accessible focus */
 	.avatar.is-link {
 		outline: none;
 	}

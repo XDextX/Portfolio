@@ -26,7 +26,7 @@ export const LEVEL_PCT: Record<TechLevel, number> = {
 	beginner: 25,
 };
 
-/** Color de la barra y del punto: saturado, es un elemento gráfico, no texto. */
+/** Bar and dot colour: saturated, since it is a graphic element, not text. */
 export const LEVEL_COLOR: Record<TechLevel, string> = {
 	advanced:     'var(--clr-advanced, #22c55e)',
 	intermediate: 'var(--clr-intermediate, #3b82f6)',
@@ -34,8 +34,8 @@ export const LEVEL_COLOR: Record<TechLevel, string> = {
 };
 
 /**
- * Color del TEXTO del nivel. Los tonos de barra dan 1.7-3.0:1 sobre crema y
- * son ilegibles, asi que el tema claro define variantes oscuras en --clr-*-text.
+ * Level TEXT colour. The bar tones give 1.7-3.0:1 on cream and are
+ * unreadable, so the light theme defines darker variants in --clr-*-text.
  */
 export const LEVEL_TEXT_COLOR: Record<TechLevel, string> = {
 	advanced:     'var(--clr-advanced-text, var(--clr-advanced))',

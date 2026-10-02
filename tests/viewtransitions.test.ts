@@ -30,8 +30,8 @@ describe('view transitions: client scripts must be re-bindable', () => {
     });
 
     it('no component binds listeners to document.currentScript', () => {
-        // currentScript apunta al nodo viejo tras un swap: nunca debe usarse para
-        // capturar un contenedor que el router va a reemplazar.
+        // currentScript points at the stale node after a swap: never use it to
+        // capture a container the router is going to replace.
         for (const name of components) {
             const src = read('src', 'components', name);
             expect(src, name).not.toContain('currentScript');
@@ -44,7 +44,7 @@ describe('view transitions: element names match across routes', () => {
         const card = read('src', 'components', 'ProjectCard.astro');
         const detail = read('src', 'pages', 'proyectos', '[name].astro');
 
-        // Mismo nombre en origen y destino es lo que hace que la card " viaje".
+        // Matching the name in source and destination is what makes the card " travel".
         expect(card).toContain('p-${repo.id}-title');
         expect(detail).toContain('p-${repo.id}-title');
     });
