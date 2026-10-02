@@ -1,0 +1,55 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import { applyLocale } from '@utils/locale';
+import { t } from '@i18n/index';
+
+const locale = applyLocale(Astro);
+---
+
+<BaseLayout title={`${t('notFound.title')} - Portfolio`} description={t('notFound.message')} locale={locale}>
+	<section class='wrap notfound'>
+		<p class='code' aria-hidden='true'>404</p>
+		<h1 class='title'>{t('notFound.title')}</h1>
+		<p class='message'>{t('notFound.message')}</p>
+		<a class='btn btn--primary' href='/'>{t('notFound.cta')}</a>
+	</section>
+</BaseLayout>
+
+<style>
+	.notfound {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+		min-height: 60vh;
+		justify-content: center;
+		text-align: center;
+		padding-block: 3rem;
+	}
+
+	.code {
+		font-size: clamp(4rem, 18vw, 9rem);
+		font-weight: 800;
+		line-height: 1;
+		color: var(--accent-text);
+		margin: 0;
+	}
+
+	.title {
+		font-size: var(--fs-2xl);
+		font-weight: 700;
+		color: var(--text-color);
+		margin: 0;
+	}
+
+	.message {
+		color: var(--text-secondary);
+		max-width: 42ch;
+	}
+
+	.btn--primary {
+		background: var(--accent-surface);
+		border: 1px solid var(--accent-surface);
+		color: #fff;
+	}
+</style>
