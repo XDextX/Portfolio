@@ -21,14 +21,15 @@ const locationLabel = lang === 'es' ? 'Ubicación' : 'Location';
 	)}
 
 	<div class='about-grid'>
-		<!-- Avatar -->
+		<!-- Identity mark. The artwork is an opaque white square logo, so it is
+		     presented as a square on a field rather than cropped into a circle
+		     and framed like a portrait photo. -->
 		<div class='about-avatar'>
 			<AvatarCircle
 				src={ABOUT.avatar}
 				alt={ABOUT.name}
 				size='100%'
-				border
-				ringWidth={3}
+				shape='square'
 			/>
 		</div>
 

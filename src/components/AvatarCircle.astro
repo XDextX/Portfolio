@@ -34,11 +34,18 @@ interface Props {
 	/** Fluid step, read as vw: 12 means 12vw. @default 12 */
 	fluidViewport?: number;
 
-	/** Draws the ring around the image. @default true */
+	/** Draws a ring around the image. Off by default: see the note below. */
 	border?: boolean;
 
 	/** Ring width in px. @default 2 */
 	ringWidth?: number;
+
+	/**
+	 * Silhouette. `'circle'` suits a portrait; `'square'` suits a logo or any
+	 * artwork with hard diagonal edges that a circular crop would cut.
+	 * @default 'circle'
+	 */
+	shape?: 'circle' | 'square';
 
 	/** Renders the image as a link */
 	href?: string;
@@ -59,8 +66,9 @@ const {
 	fluidMin = 72,
 	fluidMax = 144,
 	fluidViewport = 12,
-	border = true,
+	border = false,
 	ringWidth = 2,
+	shape = 'circle',
 	href,
 	newTab = false,
 } = Astro.props;
@@ -69,6 +77,7 @@ const isDecorative = !alt || alt.trim() === '';
 const Wrapper = href ? 'a' : 'div';
 const rel = newTab ? 'noopener noreferrer' : undefined;
 const target = newTab ? '_blank' : undefined;
+const isSquare = shape === 'square';
 
 // Breakpoint sizes ride along as custom properties rather than data attributes.
 // The old markup emitted data-size-* and read them with attr(data-size-sm px),
@@ -82,28 +91,32 @@ const px = (n: number | undefined) => (n === undefined ? undefined : `${n}px`);
 		position: relative;
 		inline-size: var(--size);
 		block-size: var(--size);
-		border-radius: 50%;
 		overflow: hidden;
 		display: inline-grid;
 		place-items: center;
-		box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.06));
-		transition:
-			transform var(--dur, 200ms) var(--ease, cubic-bezier(0.2, 0.8, 0.2, 1)),
-			box-shadow var(--dur, 200ms) var(--ease, cubic-bezier(0.2, 0.8, 0.2, 1));
-		will-change: transform;
-	}
-	.avatar:hover {
-		transform: translateY(-1px);
-		box-shadow: var(--shadow-md, 0 4px 10px rgba(0, 0, 0, 0.08));
+		transition: box-shadow var(--dur) var(--ease);
 	}
 
-	/* Theme-aware border. --avatar-ring already resolves per theme (it is
-	   aliased to --color-border, which both themes redefine), so no dark-mode
-	   override is needed here — that block referenced an undefined token and
-	   discarded the whole `border` shorthand. The fallback keeps the ring if
-	   --avatar-ring is ever removed from the token sheet. */
+	/* The ring is opt-in now. It used to be on by default, which framed the
+	   crop with a second outline drawn in --color-border — the same token every
+	   card border uses, so it said nothing. On a circular crop it was a circle
+	   inside a circle. */
 	.avatar.has-border {
 		border: var(--ring) solid var(--avatar-ring, var(--color-border));
+	}
+
+	.avatar.is-circle {
+		border-radius: 50%;
+	}
+
+	/* A square mark on a field. The artwork used here is an opaque white square
+	   (no transparency in the PNG), so on the near-white sheet it would have no
+	   edge at all; the field gives the tile a boundary without inventing a ring.
+	   This reuses the three-step light ramp: page, sheet, and now the tile. */
+	.avatar.is-square {
+		border-radius: var(--radius-md);
+		background: var(--neutral-100);
+		border: 1px solid var(--neutral-200);
 	}
 
 	.img,
@@ -129,6 +142,14 @@ const px = (n: number | undefined) => (n === undefined ? undefined : `${n}px`);
 	}
 	.avatar:hover .img-hover {
 		opacity: 1;
+	}
+
+	/* A link still responds, because a link that does not acknowledge hover is
+	   hard to aim at. A plain image does not: the lift this used to apply
+	   unconditionally was decoration on a static mark, and will-change:
+	   transform kept a compositing layer alive for every avatar forever. */
+	.avatar.is-link:hover {
+		box-shadow: var(--shadow-md);
 	}
 
 	/* Reduced motion: skip animations */
@@ -176,7 +197,12 @@ const px = (n: number | undefined) => (n === undefined ? undefined : `${n}px`);
 </style>
 
 <Wrapper
-	class:list={['avatar', border && 'has-border', href && 'is-link']}
+	class:list={[
+		'avatar',
+		isSquare ? 'is-square' : 'is-circle',
+		border && 'has-border',
+		href && 'is-link',
+	]}
 	href={href}
 	target={target}
 	rel={rel}
