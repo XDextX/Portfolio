@@ -6,8 +6,24 @@ Estado de trabajo actual. Solo lo que sigue vigente. Máximo 50 líneas.
 
 ## Estado (2026-10-01)
 Rama `main`. Build verde, `npm test` 31/31 (5 archivos), Playwright 1/1.
-7 commits locales, nada pusheado. `AGENTS.md`, `Memory.md`, `.gitignore` y `opencode.json`
-tienen cambios SIN commitear.
+10 commits locales, nada pusheado. Hay cambios SIN commitear en `AGENTS.md`, `Memory.md`,
+comentarios de `src/`, `i18n/`, `tests/`, `public/styles/` y el borrado de `.github/copilot-instructions.md`.
+
+## Regla de idioma (del usuario)
+- `AGENTS.md` **debe estar en inglés**. No reintroducir español ahí.
+- `Memory.md` queda a mi discreción — el usuario lo dejó explícitamente.
+- Código, comentarios y JSDoc en inglés. Contenido del sitio en español a propósito
+  (`es.json`, `ABOUT.bio.es`, strings visibles como `'Ver más'`): NO traducir.
+
+## Hecho — sesión 4: idioma, MCP y contraste
+- Comentarios y JSDoc traducidos a inglés en 19 archivos. **No** se tocó contenido bilingüe:
+  `i18n/locales/es.json`, `ABOUT.bio.es` y strings visibles siguen en español a propósito.
+- Borrado `.github/copilot-instructions.md` (77 líneas, desactualizado: citaba `Resume.astro`
+  en `pages/`, y `npm run lint`/format que no funcionan). Sus ideas útiles se movieron a AGENTS.md.
+- `.gitignore` tiene `.github/` → `grep` NO ve esa carpeta. Usar `Get-ChildItem -Force` para buscarla.
+- `opencode.json` simplificado a `npx chrome-devtools-mcp@latest` sin flags; Chrome instalado lo encuentra solo.
+- Contraste: 0 fallos WCAG AA en ambos temas (261 elementos). Token partido en
+  `--accent-text` / `--accent-surface` / `--clr-*-text`.
 
 ## Husky
 - `husky@9.1.7` + `"prepare": "husky"`. `.husky/pre-commit` corre `npm test` y aborta si falla.
