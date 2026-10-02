@@ -13,6 +13,21 @@ const personJsonLd = withJsonLd ? JsonLdAbout : null;
 const cvLabel     = lang === 'es' ? 'Descargar CV' : 'Download CV';
 const actionsLabel = lang === 'es' ? 'Acciones' : 'Actions';
 const locationLabel = lang === 'es' ? 'Ubicación' : 'Location';
+
+/*
+ * Two markup decisions, kept here rather than in the template: Astro emits
+ * anything in the template body verbatim, so a note written there reaches every
+ * visitor as an HTML comment.
+ *
+ * Identity mark. The artwork is an opaque white square logo, so it is
+ * presented as a square on a field rather than cropped into a circle and
+ * framed like a portrait photo.
+ *
+ * The middle dot that used to sit between the job title and the location was
+ * aria-hidden, so assistive tech heard "Full-Stack DeveloperCosta Rica" with no
+ * separator at all, while sighted readers saw a bullet — a template tell that
+ * added a pause and told nobody anything. The pin already marks the location.
+ */
 ---
 
 <section class='section' id='About' aria-labelledby='about-title'>
@@ -21,9 +36,6 @@ const locationLabel = lang === 'es' ? 'Ubicación' : 'Location';
 	)}
 
 	<div class='about-grid'>
-		<!-- Identity mark. The artwork is an opaque white square logo, so it is
-		     presented as a square on a field rather than cropped into a circle
-		     and framed like a portrait photo. -->
 		<div class='about-avatar'>
 			<AvatarCircle
 				src={ABOUT.avatar}
@@ -39,7 +51,6 @@ const locationLabel = lang === 'es' ? 'Ubicación' : 'Location';
 				<h1 id='about-title' class='about-name'>{ABOUT.name}</h1>
 				<div class='about-sub'>
 					<span class='about-job'>{ABOUT.title}</span>
-					<span class='about-sep' aria-hidden='true'>·</span>
 					<span class='about-location' aria-label={locationLabel}>
 						<svg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z'/><circle cx='12' cy='10' r='3'/></svg>
 						{ABOUT.location}
@@ -54,7 +65,6 @@ const locationLabel = lang === 'es' ? 'Ubicación' : 'Location';
 					class='btn-cv'
 					href={ABOUT.resumeUrl}
 					download
-					rel='noopener'
 				>
 					<svg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/><polyline points='7 10 12 15 17 10'/><line x1='12' y1='15' x2='12' y2='3'/></svg>
 					{cvLabel}
@@ -104,12 +114,21 @@ const locationLabel = lang === 'es' ? 'Ubicación' : 'Location';
 		gap: 0.4rem;
 	}
 
+	/* Fluid between the two sizes that actually work. A fixed --fs-4xl measured
+	   623px against a 780px column, so it holds one line on a desktop — but the
+	   same string in a 273px phone column needs three lines at 52px where 40px
+	   gives two. The clamp lands on 40px at 360px wide and reaches --fs-4xl by
+	   about 958px, so neither end pays for the other.
+
+	   Weight was 800, which is outside the 100-700 range the variable font
+	   declares: it was being clamped to 700 while the CSS claimed otherwise. */
 	.about-name {
-		font-size: var(--fs-3xl, 2rem);
-		font-weight: 800;
+		font-size: clamp(2.5rem, 2rem + 2.2vw, var(--fs-4xl));
+		font-weight: 700;
 		color: var(--accent-text);
 		margin: 0;
-		line-height: 1.2;
+		line-height: var(--lh-tight);
+		letter-spacing: -0.01em;
 	}
 
 	.about-sub {
@@ -125,11 +144,6 @@ const locationLabel = lang === 'es' ? 'Ubicación' : 'Location';
 		color: var(--text-color);
 	}
 
-	.about-sep {
-		color: var(--neutral-600);
-		opacity: 0.5;
-	}
-
 	.about-location {
 		display: inline-flex;
 		align-items: center;
@@ -138,10 +152,15 @@ const locationLabel = lang === 'es' ? 'Ubicación' : 'Location';
 		color: var(--neutral-600);
 	}
 
+	/* Capped because the 180px avatar column plus the gap leave the text a
+	   column that grows with the viewport: measured at 780px and 98 characters
+	   per line from 1280px up, against 73 at 958px and 34 on a phone. Below
+	   60ch this is untouched, so the cap only ever applies on a wide screen. */
 	.about-bio {
 		font-size: var(--fs-base);
-		color: var(--neutral-600);
-		line-height: 1.7;
+		color: var(--text-secondary);
+		line-height: var(--lh-normal);
+		max-width: var(--measure);
 		margin: 0;
 	}
 
