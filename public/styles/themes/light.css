@@ -1,73 +1,77 @@
 /* Light theme — the base layer. dark.css overrides every token it needs when
-   data-theme="dark" is set, so this only needs the plain :root. */
+   data-theme="dark" is set, so this only needs the plain :root.
+
+   The canvas is a COOL neutral, not the warm cream this used to use
+   (#F4EFD9 body / #EDE8D0 sheet). Cream plus a warm gold is the most
+   recognisable "generated" palette there is, and it was cancelling out the
+   navy-and-gold as a deliberate pair. Cooling the ground lets the brand be the
+   only chroma on the page: three steps of light, one accent. */
 :root {
 
     /* Backgrounds */
-    --bg: #F4EFD9;
-    --bg-color: #F4EFD9;
+    --bg: #E4E8EE;          /* behind the sheet */
+    --bg-color: #E4E8EE;
+    --main-bg: #FBFCFD;     /* the sheet itself */
 
     /* Foreground / text */
-    --fg: #1E1E2F;
-    --text-color: #1E1E2F;
-    /* <- ensures .chip has dark text in light */
-    --text-main: #1E1E2F;
-    --text-secondary: #4B5070;
+    --fg: #16202C;
+    --text-color: #16202C;
+    --text-main: #16202C;
+    --text-secondary: #566274;
     --text-inverse: #FFFFFF;
 
-    /* Brand */
+    /* Brand — deliberately unchanged. This is the identity; only the ground
+       moved. */
     --brand-text: var(--brand-primary);
     --color-brand: var(--brand-primary);
     --color-brand-600: var(--brand-primary-light);
     --color-brand-700: var(--brand-primary);
 
-    /* Neutral scale */
+    /* Neutral scale — cool, hue ~215 */
     --neutral-0: #FFFFFF;
-    --neutral-50: #F4EFD9;
-    --neutral-100: #E8E2CC;
-    --neutral-200: #C3BBA8;
-    --neutral-600: #4B5070;
-    --neutral-800: #1E1E2F;
-    --neutral-900: #0D0D1A;
+    --neutral-50: #F4F6F9;
+    --neutral-100: #EAEEF3;
+    --neutral-200: #DCE2E9;
+    --neutral-600: #566274;
+    --neutral-800: #1B2634;
+    --neutral-900: #101822;
 
     /* Borders & surfaces */
-    --color-border: #C3BBA8;
+    --color-border: #DCE2E9;
     --card-background: #FFFFFF;
-    /* <- white background for .chip in light */
 
-    /* Accent legible on cream (#EDE8D0): 5.01:1 — passes AA.
-       The brand gold is reserved for surfaces. */
+    /* Accent legible on the sheet (#FBFCFD): 6.4:1 — passes AA.
+       The brand gold stays reserved for surfaces. */
     --accent-text: #7A5D10;
 
     /* Gold primary button with white text: 6.18:1 — passes AA. */
     --accent-surface: #7A5D10;
 
-    /* Error / alert text on cream: ~6.1:1 — passes AA. */
+    /* Error / alert text on the sheet: ~6.6:1 — passes AA. */
     --danger-color: #B3261E;
 
-    /* Skill levels darkened for cream: 5.76:1 (beginner), ~4.9:1
-       (intermediate and advanced). The originals (#F59E0B, #3B82F6,
-       #22C55E) give 1.7-3.0:1 and are unreadable in the light theme. */
+    /* Skill levels. Darkened from the raw tones, which give 1.7-3.0:1 as text
+       on a light ground and are unreadable there. */
     --clr-beginner: #92400E;
     --clr-intermediate: #2C5FB8;
     --clr-advanced: #1F7A38;
 
-    /* Level text (12px, weight 600): needs 4.5:1, where 3:1 is enough for
-       the bars. The bar tones land between 4.3 and 4.5. */
+    /* Level text (12px, weight 600): needs 4.5:1. */
     --clr-beginner-text: #7A3208;
     --clr-intermediate-text: #1F4494;
     --clr-advanced-text: #14572A;
-
-    /* Main container — light cream instead of the dark blue */
-    --main-bg: #EDE8D0;
 
     color-scheme: light;
 }
 
 /* Component rules for the light theme.
    Single `:root` selector, not `:root:not([data-theme]), :root[data-theme="light"]`.
-   dark.css is linked after this file and covers the same seven selectors, so
+   dark.css is linked after this file and covers the same selectors, so
    when data-theme="dark" it overrides these anyway. The extra selector only
-   duplicated every block for no behavioural gain. */
+   duplicated every block for no behavioural gain.
+
+   .pill is deliberately absent: it renders zero elements, and the seven rules
+   that used to maintain it in both themes were pure weight. */
 
 /* ── Body ── */
 :root body {
@@ -78,21 +82,14 @@
 /* ── Main container ── */
 :root main {
     background-color: var(--main-bg);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 8px 24px rgba(16, 24, 40, .06);
 }
 
 /* ── Cards ── */
 :root .card {
     background: var(--neutral-0);
     border-color: var(--neutral-200);
-    box-shadow: var(--shadow-md);
-}
-
-/* ── Pills / chips ── */
-:root .pill {
-    background: var(--neutral-100);
-    color: var(--neutral-800);
-    border-color: var(--neutral-200);
+    box-shadow: var(--shadow-sm);
 }
 
 /* ── Ghost button ── */

@@ -24,19 +24,27 @@
 /* Layout of the page shell.
    --color-border and --card-background are NOT redefined here: both themes
    own them (light.css / dark.css), and a hardcoded value here would win or
-   lose depending on bundle order. */
+   lose depending on bundle order.
+
+   The sheet is measured against --max-w with a real gutter, not a percentage.
+   `max-width: 80%` meant the measure changed with the viewport — a long line
+   at 1600px and a short one at 900px — so the same paragraph reflowed into a
+   different shape on every screen. min() with a clamp also keeps the page
+   from going edge to edge on a wide monitor, while still going full width on
+   a phone, where the gutter is dead weight. */
 main {
-    max-width: 80%;
-    margin: 20px auto;
+    max-width: min(100% - 2.5rem, var(--max-w));
+    margin: clamp(1rem, 4vw, 3rem) auto;
     background-color: var(--main-bg);
-    padding-block: 20px;
-    padding-inline: 5%;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    padding-block: clamp(1.5rem, 4vw, 4rem);
+    padding-inline: clamp(1.25rem, 4vw, 4rem);
+    border-radius: var(--radius-lg);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 480px) {
     main {
-        max-width: 90%;
+        max-width: 100%;
+        margin: 0;
+        border-radius: 0;
     }
 }

@@ -1,18 +1,32 @@
 :root[data-theme="dark"] {
-    --bg: #151520;
-    --fg: #F4EFD9;
 
-    --text-main: #F4EFD9;
-    --text-secondary: #C3BBA8;
-    --text-color: #F4EFD9;
-    /* <- fix: .chip uses this variable */
+    /* One hue, not two. The dark theme used to put a navy sheet (#243972) on
+       the page with grey-blue cards (#2a2f41), so the card surfaces read as a
+       different colour system fighting the brand rather than as steps of the
+       same one. Everything below is now a step of the brand navy. */
+
+    /* Behind the sheet — a step deeper so the sheet edge still reads */
+    --bg: #16233F;
+
+    /* The sheet: the brand navy, unchanged. A navy page is a real choice and
+       is not the near-black-plus-acid-accent default. */
+    --main-bg: #243972;
+
+    /* Raised surfaces: one step up from the sheet, so cards sit forward */
+    --card-background: #2B4372;
+
+    /* Text */
+    --text-main: #F5F7FA;
+    --text-secondary: #A9B6CD;
+    --text-color: #F5F7FA;
+    --fg: #F5F7FA;
 
     --brand-text: var(--brand-accent);
 
-    /* On a dark background the brand gold already gives 6.66:1 — use as is. */
+    /* On navy the brand gold already gives 6.66:1 — use as is. */
     --accent-text: var(--brand-accent);
 
-    /* Error / alert text on the dark blue main background. */
+    /* Error / alert text on the navy field. */
     --danger-color: #F2B8B5;
 
     /* The bar tones do not work as text on dark (1.2-1.5:1).
@@ -21,20 +35,17 @@
     --clr-intermediate-text: #7DA9F5;
     --clr-advanced-text: #6EE7A8;
 
-    --neutral-0: #1E1E2F;
-    --neutral-50: #24263a;
-    --neutral-100: #2a2f41;
-    --neutral-200: #3a3b52;
-    --neutral-600: #C3BBA8;
-    --neutral-800: #F4EFD9;
+    /* Neutral scale — navy steps, so a chip, a track and a card all belong to
+       the same hue. */
+    --neutral-0: #16233F;
+    --neutral-50: #1F3059;
+    --neutral-100: #2B4372;
+    --neutral-200: #3A578F;
+    --neutral-600: #A9B6CD;
+    --neutral-800: #E8EDF5;
     --neutral-900: #FFFFFF;
 
-    --card-background: #2a2f41;
-    /* <- fix: .chip background */
-    --nested-card-background: #2e3144;
-    --color-border: #3a3b52;
-
-    --main-bg: var(--brand-primary);
+    --color-border: #3A578F;
 
     color-scheme: dark;
 }
@@ -46,17 +57,11 @@
 
 :root[data-theme="dark"] main {
     background-color: var(--main-bg);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .35);
 }
 
 :root[data-theme="dark"] .card {
-    background: var(--neutral-50);
-    border-color: var(--neutral-200);
-}
-
-:root[data-theme="dark"] .pill {
     background: var(--neutral-100);
-    color: var(--neutral-900);
     border-color: var(--neutral-200);
 }
 
