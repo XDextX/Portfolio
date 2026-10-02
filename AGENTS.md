@@ -243,6 +243,41 @@ filter it also picks up `e2e/about.spec.ts` and fails on a missing Playwright ru
 | `tests/notfound.test.ts` | the `/404` redirect target exists and its keys are in both locales |
 | `tests/about.test.ts`, `tests/aboutsection.test.ts`, `tests/github-helpers.test.ts` | data invariants and GitHub helper behaviour |
 
+## Visual language
+
+This is a deliberate identity, not a starting point. Read this before changing any colour,
+font or radius.
+
+- **The canvas is cool. Brand navy and gold are the only chroma.** The light ground is a cool
+  grey ramp (hue ~215: `--bg` behind, `--main-bg` the sheet, `--card-background` white). Do not
+  reintroduce warm neutrals — the site ran on a cream canvas (`#F4EFD9` / `#EDE8D0`) with a warm
+  gold accent, which is the single most recognisable generated palette and it cancelled the
+  navy-and-gold as a deliberate pair. Cooling the ground is what makes the brand read as a choice.
+- **The dark theme is one hue.** The sheet is the brand navy (`--main-bg`), cards are one step up
+  (`--card-background`), and the neutral scale is navy steps. It previously put a navy sheet on
+  the page with grey-blue (`#2a2f41`) cards, so surfaces read as two systems fighting. Never add a
+  surface that is not a step of the brand navy.
+- **`--accent-surface` stays dark in both themes**, because three components hardcode `color: #fff`
+  on the primary button. A light gold fill would put white on cream. If you fix the hardcoded
+  `#fff`, you can revisit this.
+- **Typography is self-hosted from `public/fonts`, two families, no third-party request.**
+  IBM Plex Sans (variable, 100–700) for everything; IBM Plex Mono (400/600) for code and small
+  data only. Do not add a `<link>` to Google Fonts or any font CDN. `05-fonts.css` must be linked
+  before the other stylesheets or the first paint uses the fallback and reflows a frame later.
+- **Plex Sans is an engineered grotesque on purpose.** The previous `--font-sans` was a bare
+  system stack, so `document.fonts.size === 0` and every visitor saw whatever their OS shipped.
+  Do not go back to a system stack; refine the tokens instead.
+- **Radius follows size class, not taste.** `--radius-xs` for chips and tags, `--radius-sm` for
+  inputs, `--radius-md` for buttons and cards, `--radius-lg` for the page sheet, `--radius-pill`
+  only for the view-toggle group. One radius everywhere is what makes a layout read as a template.
+- **Type scale is 1.25 off a 16px base.** The old steps were 1.167 apart, so `xs`/`sm`/`base`/`lg`
+  were indistinguishable. Adding a step means adding a token, not nudging an existing one.
+- **Body prose is capped with `--measure` / `--measure-wide`.** `.about-bio` once ran past 110
+  characters per line because nothing constrained it.
+- **The page sheet is `min(100% - gutter, --max-w)`, never a percentage.** `max-width: 80%` made
+  the measure change with the viewport, so the same paragraph had a different shape on every
+  screen.
+
 ## Never document sensitive data
 
 Do not write into `AGENTS.md`, `Memory.md`, `README.md`, commit messages or any other repo document:
