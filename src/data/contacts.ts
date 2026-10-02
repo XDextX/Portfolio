@@ -7,7 +7,9 @@ export const CONTACTS: ContactItem[] = [
         value: "germonram@gmail.com",
         href: "mailto:germonram@gmail.com",
         kind: "email",
-        icon: "icons/gmail.svg"
+        // Root-absolute: a relative path resolves against the current route,
+        // so it 404s on any nested page such as /proyectos/<name>.
+        icon: "/icons/gmail.svg"
     },
     {
         id: "github",
@@ -15,7 +17,7 @@ export const CONTACTS: ContactItem[] = [
         value: "github.com/XDextX",
         href: "https://github.com/XDextX",
         kind: "github",
-        icon: "icons/github.svg",
+        icon: "/icons/github.svg",
         sameAs: true
     },
     {
@@ -24,7 +26,7 @@ export const CONTACTS: ContactItem[] = [
         value: "linkedin.com/in/german-montero-ramirez/",
         href: "https://www.linkedin.com/in/german-montero-ramirez/",
         kind: "linkedin",
-        icon: "icons/linkedin.svg",
+        icon: "/icons/linkedin.svg",
         sameAs: true
     },
 ];

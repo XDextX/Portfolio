@@ -6,17 +6,19 @@ import { t } from '@i18n/index';
 const titleId = 'contact-title';
 const title = t('contact.title');
 const tagline = t('contact.tagline');
+
+// No itemscope here on purpose. The canonical structured data for this person
+// is the JSON-LD Person in AboutSection; a second Person via microdata on the
+// same page read as two entities for one person. The name also used to be
+// hardcoded in this template, duplicating ABOUT.name.
+// Every string below comes from t(), so this component needs no locale prop.
 ---
 
 <section
 	aria-labelledby={titleId}
-	itemscope
-	itemtype='https://schema.org/Person'
 	id='Contact'
 	class='section'
 >
-	<meta itemprop='name' content='German Montero Ramirez' />
-
 	<div class='contact-header'>
 		<h2 id={titleId}>{title}</h2>
 		<p class='tagline'>{tagline}</p>

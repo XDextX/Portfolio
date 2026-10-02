@@ -41,8 +41,10 @@ export const JsonLdAbout = {
     url: "https://portfolio-dext.vercel.app",
     image: `${ABOUT.avatar}`,
     // Publishable profiles (excluding mailto:) feed sameAs / rel=me.
+    // `sameAs` on the contact is the flag that marks a profile as publishable,
+    // so it is read here instead of being re-derived from `kind`.
     sameAs: ABOUT.socials
-        .filter((s) => s.kind !== "email")
+        .filter((s) => s.sameAs)
         .map((s) => s.href),
     ...(emailContact ? { email: emailContact.value } : {}),
     address: { "@type": "PostalAddress", addressCountry: "Costa Rica" }

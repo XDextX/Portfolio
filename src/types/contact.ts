@@ -6,6 +6,6 @@ export type ContactItem = {
     value: string;          // visible text (e.g. germonram@gmail.com)
     href: string;           // "mailto:...", "https://...", "tel:+506..."
     kind: ContactKind;
-    icon?: string;          // path to an svg in /public/icons
-    sameAs?: boolean;       // marks links for JSON-LD / rel=me
+    icon?: string;          // root-absolute path to an svg in /public/icons
+    sameAs?: boolean;       // publishable profile: feeds JSON-LD sameAs / rel=me
 };

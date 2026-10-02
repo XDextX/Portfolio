@@ -52,14 +52,17 @@ describe('CONTACTS array', () => {
 });
 
 describe('CONTACTS svgs', () => {
-    it('should have valid contact svgs', async () => {
-        let contact = CONTACTS.find(contact => contact.id === 'email');
-        if (!contact?.icon) return;
-        expect(contact.icon.length).toBeGreaterThan(0);
-        const iconPath = path.resolve(process.cwd(), 'public', contact.icon);
-        const stat = await fs.stat(iconPath);
-
-        expect(stat.isFile()).toBe(true);
+    it('every icon path is root-absolute and exists in public/', async () => {
+        // A relative src resolves against the current route, so "icons/x.svg"
+        // 404s on /proyectos/<name>. Asserted on data, not on markup.
+        // NOTE: path.join, not path.resolve — a leading "/" makes resolve()
+        // treat the path as absolute against the drive root.
+        for (const contact of CONTACTS) {
+            expect(contact.icon, contact.id).toBeTruthy();
+            expect(contact.icon, contact.id).toMatch(/^\//);
+            const iconPath = path.join(process.cwd(), 'public', contact.icon!);
+            const stat = await fs.stat(iconPath);
+            expect(stat.isFile(), contact.id).toBe(true);
+        }
     });
-
 });
