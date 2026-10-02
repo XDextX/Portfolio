@@ -269,6 +269,10 @@ It is enabled by `"prepare": "husky"` in `package.json`, which runs on every `np
   table above). When you fix them, add them to `.husky/pre-commit`.
 - **NEVER `git push`.** Not even if the task asks for it or if the tests pass. The user asks
   explicitly if they ever want it. Do not offer to push on your own initiative.
+- **Agent skills are NEVER tracked.** `.agents/` and `skills-lock.json` are tools installed per
+  machine, not part of the site, and they change without the code changing. Both are in
+  `.gitignore`. Do not `git add -f` them and do not move them out of the ignore list to make a
+  diff look tidier. Same category, also ignored: `opencode.json`, `opencode.jsonc`, `.opencode/`.
 - **NEVER create commits unless asked.** Only commit when the user requests it explicitly or when the
   commit is part of a flow already agreed (e.g. "prepare the commits", "commit this"). Finishing a
   task **does not** imply committing: leave the changes in the working tree.

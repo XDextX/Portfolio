@@ -26,6 +26,13 @@ pnpm-debug.log*
 # opencode: config por maquina (rutas de navegador, providers locales)
 opencode.json
 opencode.jsonc
+.opencode/
+
+# Skills del agente: NUNCA se versionan. Son herramientas instaladas por
+# maquina, no parte del sitio, y cambian sin que cambie el codigo.
+# Sin esto aparecen como ?? en cada git status y un `git add .` las sube.
+.agents/
+skills-lock.json
 
 # Memory.md: estado de trabajo del agente, personal y efimero. No se versiona.
 Memory.md
