@@ -53,6 +53,21 @@ const tagline = t('contact.tagline');
 		display: flex;
 		flex-direction: row;
 		flex-wrap: wrap;
+		/* Without a gap the wrapped cards shared an edge: measured as
+		   `gap: normal` on the list, which is how EMAIL and GITHUB ended up
+		   touching in the render. */
+		gap: var(--sp-3);
 		max-width: unset;
+	}
+
+	/* The list is a flex row, so each <li> is a flex item and its automatic
+	   minimum size is its min-content width. The contact value is
+	   white-space: nowrap so that it can ellipsize, which means its min-content
+	   width is the whole address — the item then refuses to shrink and pushes
+	   past the container. Measured: 84px of horizontal scroll at a 360px
+	   viewport, 30px at 414px. Zeroing the minimum lets the card shrink and the
+	   ellipsis finally do its job. */
+	.contact-list > li {
+		min-width: 0;
 	}
 </style>

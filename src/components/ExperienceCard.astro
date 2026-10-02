@@ -5,15 +5,30 @@ export interface Props {
 	period: string;
 	location?: string;
 	bullets: string[];
+	/** Disambiguates the heading id when two entries share a company. */
+	idSuffix?: string;
 }
 
-const { role, company, period, location, bullets } = Astro.props;
+const { role, company, period, location, bullets, idSuffix } = Astro.props;
+
+// The heading id used to be `${company}-title`, which for a real company name
+// means spaces and dots inside an id: "SD Misiones de Costa Rica S. A.-title".
+// That is not addressable by a CSS selector or a fragment, and two entries with
+// the same company would collide on it. Slugged here so aria-labelledby points
+// at something a browser can actually resolve.
+const slug = company
+	.toLowerCase()
+	.normalize('NFD')
+	.replace(/[̀-ͯ]/g, '')
+	.replace(/[^a-z0-9]+/g, '-')
+	.replace(/^-+|-+$/g, '');
+const headingId = `exp-${slug}${idSuffix ? `-${idSuffix}` : ''}-title`;
 ---
 
-<article class='exp-card' aria-labelledby={`${company}-title`}>
+<article class='exp-card' aria-labelledby={headingId}>
 	<header class='exp-header'>
 		<div class='exp-main'>
-			<h3 class='exp-role' id={`${company}-title`}>{role}</h3>
+			<h3 class='exp-role' id={headingId}>{role}</h3>
 			<span class='exp-company'>{company}</span>
 		</div>
 
@@ -45,12 +60,14 @@ const { role, company, period, location, bullets } = Astro.props;
 		background: var(--card-background);
 		transition:
 			border-color var(--dur) var(--ease),
-			transform var(--dur) var(--ease);
+			box-shadow var(--dur) var(--ease);
 	}
 
+	/* Hover moves the border, not the box, like every other card on the page.
+	   The gold left spine stays put: it is the one structural device here, and
+	   it marks the entry rather than reacting to the pointer. */
 	.exp-card:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+		box-shadow: var(--shadow-md);
 	}
 
 	/* Header */
@@ -91,15 +108,16 @@ const { role, company, period, location, bullets } = Astro.props;
 		flex-shrink: 0;
 	}
 
+	/* A date range is not a label, so it does not get a lozenge. The pill was
+	   also the least legible thing on the card: --neutral-200 against the sheet
+	   is 1.27:1, so the tag was a faint outline wrapped around the one piece of
+	   information nobody looks for. As plain text in --text-secondary it sits at
+	   roughly 6:1, which is both quieter and easier to read. */
 	.exp-period {
-		font-size: var(--fs-xs);
-		font-weight: 700;
-		/* --text-secondary gives 4.1:1 on the pill; this darker grey reaches 6.4:1 */
-		color: var(--neutral-800);
+		font-size: var(--fs-sm);
+		font-weight: 600;
 		white-space: nowrap;
-		background: var(--neutral-200);
-		padding: 0.2rem 0.55rem;
-		border-radius: 999px;
+		color: var(--text-secondary);
 	}
 
 	.exp-location {

@@ -102,12 +102,16 @@ const error    = t('contact.actions.error');
 		background: var(--card-background);
 		transition:
 			border-color var(--dur) var(--ease),
-			transform var(--dur) var(--ease);
+			box-shadow var(--dur) var(--ease);
 	}
 
+	/* Hover moves the border, not the box — the same signal as the chips and
+	   the project cards, so hover means one thing on this page. Lifting the card
+	   on every pointer pass was decoration, and translating the element fought
+	   the shared theme transition on .card. */
 	.contact-card:hover {
 		border-color: var(--accent-text);
-		transform: translateY(-2px);
+		box-shadow: var(--shadow-md);
 	}
 
 	.contact-icon {
