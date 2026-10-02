@@ -22,6 +22,15 @@ const site      = 'https://portfolio-dext.vercel.app';
 const image     = `${site}/og-cover.png`;
 const canonical = `${site}${Astro.url.pathname}`;
 const htmlLang  = locale === 'es' ? 'es-CR' : 'en-US';
+
+/*
+ * Styles. 05-fonts.css must come first: @font-face has to be known before
+ * anything computes a line box, otherwise the first paint uses the fallback and
+ * the text reflows a frame later.
+ *
+ * The note sat in the template body, where Astro emits it verbatim, so all 181
+ * characters shipped with every page.
+ */
 ---
 
 <html lang={htmlLang}>
@@ -56,9 +65,6 @@ const htmlLang  = locale === 'es' ? 'es-CR' : 'en-US';
 	<!-- Preconnect -->
 	<link rel='preconnect' href='https://avatars.githubusercontent.com' />
 
-	<!-- Styles. 05-fonts.css must come first: @font-face has to be known before
-	     anything computes a line box, otherwise the first paint uses the
-	     fallback and the text reflows a frame later. -->
 	<link rel='stylesheet' href='/styles/00-tokens.css' />
 	<link rel='stylesheet' href='/styles/05-fonts.css' />
 	<link rel='stylesheet' href='/styles/01-base.css' />

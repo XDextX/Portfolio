@@ -72,6 +72,29 @@ function markupRegions(file: string): Region[] {
     return out;
 }
 
+/**
+ * The markup body as one string, so a comment can be matched whole.
+ *
+ * Measuring per line is the bug this guards against: a four-line note has a
+ * short first line, passes a per-line length check, and still ships 290
+ * characters to every visitor. Every occurrence of the block comment gets its
+ * own entry, because one note inside a repeated component renders many times.
+ */
+function markupComments(file: string): { line: number; body: string }[] {
+    const body = markupRegions(file)
+        .map((r) => r.text)
+        .join('\n');
+    const out: { line: number; body: string }[] = [];
+    const re = /<!--([\s\S]*?)-->/g;
+    let m: RegExpExecArray | null;
+
+    while ((m = re.exec(body)) !== null) {
+        out.push({ line: body.slice(0, m.index).split('\n').length, body: m[1].trim() });
+    }
+
+    return out;
+}
+
 describe('comments never leak into the markup', () => {
     it('no // line comment sits in the template body', () => {
         const offenders: string[] = [];
@@ -96,14 +119,18 @@ describe('comments never leak into the markup', () => {
 
     it('no HTML comment in the template is a prose note', () => {
         // Short labels such as <!-- Header --> are fine and intentional.
-        // Anything long is a note that leaked from the source.
+        // Anything long is a note that leaked from the source. The whole
+        // comment is measured, not its first line: a wrapped note keeps the
+        // opening line short and passes a per-line check while shipping the
+        // rest of itself to every visitor.
         const offenders: string[] = [];
 
         for (const file of ASTRO_FILES) {
-            for (const { line, text } of markupRegions(file)) {
-                if (!text.startsWith('<!--')) continue;
-                if (text.replace(/^<!--|-->$/g, '').trim().length > 90) {
-                    offenders.push(`${path.relative(ROOT, file)}:${line}  ${text.slice(0, 72)}`);
+            for (const { line, body } of markupComments(file)) {
+                if (body.length > 90) {
+                    offenders.push(
+                        `${path.relative(ROOT, file)}:${line}  ${body.length} chars  ${body.slice(0, 60)}`,
+                    );
                 }
             }
         }

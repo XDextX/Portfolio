@@ -8,6 +8,16 @@ export interface Props {
 	locale?: 'es' | 'en';
 }
 
+/*
+ * The bar repeats what the label beside it says in words, so it is hidden from
+ * assistive tech. It used to be a role="progressbar" with aria-valuenow, which
+ * made a reader announce "85 percent" and then say "Avanzado" again — a
+ * precision the data does not have, stated twice.
+ *
+ * The note lives here because Astro emits anything in the template body
+ * verbatim: this one was shipping 271 characters to every visitor.
+ */
+
 const { name, logo, level, locale = 'es' } = Astro.props;
 const fill      = LEVEL_FILL[level];
 const color     = LEVEL_COLOR[level];
@@ -18,10 +28,6 @@ const label     = levelLabelMap[locale][level];
 <li class='bar-row'>
 	<img src={logo} alt='' width='22' height='22' loading='lazy' />
 	<span class='bar-name'>{name}</span>
-	<!-- The bar repeats what the label beside it says in words, so it is hidden
-	     from assistive tech. It used to be a role="progressbar" with
-	     aria-valuenow, which made a reader announce "85 percent" and then say
-	     "Avanzado" again — a precision the data does not have, stated twice. -->
 	<div class='bar-track' aria-hidden='true'>
 		<div class='bar-fill' style={`--pct:${fill}%;--clr:${color}`} />
 	</div>
