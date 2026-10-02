@@ -1,42 +1,30 @@
-/* Semantic aliases — the base values come from 00-tokens.css */
+/* Semantic aliases over the tokens in 00-tokens.css.
+
+   Loaded by BaseLayout AFTER the <link> stylesheets, so it wins ties against
+   01-base.css. Anything both files set must live in exactly one place; see
+   AGENTS.md before adding a duplicate.
+
+   Only aliases with a real consumer live here. Fifteen others were removed:
+   --color-bg, --color-surface, --color-text-main, --color-text-secondary,
+   --color-text-light, --color-accent, --color-accent-2, --color-accent-dark,
+   --logo-blue, --logo-yellow, --background-color, --primary-color,
+   --primary-color-dark, --nested-card-background, --accent-color-darker.
+   Adding an alias "just in case" only hides the fact that nothing reads it. */
 :root {
-    /* Surfaces */
-    --color-bg: var(--neutral-dark);
-    --color-surface: #2E2F44;
-    --color-border: var(--neutral-mid);
-
-    /* Text aliases */
-    --color-text-main: var(--text-main);
-    --color-text-secondary: var(--text-secondary);
-    --color-text-light: var(--neutral-light);
-
-    /* Accent aliases */
-    --color-accent: var(--brand-accent);
-    --color-accent-2: var(--brand-primary-light);
-    --color-accent-dark: var(--brand-accent-dark);
-
-    /* Logo references */
-    --logo-blue: var(--brand-primary);
-    --logo-yellow: var(--brand-accent);
-
-    /* Legacy aliases */
-    --background-color: var(--neutral-dark);
-    --primary-color: var(--brand-primary);
-    --primary-color-dark: #1b2a59;
-
-    /* Cards */
-    --card-background: #2a2f41;
-    --nested-card-background: #2e3144;
-
-    /* Accent shortcuts */
     --accent-color: var(--brand-accent);
     --accent-color-dark: var(--brand-accent-dark);
-    --accent-color-darker: var(--brand-primary);
 
-    /* Main container background — overridden per theme */
-    --main-bg: var(--brand-primary);
+    /* Main container background.
+   NOT set here on purpose: both themes own it (light.css #EDE8D0, dark.css
+   var(--brand-primary)). This file is bundled and injected after the theme
+   <link>s, so a :root declaration here would win over them and the light
+   theme would render with the dark blue. */
 }
 
+/* Layout of the page shell.
+   --color-border and --card-background are NOT redefined here: both themes
+   own them (light.css / dark.css), and a hardcoded value here would win or
+   lose depending on bundle order. */
 main {
     max-width: 80%;
     margin: 20px auto;
@@ -45,42 +33,6 @@ main {
     padding-inline: 5%;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-/* Sections */
-
-/* Headings */
-
-h1 {
-    font-size: 2rem;
-}
-
-h3 {
-    font-size: 1.5rem;
-}
-
-h4 {
-    font-size: 1.2rem;
-}
-
-/* Listas */
-ul {
-    list-style: none;
-}
-
-ul li {
-    margin-bottom: 8px;
-}
-
-ul ul {
-    margin-top: 5px;
-    padding-left: 20px;
-    list-style-type: disc;
-}
-
-a:hover {
-    color: var(--accent-color-dark);
-    text-decoration: underline;
 }
 
 @media (max-width: 768px) {

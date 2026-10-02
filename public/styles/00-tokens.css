@@ -35,14 +35,12 @@
     --lh-tight: 1.2;
     --lh-normal: 1.5;
 
-    /* Spacing scale */
-    --sp-0: 0;
-    --sp-1: 0.25rem;
+    /* Spacing scale — only the steps actually consumed are defined.
+   --sp-0, --sp-1 and --sp-8 were removed: nothing referenced them. */
     --sp-2: 0.5rem;
     --sp-3: 0.75rem;
     --sp-4: 1rem;
     --sp-6: 1.5rem;
-    --sp-8: 2rem;
 
     /* Skill level colors — consumidas por src/data/levelLabels.ts */
     --clr-advanced: #22c55e;
@@ -57,9 +55,8 @@
     --shadow-md: 0 4px 10px rgba(0, 0, 0, .08);
     --shadow-lg: 0 10px 24px rgba(0, 0, 0, .12);
 
-    /* Speeds / motion */
+    /* Speeds / motion — --dur-fast was unused and has been removed */
     --ease: cubic-bezier(.2, .8, .2, 1);
-    --dur-fast: 120ms;
     --dur: 200ms;
 
     /* Content max width */
@@ -67,13 +64,25 @@
 }
 
 /* ── Theme change transition ──
-   Only color/background-color/border-color: using `all` would also drag in
-   width/transform from the skill bars and the card open animations,
-   causing unwanted motion on every theme switch. */
-:root,
-:root *,
-:root *::before,
-:root *::after {
+   Scoped to the surfaces that actually change colour when the theme flips.
+   A `:root *` rule reached 791 of 881 elements on the home page, adding a
+   transition declaration to nodes that never animate. Components keep their
+   own hover transitions (--dur, 200ms) untouched because they declare a
+   shorthand that overrides this one.
+
+   Only color/background-color/border-color: `all` would also drag in
+   width/transform from the skill bars and card open animations. */
+body,
+main,
+.section,
+.card,
+.pill,
+.chip,
+.btn,
+.btn-action,
+.theme-btn,
+.bar-track,
+.level-tag {
     transition:
         background-color 180ms var(--ease),
         border-color 180ms var(--ease),
@@ -81,10 +90,17 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    :root,
-    :root *,
-    :root *::before,
-    :root *::after {
+    body,
+    main,
+    .section,
+    .card,
+    .pill,
+    .chip,
+    .btn,
+    .btn-action,
+    .theme-btn,
+    .bar-track,
+    .level-tag {
         transition: none !important;
     }
 }

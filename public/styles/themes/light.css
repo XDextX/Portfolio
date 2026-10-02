@@ -1,7 +1,6 @@
-/* Light theme — applied when data-theme is absent or explicitly "light" */
-:root,
-:root:not([data-theme]),
-:root[data-theme="light"] {
+/* Light theme — the base layer. dark.css overrides every token it needs when
+   data-theme="dark" is set, so this only needs the plain :root. */
+:root {
 
     /* Backgrounds */
     --bg: #F4EFD9;
@@ -61,52 +60,51 @@
     color-scheme: light;
 }
 
+/* Component rules for the light theme.
+   Single `:root` selector, not `:root:not([data-theme]), :root[data-theme="light"]`.
+   dark.css is linked after this file and covers the same seven selectors, so
+   when data-theme="dark" it overrides these anyway. The extra selector only
+   duplicated every block for no behavioural gain. */
+
 /* ── Body ── */
-:root:not([data-theme]) body,
-:root[data-theme="light"] body {
+:root body {
     background: var(--bg);
     color: var(--fg);
 }
 
 /* ── Main container ── */
-:root:not([data-theme]) main,
-:root[data-theme="light"] main {
+:root main {
     background-color: var(--main-bg);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
 /* ── Cards ── */
-:root:not([data-theme]) .card,
-:root[data-theme="light"] .card {
+:root .card {
     background: var(--neutral-0);
     border-color: var(--neutral-200);
     box-shadow: var(--shadow-md);
 }
 
 /* ── Pills / chips ── */
-:root:not([data-theme]) .pill,
-:root[data-theme="light"] .pill {
+:root .pill {
     background: var(--neutral-100);
     color: var(--neutral-800);
     border-color: var(--neutral-200);
 }
 
 /* ── Ghost button ── */
-:root:not([data-theme]) .btn.ghost,
-:root[data-theme="light"] .btn.ghost {
+:root .btn.ghost {
     color: var(--brand-text);
     border-color: var(--brand-text);
 }
 
 /* ── Theme toggle ── */
-:root:not([data-theme]) .theme-btn,
-:root[data-theme="light"] .theme-btn {
+:root .theme-btn {
     background: var(--neutral-0);
     color: var(--neutral-800);
     border-color: var(--neutral-200);
 }
 
-:root:not([data-theme]) .theme-btn:hover,
-:root[data-theme="light"] .theme-btn:hover {
+:root .theme-btn:hover {
     background: var(--neutral-100);
 }

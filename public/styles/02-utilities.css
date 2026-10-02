@@ -133,13 +133,8 @@
     grid-template-columns: repeat(3, 1fr);
 }
 
-.accent-color {
-    color: var(--accent-text);
-}
-
-.primary-bg {
-    background-color: var(--bg-color);
-}
+/* .accent-color and .primary-bg were removed: no element in src/ applies them.
+   Add them back here if a component actually needs the class. */
 
 @media (max-width: 900px) {
 
