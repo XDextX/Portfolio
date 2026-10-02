@@ -1,7 +1,10 @@
 {
 	"layout": {
 		"language": "Idioma",
-		"languageSwitcher": "Selecciona un idioma"
+		"languageSwitcher": "Selecciona un idioma",
+		"theme": "Tema",
+		"themeToDark": "Cambiar a modo oscuro",
+		"themeToLight": "Cambiar a modo claro"
 	},
 	"project": {
 		"actions": {
@@ -42,7 +45,12 @@
 		"viewAll": "Ver todos →"
 	},
 	"skills": {
-		"title": "Habilidades"
+		"title": "Habilidades",
+		"views": {
+			"group": "Vista de habilidades",
+			"bars": "Barras de progreso",
+			"list": "Lista compacta"
+		}
 	},
 	"experience": {
 		"title": "Experiencia laboral"
@@ -60,7 +68,8 @@
 	"nav": {
 		"home": "Inicio",
 		"projects": "Proyectos",
-		"back": "Volver a proyectos"
+		"back": "Volver a proyectos",
+		"breadcrumb": "Ruta de navegación"
 	},
 	"notFound": {
 		"title": "Página no encontrada",

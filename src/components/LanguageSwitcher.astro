@@ -9,12 +9,14 @@ export interface Props {
 const { locale } = Astro.props;
 const locales = availableLocales().filter(isSupportedLocale);
 const current = isSupportedLocale(locale) ? locale : 'es';
-const labelId = 'language-switcher';
+const hint = t('layout.languageSwitcher');
+// The label wraps the select below, so the association needs no id at all: a
+// global id here would collide as soon as a second instance exists.
 ---
 
-<div class='language-switcher'>
-	<label class='label' for={labelId}>{t('layout.language')}</label>
-	<select id={labelId} class='select' data-lang-switcher value={current}>
+<label class='language-switcher' title={hint}>
+	<span class='label'>{t('layout.language')}</span>
+	<select class='select' data-lang-switcher>
 		{
 			locales.map((code) => (
 				<option value={code} selected={code === current}>
@@ -23,9 +25,11 @@ const labelId = 'language-switcher';
 			))
 		}
 	</select>
-</div>
+</label>
 
 <script>
+	import { navigate } from 'astro:transitions/client';
+
 	// Re-bound on every navigation: with <ClientRouter /> the DOM is replaced,
 	// so a listener bound once would die on the first transition.
 	document.addEventListener('astro:page-load', () => {
@@ -36,7 +40,10 @@ const labelId = 'language-switcher';
 					const value = (event.target as HTMLSelectElement).value;
 					const next = new URL(window.location.href);
 					next.searchParams.set('lang', value);
-					window.location.replace(next.toString());
+					// navigate() instead of window.location.replace(): the router
+					// swaps the page instead of reloading it, and the server writes
+					// the lang cookie while rendering the new locale.
+					navigate(next.toString());
 				});
 			});
 	});
@@ -47,18 +54,18 @@ const labelId = 'language-switcher';
 		display: inline-flex;
 		align-items: center;
 		gap: 0.5rem;
-		font-size: 0.875rem;
+		font-size: var(--fs-sm);
 	}
 
 	.label {
-		color: var(--text-color, #f5f5f7);
+		color: var(--text-color);
 	}
 
 	.select {
-		background: var(--card-background, #2a2f41);
-		color: inherit;
-		border: 1px solid var(--border-color, #3a4056);
-		border-radius: 0.4rem;
+		background: var(--card-background);
+		color: var(--text-color);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
 		padding: 0.25rem 0.75rem;
 		cursor: pointer;
 	}

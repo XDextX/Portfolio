@@ -1,13 +1,17 @@
 ---
-// No props — renders the 3 view-toggle buttons; TechGrid owns the JS logic.
+// No props — renders the two view-toggle buttons; TechGrid owns the JS logic.
+// Labels go through i18n so they follow the active locale, and each button
+// carries an aria-label because `title` alone is a weak accessible name.
+import { t } from '@i18n/index';
 ---
 
-<div class='view-toggle' role='group' aria-label='Vista'>
+<div class='view-toggle' role='group' aria-label={t('skills.views.group')}>
 	<button
 		class='toggle-btn'
 		data-view='bars'
 		aria-pressed='true'
-		title='Barras de progreso'
+		aria-label={t('skills.views.bars')}
+		title={t('skills.views.bars')}
 	>
 		<svg
 			xmlns='http://www.w3.org/2000/svg'
@@ -33,7 +37,8 @@
 		class='toggle-btn'
 		data-view='list'
 		aria-pressed='false'
-		title='Lista compacta'
+		aria-label={t('skills.views.list')}
+		title={t('skills.views.list')}
 	>
 		<svg
 			xmlns='http://www.w3.org/2000/svg'

@@ -36,11 +36,11 @@ const forksLabel = t('project.meta.forksLabel', {
 	count: fmtNum.format(repo.forks_count),
 });
 
-const directions = {
-	[t('nav.home')]: '/',
-	[t('nav.projects')]: '/proyectos',
-	[repo.name]: `/proyectos/${repo.name}`,
-};
+const directions = [
+	{ label: t('nav.home'), href: '/' },
+	{ label: t('nav.projects'), href: '/proyectos' },
+	{ label: repo.name, href: `/proyectos/${repo.name}` },
+];
 
 const jsonLd = {
 	'@context': 'https://schema.org',

@@ -1,12 +1,14 @@
 ---
-
+import { t } from '@i18n/index';
 ---
 
 <button
-	id='theme-toggle'
 	class='theme-btn'
 	type='button'
-	aria-label='Switch theme'
+	data-theme-toggle
+	data-label-dark={t('layout.themeToDark')}
+	data-label-light={t('layout.themeToLight')}
+	aria-label={t('layout.themeToDark')}
 >
 	<!-- Sun: shown in dark mode, meaning "switch to light" -->
 	<svg
@@ -50,41 +52,50 @@
 </button>
 
 <script>
-	function applyTheme(theme: string) {
+	function applyTheme(theme: string, persist: boolean) {
 		if (theme === 'dark') {
 			document.documentElement.setAttribute('data-theme', 'dark');
 		} else {
 			document.documentElement.removeAttribute('data-theme');
 		}
-		localStorage.setItem('theme', theme);
+		// Only write when the user actually toggles: restoring the saved theme
+		// happens on every navigation and would otherwise rewrite the same
+		// value into localStorage each time.
+		if (persist) localStorage.setItem('theme', theme);
 	}
 
-	function init() {
-		const btn = document.getElementById('theme-toggle');
-		if (!btn) return;
-
-		// Restore saved theme
-		const saved = localStorage.getItem('theme') ?? 'light';
-		applyTheme(saved);
-
-		btn.setAttribute(
-			'aria-label',
-			saved === 'dark' ? 'Switch to light mode' : 'Switch to dark mode',
-		);
-
-		btn.addEventListener('click', () => {
-			const current =
-				document.documentElement.getAttribute('data-theme') ?? 'light';
-			const next = current === 'dark' ? 'light' : 'dark';
-			applyTheme(next);
-			btn.setAttribute(
-				'aria-label',
-				next === 'dark' ? 'Switch to light mode' : 'Switch to dark mode',
-			);
-		});
+	function currentTheme(): string {
+		return document.documentElement.getAttribute('data-theme') ?? 'light';
 	}
 
-	document.addEventListener('astro:page-load', init);
+	// Re-bound on every navigation: with <ClientRouter /> the DOM is replaced,
+	// so a listener bound once would die after the first transition.
+	// No global id — the button is found by data attribute, so several
+	// instances on one page work independently.
+	document.addEventListener('astro:page-load', () => {
+		document
+			.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]')
+			.forEach((btn) => {
+				const saved = localStorage.getItem('theme') ?? 'light';
+				applyTheme(saved, false);
+
+				const setLabel = (theme: string) =>
+					btn.setAttribute(
+						'aria-label',
+						theme === 'dark'
+							? (btn.dataset.labelLight ?? 'Switch to light mode')
+							: (btn.dataset.labelDark ?? 'Switch to dark mode'),
+					);
+
+				setLabel(saved);
+
+				btn.addEventListener('click', () => {
+					const next = currentTheme() === 'dark' ? 'light' : 'dark';
+					applyTheme(next, true);
+					setLabel(next);
+				});
+			});
+	});
 </script>
 
 <style>
@@ -92,17 +103,17 @@
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		background: var(--card-background, #2a2f41);
-		color: var(--text-color, #fff);
-		border: 1px solid var(--color-border, #3a4056);
-		border-radius: 0.4rem;
+		background: var(--card-background);
+		color: var(--text-color);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
 		padding: 0.3rem 0.5rem;
 		cursor: pointer;
 		transition: background var(--dur) var(--ease);
 	}
 
 	.theme-btn:hover {
-		background: var(--neutral-200, #3a3b52);
+		background: var(--neutral-200);
 	}
 
 	/* The icon shows the theme you are switching TO, not the current one.

@@ -71,4 +71,23 @@ describe('view transitions: no global IDs for JS hooks', () => {
         expect(src).toContain('data-projects-toggle');
         expect(src).not.toMatch(/id='projects-toggle'/);
     });
+
+    it('ThemeSwitch finds its button by data attribute, not a global id', () => {
+        const src = read('src', 'components', 'ThemeSwitch.astro');
+
+        // A global id only supports one instance per page and collides with
+        // anything else that wants #theme-toggle.
+        expect(src).not.toContain('getElementById');
+        expect(src).not.toMatch(/id='theme-toggle'/);
+        expect(src).toContain('data-theme-toggle');
+    });
+
+    it('no component uses a global id to reach an element from a script', () => {
+        // getElementById / querySelector('#x') on a script-owned hook is the
+        // rule AGENTS.md forbids; data-* keeps several instances independent.
+        for (const name of fs.readdirSync(path.resolve(process.cwd(), 'src', 'components'))) {
+            const src = read('src', 'components', name);
+            expect(src, name).not.toMatch(/document\.getElementById|querySelector\(\s*['"]#/);
+        }
+    });
 });

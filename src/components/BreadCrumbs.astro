@@ -1,20 +1,69 @@
 ---
-type directions = {
-	[key: string]: string;
-};
-interface Props {
-	directions: directions;
+import { t } from '@i18n/index';
+
+/** One breadcrumb entry. */
+export interface Crumb {
+	/** Visible text, already translated by the caller. */
+	label: string;
+	/** Target path. Ignored on the last entry, which is the current page. */
+	href: string;
 }
+
+export interface Props {
+	/** Trail in order, root first. The last entry is the current page. */
+	directions: Crumb[];
+}
+
 const { directions } = Astro.props;
+const lastIndex = directions.length - 1;
 ---
 
-<nav class='crumbs' aria-label='Breadcrumb'>
-	{
-		Object.entries(directions).map(([key, value]) => (
-			<>
-				<span>›</span>
-				<a href={value}>{key}</a>
-			</>
-		))
-	}
+<nav class='crumbs' aria-label={t('nav.breadcrumb')}>
+	<ol>
+		{
+			directions.map(({ label, href }, i) => (
+				<li>
+					{i === lastIndex ? (
+						<span aria-current='page'>{label}</span>
+					) : (
+						<a href={href}>{label}</a>
+					)}
+				</li>
+			))
+		}
+	</ol>
 </nav>
+
+<style>
+	.crumbs ol {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: var(--fs-sm);
+	}
+
+	/* Separator drawn in CSS rather than emitted as a node, so it can never
+	   end up leading the trail (which is what the old markup rendered). */
+	.crumbs li + li::before {
+		content: '›';
+		color: var(--neutral-600);
+	}
+
+	.crumbs a {
+		color: var(--accent-text);
+		text-decoration: none;
+	}
+
+	.crumbs a:hover {
+		text-decoration: underline;
+	}
+
+	.crumbs [aria-current='page'] {
+		color: var(--neutral-600);
+		font-weight: 600;
+	}
+</style>

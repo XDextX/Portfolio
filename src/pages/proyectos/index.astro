@@ -43,10 +43,10 @@ const pageTitle = `${t('projects.title')} - Portfolio`;
 const pageDescription = topic
 	? t('projects.description.withTopic', { topic })
 	: t('projects.description.default');
-const directions = {
-	[t('nav.home')]: '/',
-	[t('nav.projects')]: '/proyectos',
-};
+const directions = [
+	{ label: t('nav.home'), href: '/' },
+	{ label: t('nav.projects'), href: '/proyectos' },
+];
 
 const jsonLd = {
 	'@context': 'https://schema.org',
