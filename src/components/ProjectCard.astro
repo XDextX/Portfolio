@@ -51,18 +51,44 @@ function formatCount(n: number) {
 
 	<!-- Footer -->
 	<footer class='card-footer'>
+		<!-- A count of zero is noise: two greyed "0"s with a star and a fork in
+		     front of them say less than the date alone. The count appears when
+		     there is something to count. -->
 		<div class='card-meta'>
-			<span title='Stars' aria-label={t('project.meta.starsLabel', { count: String(repo.stargazers_count) })}>
-				<svg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'><path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/></svg>
-				{formatCount(repo.stargazers_count)}
-			</span>
-			<span title='Forks' aria-label={t('project.meta.forksLabel', { count: String(repo.forks_count) })}>
-				<svg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx='12' cy='18' r='3'/><circle cx='6' cy='6' r='3'/><circle cx='18' cy='6' r='3'/><path d='M18 9v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9'/><line x1='12' y1='12' x2='12' y2='15'/></svg>
-				{formatCount(repo.forks_count)}
-			</span>
+			{
+				repo.stargazers_count > 0 && (
+					<span
+						title='Stars'
+						aria-label={t('project.meta.starsLabel', {
+							count: String(repo.stargazers_count),
+						})}
+					>
+						<svg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'><path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'/></svg>
+						{formatCount(repo.stargazers_count)}
+					</span>
+				)
+			}
+			{
+				repo.forks_count > 0 && (
+					<span
+						title='Forks'
+						aria-label={t('project.meta.forksLabel', {
+							count: String(repo.forks_count),
+						})}
+					>
+						<svg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx='12' cy='18' r='3'/><circle cx='6' cy='6' r='3'/><circle cx='18' cy='6' r='3'/><path d='M18 9v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9'/><line x1='12' y1='12' x2='12' y2='15'/></svg>
+						{formatCount(repo.forks_count)}
+					</span>
+				)
+			}
 			<time class='card-date' datetime={repo.updated_at}>{formattedDate}</time>
 		</div>
 
+		<!-- Only the destinations the title does not already offer. The detail
+		     page was reachable from the title's own link, so a button pointing at
+		     the same URL was a second route to one place — and its gold fill
+		     competed with the gold title for the eye. The title is now the single
+		     accent on the card and the way in. -->
 		<nav class='card-actions' aria-label={t('project.actions.section')}>
 			<a
 				class='btn-action'
@@ -73,10 +99,6 @@ function formatCount(n: number) {
 			>
 				{t('project.actions.code')}
 				<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><line x1='7' y1='17' x2='17' y2='7'/><polyline points='7 7 17 7 17 17'/></svg>
-			</a>
-
-			<a class='btn-action primary' href={`/proyectos/${repo.name}`}>
-				{t('project.actions.detail')}
 			</a>
 
 			{hasDemo && (
@@ -106,14 +128,16 @@ function formatCount(n: number) {
 		background: var(--card-background);
 		transition:
 			border-color var(--dur) var(--ease),
-			transform var(--dur) var(--ease),
 			box-shadow var(--dur) var(--ease);
 	}
 
+	/* Hover moves the border, not the box. Lifting a card by 2px on every
+	   pointer pass is decoration, and moving the element fights the shared
+	   transition on .card. A gold border is the same signal the chips use, and
+	   it keeps the title as the card's single accent. */
 	.project-card:hover {
 		border-color: var(--accent-text);
-		transform: translateY(-2px);
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+		box-shadow: var(--shadow-md);
 	}
 
 	/* Header */
@@ -220,16 +244,5 @@ function formatCount(n: number) {
 		border-color: var(--accent-text);
 		color: var(--accent-text);
 		text-decoration: none;
-	}
-
-	.btn-action.primary {
-		background: var(--accent-surface);
-		border-color: var(--accent-surface);
-		color: #fff;
-	}
-
-	.btn-action.primary:hover {
-		opacity: 0.88;
-		color: #fff;
 	}
 </style>
