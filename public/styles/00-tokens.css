@@ -5,35 +5,45 @@
     --brand-accent: #E3C770;
     --brand-accent-dark: #BFA258;
 
-    /* Accent for TEXT. The brand gold (#E3C770) on cream gives only
+    /* Accent for TEXT. The brand gold (#E3C770) on a light ground gives only
        1.35:1 and is unreadable; the themes lower this to a dark tone.
        Use --accent-text for text colour and --brand-accent for
        surfaces (button fill, border, bar). */
     --accent-text: #BFA258;
 
     /* Primary button fill with white text on top. The brand gold only
-       gives 1.66:1 against white, so the light theme darkens it. */
+       gives 1.66:1 against white, so the light theme darkens it.
+       Stays dark in BOTH themes: three components hardcode color #fff on the
+       primary button, so a light fill would put white on cream. */
     --accent-surface: #E3C770;
 
-    /* Neutrals (raw values — themes override the scale) */
-    --neutral-light: #F4EFD9;
-    --neutral-mid: #C3BBA8;
-    --neutral-dark: #1E1E2F;
+    /* Typography. Plex Sans is self-hosted from /fonts (see 05-fonts.css); the
+       system stack stays in the fallback chain so a failed font request degrades
+       to something sane instead of to Times. */
+    --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
-    /* Typography */
-    --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
-    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    /* Type scale: 1.25 (major third) off a 16px base. The previous steps were
+       1.167 apart, so xs/sm/base/lg were nearly indistinguishable and every
+       level looked like the one above it. */
+    --fs-xs: 0.75rem;    /* 12 — eyebrows, badges, meta            */
+    --fs-sm: 0.8125rem;  /* 13 — captions, secondary UI           */
+    --fs-base: 1rem;     /* 16 — body                              */
+    --fs-lg: 1.25rem;    /* 20 — card titles, section intros       */
+    --fs-xl: 1.5rem;     /* 24 — section titles                    */
+    --fs-2xl: 2rem;      /* 32 — name, experience role             */
+    --fs-3xl: 2.5rem;    /* 40 — hero name                         */
+    --fs-4xl: 3.25rem;   /* 52 — hero on wide screens              */
+    --fs-5xl: 4rem;      /* 64 — reserved for a single display use */
 
-    --fs-xs: 0.75rem;
-    --fs-sm: 0.875rem;
-    --fs-base: 1rem;
-    --fs-lg: 1.125rem;
-    --fs-xl: 1.25rem;
-    --fs-2xl: 1.5rem;
-    --fs-3xl: 1.875rem;
+    /* Reading measure. Body prose is capped rather than filling the container:
+       at --max-w a full-width line ran past 110 characters. */
+    --measure: 66ch;
+    --measure-wide: 76ch;
 
-    --lh-tight: 1.2;
-    --lh-normal: 1.5;
+    --lh-tight: 1.15;
+    --lh-snug: 1.35;
+    --lh-normal: 1.6;
 
     /* Spacing scale — only the steps actually consumed are defined.
    --sp-0, --sp-1 and --sp-8 were removed: nothing referenced them. */
@@ -47,10 +57,11 @@
     --clr-intermediate: #3b82f6;
     --clr-beginner: #f59e0b;
 
-    /* Avatar ring. Aliased to --color-border because both themes already
-       redefine that token (light #C3BBA8, dark #3a3b52), so the ring follows
-       the theme with no per-theme override. AvatarCircle consumed an undefined
-       --avatar-ring before, which silently dropped the whole `border` shorthand. */
+    /* Avatar ring. Aliased to --color-border, which both themes redefine, so
+       the ring follows the theme with no per-theme override. AvatarCircle
+       consumed an undefined --avatar-ring before, which silently dropped the
+       whole `border` shorthand. No hex is named here on purpose: naming one
+       goes stale the next time a theme changes its border. */
     --avatar-ring: var(--color-border);
 
     /* Radii & shadows */
