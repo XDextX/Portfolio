@@ -91,7 +91,36 @@ Así se hallaron dos bugs reales que el build no marcó: JSON-LD roto y la ruta 
 `tests/viewtransitions.test.ts` cubre estas reglas. Si necesitas saltar alguna, hazlo explícito y
 actualiza ese test.
 
-## Commits: husky y nunca push
+## MCP: chrome-devtools
+
+`opencode.json` corre `npx chrome-devtools-mcp@latest` sin flags: el MCP busca un Chromium por su
+cuenta (Chrome o su bundled) y arranca sin configuracion extra.
+
+- **No anadas `mcpServers`** dentro de `mcp` (ese es el formato de VS Code/Claude Desktop y aqui no
+  funciona). La clave `mcp` es un mapa directo de servidores, y cada uno exige `type` y `command`
+  como **array**.
+- **No hardcodees rutas de navegador.** OpenCode no expande `{env:VAR}` dentro de `mcp.*.command`
+  (el placeholder se descarta sin expandirse), y una ruta absoluta rompe en otra maquina. Si necesitas
+  otro navegador, instala Chrome en vez de pelear con el path.
+- En Windows, un path con espacios (ej. `Opera GX`) se trunca si pasas por `cmd.exe`: por eso no se
+  pasan rutas como argumento.
+
+## Nunca documentes datos sensibles
+
+No escribas en `AGENTS.md`, `Memory.md`, `README.md`, mensajes de commit ni ningún
+documento del repo: rutas con el nombre de usuario real (`C:\Users\<tu-usuario>\...`), emails,
+nombres completos, direcciones físicas, tokens, API keys o contraseñas.
+
+- Usa placeholders: `C:\Users\<usuario>\...`, `<email>`, `<token>`.
+- En ejemplos de rutas, prefiere variables (`$env:USERPROFILE`) en vez de la ruta literal.
+- Sí es válido **señalar la existencia** de un secreto y el riesgo (`hay un PAT en .env,
+  no lo commitees`), pero nunca su valor.
+- Al documentar un bug, describes la forma (`--executablePath=C:\...\Programs\Opera`) sin
+  rellenar el resto con datos de tu máquina.
+
+Esto aplica también a `.env`, que está gitignored pero sigue siendo un archivo en disco.
+
+## Commits: husky, y reglas de git que no se negocian
 
 Hay un hook de pre-commit: `.husky/pre-commit` corre `npm test` y **cancela el commit** si algo falla.
 Se activa por `"prepare": "husky"` en `package.json`, que se ejecuta en cada `npm install`.
@@ -100,11 +129,19 @@ Se activa por `"prepare": "husky"` en `package.json`, que se ejecuta en cada `np
 - Escape solo si es intencional: `git commit --no-verify`.
 - El hook **no** llama a `npm run lint` ni a `npm run format` porque ambas están rotas (ver tabla arriba).
   Cuando las arregles, añádelas en `.husky/pre-commit`.
-- **NUNCA hagas `git push`.** Commitea local y ya. No ofrezcas pushear ni lo hagas "para ayudar":
-  el usuario lo pide explícitamente si algún día lo quiere. Commits sin pushear son el estado normal.
+- **NUNCA hagas `git push`.** Ni siquiera si te lo pide la tarea o si los tests pasan. El usuario
+  lo pide explícitamente si algún día lo quiere. No ofrezcas pushear por iniciativa propia.
+- **NUNCA crees commits sin que te lo pidan.** Solo commitea si el usuario lo pide explícitamente o si
+  el commit es parte de un flujo que ya acordaste (p. ej. "prepara los commits", "commitea esto").
+  Terminar una tarea **no** implica commitear: deja los cambios en el working tree.
+- Si hay duda sobre si toca commitear, **pregunta** en vez de decidir por tu cuenta.
+- Estado normal: cambios sin commitear en el working tree, commits sin pushear.
 
 ## Memory
 - `Memory.md` es tu memoria. Mantenla chica y organizada (50 líneas máx); resume y borra lo que ya no
   sea relevante.
+- **Reparto:** las *reglas* viven solo aquí en `AGENTS.md`. `Memory.md` es únicamente estado
+  y contexto (qué se hizo, qué falta, qué está verificado). No dupliques reglas en los dos:
+  si una regla cambia, cámbiala aquí y déjala en un solo sitio.
 - Si algo se guarda de forma frecuente, propón una nueva regla y créala en `AGENTS.md`.
 - Luego de cada tarea modifica `Memory.md` y `AGENTS.md`.

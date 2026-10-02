@@ -1,14 +1,13 @@
 # Memory
 
-Contexto de trabajo actual. Solo lo que sigue vigente. Máximo 50 líneas.
+Estado de trabajo actual. Solo lo que sigue vigente. Máximo 50 líneas.
+
+**Las reglas van en `AGENTS.md`, no aquí.** Este archivo es solo contexto y estado.
 
 ## Estado (2026-10-01)
 Rama `main`. Build verde, `npm test` 31/31 (5 archivos), Playwright 1/1.
-9 commits locales, **nunca pushear**.
-
-## Reglas del usuario (no negociables)
-- **NUNCA hacer `git push`.** Commitear local. No ofrecer pushear.
-- Editar `Memory.md` y `AGENTS.md` tras cada tarea.
+7 commits locales, nada pusheado. `AGENTS.md`, `Memory.md`, `.gitignore` y `opencode.json`
+tienen cambios SIN commitear.
 
 ## Husky
 - `husky@9.1.7` + `"prepare": "husky"`. `.husky/pre-commit` corre `npm test` y aborta si falla.
