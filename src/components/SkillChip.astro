@@ -12,20 +12,21 @@ export interface Props {
 const { name, logo, href, level, locale = 'es' } = Astro.props;
 const color = LEVEL_COLOR[level];
 const label = levelLabelMap[locale][level];
+// A tech with no href renders a <span>, not <a href="#">: the latter is a
+// focusable link whose only effect is jumping the page back to the top.
+const Tag = href ? 'a' : 'span';
 ---
 
-<a
+<Tag
 	class='chip'
-	href={href ?? '#'}
-	target={href ? '_blank' : undefined}
-	rel={href ? 'noopener noreferrer' : undefined}
+	{...(href ? { href, target: '_blank', rel: 'noopener noreferrer' } : {})}
 	title={label}
 	style={`--dot:${color}`}
 >
 	<img src={logo} alt='' width='18' height='18' loading='lazy' />
 	{name}
 	<span class='chip-dot' aria-hidden='true' />
-</a>
+</Tag>
 
 <style>
 	.chip {
