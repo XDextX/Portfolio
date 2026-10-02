@@ -8,16 +8,25 @@ const { text } = Astro.props;
 <span class='chip'>{text}</span>
 
 <style>
+	/* A GitHub topic is a tag: metadata, not navigation. A lozenge is the
+	   honest shape for that, and it is why --radius-pill exists.
+
+	   The fill was --card-background on a card that is also --card-background,
+	   so the tag rendered as a border and some text with a background doing
+	   nothing at all — measured byte-identical to the surface under it. It only
+	   looked right in the skills list, where the backdrop is the page sheet
+	   rather than a card.
+
+	   A filled tag does not need an outline, so the border goes. */
 	.chip {
-		display: inline-block;
+		display: inline-flex;
+		align-items: center;
 		font-size: var(--fs-xs);
-		font-weight: 600;
-		padding: 0.2rem 0.55rem;
-		border-radius: 999px;
-		border: 1px solid var(--color-border);
-		background: var(--card-background);
-		color: var(--neutral-600);
+		font-weight: 500;
+		padding: 0.15rem 0.5rem;
+		border-radius: var(--radius-pill);
+		background: var(--tag-surface);
+		color: var(--text-secondary);
 		white-space: nowrap;
-		user-select: none;
 	}
 </style>

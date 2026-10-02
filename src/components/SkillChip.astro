@@ -25,34 +25,55 @@ const Tag = href ? 'a' : 'span';
 >
 	<img src={logo} alt='' width='18' height='18' loading='lazy' />
 	{name}
+	{/* The dot is aria-hidden, so without this the level reached assistive tech
+	    only through a title attribute. */}
+	<span class='sr-only'>{label}</span>
 	<span class='chip-dot' aria-hidden='true' />
 </Tag>
 
 <style>
+	/* It is a chip, not a row of text: this is a link to the technology's site,
+	   and an element you can click has to look like one. An earlier pass here
+	   removed the fill, the border and the radius together, which left logo and
+	   label floating on the sheet with nothing to say "pressable" — and the
+	   hover fill it used (--neutral-100) measured 1.13:1 against that sheet, so
+	   it did not register either.
+
+	   What changed is the radius and the weight, not the affordance: a lozenge at
+	   999px on a 32px row is the generic look, --radius-sm is a chip. Weight 500
+	   because ten rows at 600 is a wall, and the dot is 8px because it is now
+	   the thing carrying the level.
+
+	   Hover moves colour instead of background. A fill alone cannot work on a
+	   near-white sheet — every light grey lands near 1.2:1 — so the text and the
+	   border go to --accent-text, which is 5.2:1 here and 7.9:1 in the dark
+	   theme, and it keeps navy and gold as the only chroma on the page. */
 	.chip {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.4rem;
-		padding: 0.3rem 0.65rem 0.3rem 0.5rem;
-		border-radius: 999px;
+		gap: 0.45rem;
+		padding: 0.35rem 0.6rem;
+		border-radius: var(--radius-sm);
 		border: 1px solid var(--color-border);
-		background: var(--card-background);
-		font-size: var(--fs-sm);
-		font-weight: 600;
+		background: var(--tag-surface);
 		color: var(--text-color);
+		font-size: var(--fs-sm);
+		font-weight: 500;
 		text-decoration: none;
-		transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+		transition:
+			color var(--dur) var(--ease),
+			border-color var(--dur) var(--ease);
 	}
 
 	.chip:hover {
-		border-color: var(--dot);
-		transform: translateY(-1px);
+		color: var(--accent-text);
+		border-color: var(--accent-text);
 		text-decoration: none;
 	}
 
 	.chip-dot {
-		width: 7px;
-		height: 7px;
+		width: 8px;
+		height: 8px;
 		border-radius: 50%;
 		background: var(--dot);
 		flex-shrink: 0;

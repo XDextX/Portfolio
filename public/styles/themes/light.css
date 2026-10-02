@@ -40,6 +40,14 @@
     --color-border: #DCE2E9;
     --card-background: #FFFFFF;
 
+    /* Chip surface: a small labelled surface — a GitHub topic, a skill. It has
+       to differ from BOTH --main-bg and --card-background, because chips appear
+       on the sheet and inside cards, and a chip filled with --card-background
+       is invisible on a card. --neutral-200 is the lightest step that still
+       separates from this near-white sheet; --text-secondary stays at 4.8:1
+       on top of it. */
+    --tag-surface: #DCE2E9;
+
     /* Accent legible on the sheet (#FBFCFD): 6.4:1 — passes AA.
        The brand gold stays reserved for surfaces. */
     --accent-text: #7A5D10;

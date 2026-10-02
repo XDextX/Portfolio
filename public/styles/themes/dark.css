@@ -15,6 +15,11 @@
     /* Raised surfaces: one step up from the sheet, so cards sit forward */
     --card-background: #2B4372;
 
+    /* Tag surface: a filled label (a GitHub topic). It recedes here rather than
+       advancing — --neutral-50 is below the card, where --neutral-100 *is* the
+       card colour and the tag would vanish. Keeps --text-secondary at 6.5:1. */
+    --tag-surface: #1F3059;
+
     /* Text */
     --text-main: #F5F7FA;
     --text-secondary: #A9B6CD;
