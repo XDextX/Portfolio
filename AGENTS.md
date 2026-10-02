@@ -3,6 +3,8 @@
 Astro 5 personal portfolio (SSR). Single package, no monorepo. Content is data-driven from
 `src/data/*.ts`; projects are pulled live from the GitHub API.
 
+This file must stay in English. `Memory.md` is the agent's call — it can be in any language.
+
 ## Commands — verified working vs. broken
 
 | Command | Status |
@@ -47,101 +49,140 @@ Read via `import.meta.env` only — never `process.env`. In `.env`:
 
 `.env` is gitignored and currently holds a live GitHub PAT in plaintext. Never commit it, never echo it.
 
-## Verifica en vivo, no solo con build y tests
+## Verify live, not just with build and tests
 
-Build verde y tests en verde **no** detectan bugs de render. Levanta un dev server y pega las páginas:
+A green build and green tests **do not** catch render bugs. Start a dev server and hit the pages:
 
 ```powershell
 $job = Start-Job { npx astro dev --port 439X }; Start-Sleep 13
-Invoke-WebRequest "http://localhost:439X/ruta" -UseBasicParsing | Select-Object StatusCode
+Invoke-WebRequest "http://localhost:439X/route" -UseBasicParsing | Select-Object StatusCode
 Stop-Job $job; Remove-Job $job -Force
 ```
 
-Así se hallaron dos bugs reales que el build no marcó: JSON-LD roto y la ruta duplicada `/Resume`.
+That is how two real bugs surfaced which the build did not flag: broken JSON-LD and the
+duplicated `/Resume` route.
 
-## Reglas de estructura
+## Structural rules
 
-- **Nunca dejes un componente de página en `src/pages/`.** Astro lo registra como ruta aunque solo
-  se use como componente. `Resume.astro` vivía ahí y generaba `/Resume`, duplicando `/` con canonical
-  y hreflang conflictivos. La home section vive en `src/components/Resume.astro`.
-- **Una sola fuente por dato.** `ABOUT.socials` se deriva de `CONTACTS` por id; no dupliques email/
-  GitHub/LinkedIn en dos archivos.
-- **URLs públicas con barra inicial.** `resumeUrl` es `/cv/...`, no `cv/...` — la relativa resolvía
-  mal desde `/proyectos`.
-- **JSON-LD con `set:html`, nunca `is:inline` + interpolación.** `is:inline` desactiva la evaluación
-  de expresiones, así que `{JSON.stringify(x)}` se emitía como texto literal. Ambos patrones están
-  arreglados en `AboutSection.astro` y `BaseLayout.astro`; no reintroduzcas el anterior.
+- **Never leave a page component in `src/pages/`.** Astro registers it as a route even if it is only
+  used as a component. `Resume.astro` lived there and served `/Resume`, duplicating `/` with
+  conflicting canonical and hreflang tags. The home section is `src/components/Resume.astro`.
+- **One source per datum.** `ABOUT.socials` is derived from `CONTACTS` by id; do not duplicate
+  email/GitHub/LinkedIn across two files.
+- **Public URLs need a leading slash.** `resumeUrl` is `/cv/...`, not `cv/...` — the relative form
+  resolved incorrectly from `/proyectos`.
+- **JSON-LD with `set:html`, never `is:inline` plus interpolation.** `is:inline` disables expression
+  evaluation, so `{JSON.stringify(x)}` was emitted as literal text. Both sites are fixed in
+  `AboutSection.astro` and `BaseLayout.astro`; do not reintroduce the old pattern.
 
-## Client scripts bajo `<ClientRouter />`
+## Client scripts under `<ClientRouter />`
 
-`<ClientRouter />` (view transitions) está **activado a propósito y se mantiene**. Reglas obligatorias:
+`<ClientRouter />` (view transitions) is **enabled on purpose and stays**. Mandatory rules:
 
-- Todo script de cliente se ata con `document.addEventListener('astro:page-load', ...)`, nunca con
-  `DOMContentLoaded` ni un `addEventListener` suelto a nivel de módulo. El router reemplaza el DOM en
-  cada navegación, así que un listener ligado una sola vez muere en la primera transición.
-- **Prohibido `<script is:inline>` para lógica de cliente.** Solo se ejecuta con el HTML del servidor.
-  Ojo: `is:inline` + `{JSON.stringify(x)}` tampoco evalúa la expresión, emite el literal. Para JSON-LD
-  usa `set:html={JSON.stringify(x)}`.
-- **Prohibido `document.currentScript`** para capturar contenedores. Tras un swap apunta al nodo viejo.
-- **Nada de IDs globales para hooks de JS.** Usa `data-*` y resuelve relativo al contenedor
-  (`root.querySelector`). Así varias instancias en la misma página funcionan de forma independiente.
-- `transition:name` debe coincidir entre origen y destino (p. ej. `p-${repo.id}-title` en
-  `ProjectCard.astro` y en `proyectos/[name].astro`) — es lo que hace que la card " viaje".
+- Every client script binds via `document.addEventListener('astro:page-load', ...)`, never with
+  `DOMContentLoaded` or a bare module-level `addEventListener`. The router replaces the DOM on each
+  navigation, so a listener bound once dies on the first transition.
+- **`<script is:inline>` is forbidden for client logic.** It only runs with the server HTML.
+  Note: `is:inline` + `{JSON.stringify(x)}` does not evaluate the expression either, it emits the
+  literal. For JSON-LD use `set:html={JSON.stringify(x)}`.
+- **`document.currentScript` is forbidden** for capturing containers. After a swap it points at the
+  stale node.
+- **No global ids for JS hooks.** Use `data-*` and resolve relative to the container
+  (`root.querySelector`), so several instances on one page work independently.
+- `transition:name` must match between source and destination (e.g. `p-${repo.id}-title` in
+  `ProjectCard.astro` and in `proyectos/[name].astro`) — that is what makes the card " travel".
 
-`tests/viewtransitions.test.ts` cubre estas reglas. Si necesitas saltar alguna, hazlo explícito y
-actualiza ese test.
+`tests/viewtransitions.test.ts` enforces these rules. If you must skip one, do it explicitly and
+update that test.
 
 ## MCP: chrome-devtools
 
-`opencode.json` corre `npx chrome-devtools-mcp@latest` sin flags: el MCP busca un Chromium por su
-cuenta (Chrome o su bundled) y arranca sin configuracion extra.
+`opencode.json` runs `npx chrome-devtools-mcp@latest` with no flags: the MCP finds a Chromium on its
+own (Chrome or its bundled one) and starts with no extra configuration.
 
-- **No anadas `mcpServers`** dentro de `mcp` (ese es el formato de VS Code/Claude Desktop y aqui no
-  funciona). La clave `mcp` es un mapa directo de servidores, y cada uno exige `type` y `command`
-  como **array**.
-- **No hardcodees rutas de navegador.** OpenCode no expande `{env:VAR}` dentro de `mcp.*.command`
-  (el placeholder se descarta sin expandirse), y una ruta absoluta rompe en otra maquina. Si necesitas
-  otro navegador, instala Chrome en vez de pelear con el path.
-- En Windows, un path con espacios (ej. `Opera GX`) se trunca si pasas por `cmd.exe`: por eso no se
-  pasan rutas como argumento.
+- **Do not nest `mcpServers`** inside `mcp` — that is the VS Code / Claude Desktop format and it does
+  not work here. The `mcp` key is a direct map of servers, and each one requires `type` and `command`
+  as an **array**.
+- **Do not hardcode browser paths.** OpenCode does not expand `{env:VAR}` inside `mcp.*.command`
+  (the placeholder is dropped unexpanded), and an absolute path breaks on any other machine. If you
+  need a different browser, install Chrome rather than fighting the path.
+- On Windows, a path containing spaces (e.g. `Opera GX`) gets truncated when it goes through
+  `cmd.exe`, which is why paths are not passed as arguments here.
 
-## Nunca documentes datos sensibles
+## Code conventions
 
-No escribas en `AGENTS.md`, `Memory.md`, `README.md`, mensajes de commit ni ningún
-documento del repo: rutas con el nombre de usuario real (`C:\Users\<tu-usuario>\...`), emails,
-nombres completos, direcciones físicas, tokens, API keys o contraseñas.
+**Language:** code, comments and JSDoc in **English**. Do not translate site content:
+`i18n/locales/es.json`, `ABOUT.bio.es` and user-visible strings (e.g. `'Ver más'` in
+`ProjectsFooter`) are deliberately in Spanish — they are the translation target.
 
-- Usa placeholders: `C:\Users\<usuario>\...`, `<email>`, `<token>`.
-- En ejemplos de rutas, prefiere variables (`$env:USERPROFILE`) en vez de la ruta literal.
-- Sí es válido **señalar la existencia** de un secreto y el riesgo (`hay un PAT en .env,
-  no lo commitees`), pero nunca su valor.
-- Al documentar un bug, describes la forma (`--executablePath=C:\...\Programs\Opera`) sin
-  rellenar el resto con datos de tu máquina.
+**DRY — extract before duplicating.** When the same markup, logic or style appears twice:
 
-Esto aplica también a `.env`, que está gitignored pero sigue siendo un archivo en disco.
+- *Markup* → a new component in `src/components/`, not another copy of the block.
+  Reference patterns: `ProjectCard.astro`, `ProjectsSection.astro`.
+- *Fetch/transform logic* → a helper in `src/pages/lib/github.ts` (`ghListByTopic`, `ghRepo`,
+  `ghSearch`, `ghRepoReadme`). Tests and API routes import those helpers instead of reimplementing the fetch.
+- *Styles* → a new token in `public/styles/00-tokens.css` or a utility in `src/styles/global.css`,
+  rather than copying values between files.
 
-## Commits: husky, y reglas de git que no se negocian
+**JSDoc on public helpers and components.** One description line plus `@param`/`@returns` on
+helpers; on components, a typed `interface Props`. Examples: `src/data/levelLabels.ts`,
+`src/types/github.ts`.
 
-Hay un hook de pre-commit: `.husky/pre-commit` corre `npm test` y **cancela el commit** si algo falla.
-Se activa por `"prepare": "husky"` en `package.json`, que se ejecuta en cada `npm install`.
+**Centralised fetch mocks.** Use `tests/helpers/github-mocks.ts`
+(`mockGitHubSearchResponse`, `mockGitHubRepoResponse`, `mockErrorResponse`, `sequenceFetch`) plus
+`vi.unstubAllGlobals()` in `afterEach`. Do not repeat the GitHub `fetch` shape in every spec.
 
-- Si un commit se rechaza, no es un bug de git: la suite falló. Arregla el test primero.
-- Escape solo si es intencional: `git commit --no-verify`.
-- El hook **no** llama a `npm run lint` ni a `npm run format` porque ambas están rotas (ver tabla arriba).
-  Cuando las arregles, añádelas en `.husky/pre-commit`.
-- **NUNCA hagas `git push`.** Ni siquiera si te lo pide la tarea o si los tests pasan. El usuario
-  lo pide explícitamente si algún día lo quiere. No ofrezcas pushear por iniciativa propia.
-- **NUNCA crees commits sin que te lo pidan.** Solo commitea si el usuario lo pide explícitamente o si
-  el commit es parte de un flujo que ya acordaste (p. ej. "prepara los commits", "commitea esto").
-  Terminar una tarea **no** implica commitear: deja los cambios en el working tree.
-- Si hay duda sobre si toca commitear, **pregunta** en vez de decidir por tu cuenta.
-- Estado normal: cambios sin commitear en el working tree, commits sin pushear.
+## Quick file reference
+
+| File | Responsibility |
+|---|---|
+| `src/layouts/BaseLayout.astro` | head/meta, OG tags, stylesheet `<link>`s, `<ClientRouter />`, theme anti-FOUC |
+| `src/pages/lib/github.ts` | the only place that reads `GITHUB_TOKEN`; API helpers |
+| `src/pages/api/github-list.json.ts` | repo list, 30 min TTL cache |
+| `src/pages/api/v1/projects/[name].json.ts` | repo detail, its own cache |
+| `src/components/Resume.astro` | home composition; **must not** live in `pages/` (see Structural rules) |
+| `src/components/ProjectsSection.astro` | projects grid, `preview`, show-more toggle |
+| `src/components/ProjectCard.astro` | card carrying `transition:name` `p-${repo.id}-*` |
+| `src/data/*.ts` | editable content, no markup changes needed |
+| `i18n/locales/{es,en}.json` | UI strings; edit **both together** |
+
+## Never document sensitive data
+
+Do not write into `AGENTS.md`, `Memory.md`, `README.md`, commit messages or any other repo document:
+paths containing the real user name (`C:\Users\<your-user>\...`), emails, full names, physical
+addresses, tokens, API keys or passwords.
+
+- Use placeholders: `C:\Users\<user>\...`, `<email>`, `<token>`.
+- In path examples, prefer variables (`$env:USERPROFILE`) over the literal path.
+- It is fine to **flag the existence** of a secret and the risk (`there is a PAT in .env,
+  do not commit it`), but never its value.
+- When documenting a bug, describe the shape (`--executablePath=C:\...\Programs\Opera`) without
+  filling in the rest with data from your machine.
+
+This also applies to `.env`, which is gitignored but still a file on disk.
+
+## Commits: husky, and non-negotiable git rules
+
+There is a pre-commit hook: `.husky/pre-commit` runs `npm test` and **cancels the commit** on failure.
+It is enabled by `"prepare": "husky"` in `package.json`, which runs on every `npm install`.
+
+- If a commit is rejected, that is not a git bug: the suite failed. Fix the test first.
+- Escape hatch only when intentional: `git commit --no-verify`.
+- The hook does **not** call `npm run lint` or `npm run format` because both are broken (see the
+  table above). When you fix them, add them to `.husky/pre-commit`.
+- **NEVER `git push`.** Not even if the task asks for it or if the tests pass. The user asks
+  explicitly if they ever want it. Do not offer to push on your own initiative.
+- **NEVER create commits unless asked.** Only commit when the user requests it explicitly or when the
+  commit is part of a flow already agreed (e.g. "prepare the commits", "commit this"). Finishing a
+  task **does not** imply committing: leave the changes in the working tree.
+- If unsure whether to commit, **ask** instead of deciding on your own.
+- Normal state: uncommitted changes in the working tree, unpushed commits.
 
 ## Memory
-- `Memory.md` es tu memoria. Mantenla chica y organizada (50 líneas máx); resume y borra lo que ya no
-  sea relevante.
-- **Reparto:** las *reglas* viven solo aquí en `AGENTS.md`. `Memory.md` es únicamente estado
-  y contexto (qué se hizo, qué falta, qué está verificado). No dupliques reglas en los dos:
-  si una regla cambia, cámbiala aquí y déjala en un solo sitio.
-- Si algo se guarda de forma frecuente, propón una nueva regla y créala en `AGENTS.md`.
-- Luego de cada tarea modifica `Memory.md` y `AGENTS.md`.
+- `Memory.md` is your memory. Keep it small (50 lines max); summarise what is stale and delete it.
+  Its language is your call — this file stays English.
+- **Split of roles:** the *rules* live only here in `AGENTS.md`. `Memory.md` is state and context only
+  (what was done, what is pending, what is verified). Do not duplicate rules across the two: if a rule
+  changes, change it here and keep it in one place.
+- If something comes up often enough, propose a new rule and add it to `AGENTS.md`.
+- After each task, update both `Memory.md` and `AGENTS.md`.
