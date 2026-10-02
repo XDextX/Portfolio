@@ -8,7 +8,7 @@ Astro 5 personal portfolio (SSR). Single package, no monorepo. Content is data-d
 | Command | Status |
 |---|---|
 | `npm run build` | works (~4s) |
-| `npm test` | works — 16 tests, 4 files |
+| `npm test` | works |
 | `npx playwright test` | works (1 test, ~7s, spawns its own dev server on :4321) |
 | `npm run lint` | **broken** — `eslint` is not a dependency and there is no config |
 | `npm run format` | **broken** — `prettier` is not a dependency and there is no config |
@@ -90,6 +90,18 @@ Así se hallaron dos bugs reales que el build no marcó: JSON-LD roto y la ruta 
 
 `tests/viewtransitions.test.ts` cubre estas reglas. Si necesitas saltar alguna, hazlo explícito y
 actualiza ese test.
+
+## Commits: husky y nunca push
+
+Hay un hook de pre-commit: `.husky/pre-commit` corre `npm test` y **cancela el commit** si algo falla.
+Se activa por `"prepare": "husky"` en `package.json`, que se ejecuta en cada `npm install`.
+
+- Si un commit se rechaza, no es un bug de git: la suite falló. Arregla el test primero.
+- Escape solo si es intencional: `git commit --no-verify`.
+- El hook **no** llama a `npm run lint` ni a `npm run format` porque ambas están rotas (ver tabla arriba).
+  Cuando las arregles, añádelas en `.husky/pre-commit`.
+- **NUNCA hagas `git push`.** Commitea local y ya. No ofrezcas pushear ni lo hagas "para ayudar":
+  el usuario lo pide explícitamente si algún día lo quiere. Commits sin pushear son el estado normal.
 
 ## Memory
 - `Memory.md` es tu memoria. Mantenla chica y organizada (50 líneas máx); resume y borra lo que ya no

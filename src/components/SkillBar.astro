@@ -1,5 +1,5 @@
 ---
-import { LEVEL_PCT, LEVEL_COLOR, levelLabelMap, type TechLevel } from '../data/levelLabels';
+import { LEVEL_PCT, LEVEL_COLOR, LEVEL_TEXT_COLOR, levelLabelMap, type TechLevel } from '../data/levelLabels';
 
 export interface Props {
 	name: string;
@@ -11,6 +11,7 @@ export interface Props {
 const { name, logo, level, locale = 'es' } = Astro.props;
 const pct   = LEVEL_PCT[level];
 const color = LEVEL_COLOR[level];
+const textColor = LEVEL_TEXT_COLOR[level];
 const label = levelLabelMap[locale][level];
 ---
 
@@ -27,7 +28,7 @@ const label = levelLabelMap[locale][level];
 	>
 		<div class='bar-fill' style={`--pct:${pct}%;--clr:${color}`} />
 	</div>
-	<span class='level-tag' style={`color:${color}`}>{label}</span>
+	<span class='level-tag' style={`color:${textColor}`}>{label}</span>
 </li>
 
 <style>

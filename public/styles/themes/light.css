@@ -35,6 +35,26 @@
     --card-background: #FFFFFF;
     /* ← fondo blanco para .chip en light */
 
+    /* Acento legible sobre crema (#EDE8D0): 5.01:1 — pasa AA.
+       El dorado de marca se reserva para superficies. */
+    --accent-text: #7A5D10;
+
+    /* Boton primario dorado con texto blanco: 6.18:1 — pasa AA. */
+    --accent-surface: #7A5D10;
+
+    /* Niveles de skill oscurecidos para crema: 5.76:1 (principiante),
+       ~4.9:1 (intermedio y avanzado). Los originales (#F59E0B, #3B82F6,
+       #22C55E) dan 1.7-3.0:1 y son ilegibles en tema claro. */
+    --clr-beginner: #92400E;
+    --clr-intermediate: #2C5FB8;
+    --clr-advanced: #1F7A38;
+
+    /* Texto de nivel (12px, weight 600): necesita 4.5:1, no basta 3:1 como
+       las barras. Los tonos de barra quedan entre 4.3 y 4.5. */
+    --clr-beginner-text: #7A3208;
+    --clr-intermediate-text: #1F4494;
+    --clr-advanced-text: #14572A;
+
     /* Main container — crema claro en lugar del azul oscuro */
     --main-bg: #EDE8D0;
 

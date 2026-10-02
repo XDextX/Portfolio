@@ -4,40 +4,43 @@ Contexto de trabajo actual. Solo lo que sigue vigente. Máximo 50 líneas.
 
 ## Estado (2026-10-01)
 Rama `main`. Build verde, `npm test` 31/31 (5 archivos), Playwright 1/1.
+9 commits locales, **nunca pushear**.
+
+## Reglas del usuario (no negociables)
+- **NUNCA hacer `git push`.** Commitear local. No ofrecer pushear.
+- Editar `Memory.md` y `AGENTS.md` tras cada tarea.
+
+## Husky
+- `husky@9.1.7` + `"prepare": "husky"`. `.husky/pre-commit` corre `npm test` y aborta si falla.
+- Verificado en ambas direcciones: aprueba en árbol limpio, bloquea con test roto.
+- NO invoca lint/format: están rotos (eslint/prettier no instalados, sin config).
+- Escape: `git commit --no-verify`. `.husky/_` se auto-ignora.
 
 ## Hecho — sesión 1: limpieza estructural
-- `Resume.astro` movido de `pages/` a `components/` — eliminaba la ruta duplicada `/Resume`
-  (misma página que `/`, indexable, con canonical/hreflang conflictivos).
-- Borrados 8 componentes muertos: Navbar, ProjectSkeleton, Profile, Pill, Section,
-  UserPlaceHolder, LevelPill, Snack. Círculo sin raíz: Profile→UserPlaceHolder, LevelPill→Pill.
-- `ABOUT.socials` se deriva de `CONTACTS`. Una sola fuente para email/GitHub/LinkedIn.
-- `sitemap.xml.ts` arreglado: endpoint `github-list.json` (antes `/api/portfolio.json` inexistente),
-  tolera fallo de API, cachea 30 min. Antes devolvía 500.
-- Tokens `--clr-advanced/intermediate/beginner` definidos en `00-tokens.css`.
-- `resumeUrl` raíz-absoluta (`/cv/...`); la relativa rompía en `/proyectos`.
+- `Resume.astro` de `pages/` a `components/` — eliminaba `/Resume` duplicada (indexable, canonical
+  y hreflang conflictivos). Borrados 8 componentes muertos (círculo sin raíz).
+- `ABOUT.socials` se deriva de `CONTACTS`. `resumeUrl` raíz-absoluta (`/cv/...`).
+- `sitemap.xml.ts`: endpoint `github-list.json` (antes inexistente), tolera fallo de API, cachea.
+  Antes daba 500.
 - JSON-LD: `is:inline` + `{JSON.stringify()}` emitía el literal. Ahora `set:html`.
-- `astro.config.mjs`: import muerto de `@astrojs/node` fuera, `site:` agregado,
-  `@astrojs/vercel/serverless` → `@astrojs/vercel` (deprecado).
+- Tokens `--clr-*` definidos. `astro.config.mjs`: import muerto fuera, `site:` agregado.
 
 ## Hecho — sesión 2: view transitions
-El usuario decidió **mantener** `<ClientRouter />`. Arreglado:
-- `LanguageSwitcher.astro`: era el único script con `is:inline` + `document.currentScript`.
-  Se rompía en la primera navegación (el selector de idioma dejaba de responder).
-  Ahora `astro:page-load` + `data-lang-switcher`.
-- `ProjectsSection`/`ProjectsFooter`: `getElementById('projects-toggle')` y `id='projects-grid'`
-  → `data-projects-root` / `data-projects-grid` / `data-projects-toggle`, resueltos por scope.
-  Ahora varias instancias por página funcionan independientes.
-- Nuevo `tests/viewtransitions.test.ts` (15 tests) que falla si alguien reintroduce el patrón.
-  Verificado: reintroducirlo rompe 2 tests.
+El usuario decidió **mantener** `<ClientRouter />`.
+- `LanguageSwitcher.astro`: era el único con `is:inline` + `currentScript`; se rompía en la primera
+  navegación. Ahora `astro:page-load` + `data-lang-switcher`.
+- `ProjectsSection`/`ProjectsFooter`: IDs globales → `data-projects-*` resueltos por scope.
+- `tests/viewtransitions.test.ts` (15 tests) falla si reintroducen el patrón.
 
 ## Verificación
-Comprobar de verdad con dev server: `Start-Job { npx astro dev --port 439X }` + `Invoke-WebRequest`.
-Build y tests en verde NO capturan bugs de render: así se hallaron JSON-LD roto y `/Resume`.
+Build y tests en verde NO capturan bugs de render. Levantar dev server y pegar:
+`Start-Job { npx astro dev --port 439X }` + `Invoke-WebRequest`. Así se hallaron JSON-LD y `/Resume`.
 
 ## Pendiente
-- Sin navegador de escritorio conectado: los fixes de view transitions no se probaron en
-  navegador real, solo por markup/CSS servido. Falta probar navegación real.
+- Sin navegador conectado: los fixes de view transitions no se probaron en navegación real.
 - `.env` tiene un PAT de GitHub en texto plano. Rotar si la máquina no es de confianza.
 - Falta `src/pages/404.astro`; `[name].astro` redirige a `/404`.
 - `README.md` desactualizado: dice Angular 19, linkea LICENSE inexistente.
-- `npm run lint` / `format` siguen rotos (eslint/prettier no instalados, sin config).
+- `npm run lint` / `format` rotos.
+- AGENTS.md perdió i18n-singleton, aliases de Vitest y convención de indentación (decisión del
+  usuario al recortar). Reconsiderar si agents tropieza.

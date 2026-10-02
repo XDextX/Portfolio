@@ -134,7 +134,7 @@
 }
 
 .accent-color {
-    color: var(--logo-yellow);
+    color: var(--accent-text);
 }
 
 .primary-bg {

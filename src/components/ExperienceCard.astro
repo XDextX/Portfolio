@@ -71,7 +71,7 @@ const { role, company, period, location, bullets } = Astro.props;
 	.exp-role {
 		font-size: var(--fs-lg);
 		font-weight: 700;
-		color: var(--accent-color);
+		color: var(--accent-text);
 		margin: 0;
 		line-height: 1.3;
 	}
@@ -94,7 +94,8 @@ const { role, company, period, location, bullets } = Astro.props;
 	.exp-period {
 		font-size: var(--fs-xs);
 		font-weight: 700;
-		color: var(--neutral-600);
+		/* --text-secondary da 4.1:1 sobre el pill; este gris mas oscuro llega a 6.4:1 */
+		color: var(--neutral-800);
 		white-space: nowrap;
 		background: var(--neutral-200);
 		padding: 0.2rem 0.55rem;

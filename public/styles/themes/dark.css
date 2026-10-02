@@ -9,6 +9,15 @@
 
     --brand-text: var(--brand-accent);
 
+    /* Sobre fondo oscuro el dorado de marca ya da 6.66:1 — se usa tal cual. */
+    --accent-text: var(--brand-accent);
+
+    /* Los tonos de barra no funcionan como texto en oscuro (1.2-1.5:1).
+       Variantes claras: 8.6:1 / 7.4:1 / 7.9:1 */
+    --clr-beginner-text: #FBBF24;
+    --clr-intermediate-text: #7DA9F5;
+    --clr-advanced-text: #6EE7A8;
+
     --neutral-0: #1E1E2F;
     --neutral-50: #24263a;
     --neutral-100: #2a2f41;
