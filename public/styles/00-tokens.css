@@ -47,6 +47,12 @@
     --clr-intermediate: #3b82f6;
     --clr-beginner: #f59e0b;
 
+    /* Avatar ring. Aliased to --color-border because both themes already
+       redefine that token (light #C3BBA8, dark #3a3b52), so the ring follows
+       the theme with no per-theme override. AvatarCircle consumed an undefined
+       --avatar-ring before, which silently dropped the whole `border` shorthand. */
+    --avatar-ring: var(--color-border);
+
     /* Radii & shadows */
     --radius-sm: 0.375rem;
     --radius-md: 0.75rem;

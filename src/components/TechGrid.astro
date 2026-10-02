@@ -141,11 +141,21 @@ const byCategory = groupBy(items, (t) => t.category ?? 'Other');
 		justify-content: flex-end;
 	}
 
-	/* Ambas vistas compactas en 2 columnas */
-	.bars-grid,
+	/* Chips are small, so two columns always fit comfortably.
+	   Bars need real width for the progress track: SkillBar spends ~260px on
+	   its logo, name and level tag before the track starts, so a 2-column grid
+	   squeezed the track down to 31px (and to 0px below ~546px of content).
+	   auto-fit only splits into two once each column clears 420px; below that
+	   it stays single-column, which is what keeps the track visible. */
 	.chip-grid {
 		display: grid;
 		grid-template-columns: repeat(2, 1fr);
+		gap: var(--sp-3) var(--sp-6);
+	}
+
+	.bars-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr));
 		gap: var(--sp-3) var(--sp-6);
 	}
 
@@ -185,9 +195,9 @@ const byCategory = groupBy(items, (t) => t.category ?? 'Other');
 	}
 
 	@media (max-width: 600px) {
-		.bars-grid,
 		.chip-grid {
 			grid-template-columns: 1fr;
 		}
+		/* .bars-grid needs no rule: auto-fit already drops to one column. */
 	}
 </style>

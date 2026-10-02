@@ -32,9 +32,12 @@ const label = levelLabelMap[locale][level];
 </li>
 
 <style>
+	/* The logo and the level tag are fixed; the name may shrink and ellipsize,
+	   so a long tech name can never squeeze the track out of existence. The
+	   track keeps a 60px floor as a last-resort guard for narrow containers. */
 	.bar-row {
 		display: grid;
-		grid-template-columns: 22px 130px 1fr auto;
+		grid-template-columns: 22px minmax(72px, 130px) minmax(60px, 1fr) auto;
 		align-items: center;
 		gap: 0.6rem;
 	}
@@ -76,7 +79,7 @@ const label = levelLabelMap[locale][level];
 
 	@media (max-width: 520px) {
 		.bar-row {
-			grid-template-columns: 22px 1fr 1fr;
+			grid-template-columns: 22px minmax(0, 1fr) minmax(60px, 1fr);
 		}
 		.level-tag {
 			display: none;

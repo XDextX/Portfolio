@@ -41,6 +41,9 @@
     /* Gold primary button with white text: 6.18:1 — passes AA. */
     --accent-surface: #7A5D10;
 
+    /* Error / alert text on cream: ~6.1:1 — passes AA. */
+    --danger-color: #B3261E;
+
     /* Skill levels darkened for cream: 5.76:1 (beginner), ~4.9:1
        (intermediate and advanced). The originals (#F59E0B, #3B82F6,
        #22C55E) give 1.7-3.0:1 and are unreadable in the light theme. */

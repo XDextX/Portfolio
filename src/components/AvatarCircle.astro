@@ -1,4 +1,5 @@
 ---
+/** Circular avatar image, optionally a link. */
 interface Props {
 	/** Path to the main image */
 	src: string;
@@ -9,24 +10,40 @@ interface Props {
 	/** Image shown on hover (optional) */
 	hoverSrc?: string;
 
-	/** Base sizes in px (can be combined with fluid) */
-	size?: number | string; // base (>= 0) — defaults to 96
-	sizeSm?: number; // >= 480px
-	sizeMd?: number; // >= 768px
-	sizeLg?: number; // >= 1024px
+	/** Base size: any CSS length, or a px number. @default '100%' */
+	size?: number | string;
 
-	/** Enables fluid sizing with clamp(min, vw, max) */
-	fluid?: boolean; // false by default
-	fluidMin?: number; // px, e.g. 72
-	fluidMax?: number; // px, e.g. 144
-	fluidViewport?: number; // number used as vw, e.g. 12 => 12vw
+	/** Size in px from 480px up. Overrides `size`. */
+	sizeSm?: number;
 
-	/** Border and shadow */
-	border?: boolean; // true by default
-	ringWidth?: number; // px, defaults to 2
+	/** Size in px from 768px up. Overrides `sizeSm`. */
+	sizeMd?: number;
+
+	/** Size in px from 1024px up. Overrides `sizeMd`. */
+	sizeLg?: number;
+
+	/** Enables fluid sizing with clamp(min, vw, max). @default false */
+	fluid?: boolean;
+
+	/** Fluid lower bound in px. @default 72 */
+	fluidMin?: number;
+
+	/** Fluid upper bound in px. @default 144 */
+	fluidMax?: number;
+
+	/** Fluid step, read as vw: 12 means 12vw. @default 12 */
+	fluidViewport?: number;
+
+	/** Draws the ring around the image. @default true */
+	border?: boolean;
+
+	/** Ring width in px. @default 2 */
+	ringWidth?: number;
 
 	/** Renders the image as a link */
 	href?: string;
+
+	/** Opens `href` in a new tab with a safe rel. @default false */
 	newTab?: boolean;
 }
 
@@ -52,6 +69,12 @@ const isDecorative = !alt || alt.trim() === '';
 const Wrapper = href ? 'a' : 'div';
 const rel = newTab ? 'noopener noreferrer' : undefined;
 const target = newTab ? '_blank' : undefined;
+
+// Breakpoint sizes ride along as custom properties rather than data attributes.
+// The old markup emitted data-size-* and read them with attr(data-size-sm px),
+// which no browser supports for non-content properties, so every one of these
+// props was silently ignored.
+const px = (n: number | undefined) => (n === undefined ? undefined : `${n}px`);
 ---
 
 <style>
@@ -74,12 +97,13 @@ const target = newTab ? '_blank' : undefined;
 		box-shadow: var(--shadow-md, 0 4px 10px rgba(0, 0, 0, 0.08));
 	}
 
-	/* Theme-aware border */
+	/* Theme-aware border. --avatar-ring already resolves per theme (it is
+	   aliased to --color-border, which both themes redefine), so no dark-mode
+	   override is needed here — that block referenced an undefined token and
+	   discarded the whole `border` shorthand. The fallback keeps the ring if
+	   --avatar-ring is ever removed from the token sheet. */
 	.avatar.has-border {
-		border: var(--ring) solid var(--avatar-ring);
-	}
-	:root[data-theme='dark'] .avatar.has-border {
-		border-color: var(--avatar-ring-dark);
+		border: var(--ring) solid var(--avatar-ring, var(--color-border));
 	}
 
 	.img,
@@ -115,20 +139,24 @@ const target = newTab ? '_blank' : undefined;
 		}
 	}
 
-	/* Responsive: variables are assigned per breakpoint if present */
+	/* Responsive: data-size-* only marks that the prop was supplied; the value
+	   itself is read from the custom property set inline. The old version read
+	   it with attr(data-size-sm px), which no browser supports for non-content
+	   properties, so every breakpoint prop was silently ignored.
+	   !important is required: an inline --size would otherwise win. */
 	@media (min-width: 480px) {
-		.avatar[data-size-sm] {
-			--size: attr(data-size-sm px);
+		.avatar[data-size-sm]:not([data-fluid='true']) {
+			--size: var(--size-sm) !important;
 		}
 	}
 	@media (min-width: 768px) {
-		.avatar[data-size-md] {
-			--size: attr(data-size-md px);
+		.avatar[data-size-md]:not([data-fluid='true']) {
+			--size: var(--size-md) !important;
 		}
 	}
 	@media (min-width: 1024px) {
-		.avatar[data-size-lg] {
-			--size: attr(data-size-lg px);
+		.avatar[data-size-lg]:not([data-fluid='true']) {
+			--size: var(--size-lg) !important;
 		}
 	}
 
@@ -142,7 +170,7 @@ const target = newTab ? '_blank' : undefined;
 		outline: none;
 	}
 	.avatar.is-link:focus-visible {
-		outline: 2px solid var(--avatar-ring);
+		outline: 2px solid var(--avatar-ring, var(--color-border));
 		outline-offset: 4px;
 	}
 </style>
@@ -158,6 +186,9 @@ const target = newTab ? '_blank' : undefined;
 		'--max': `${fluidMax}px`,
 		'--vw': `${fluidViewport}vw`,
 		'--size': `${size}`,
+		...(sizeSm ? { '--size-sm': px(sizeSm) } : {}),
+		...(sizeMd ? { '--size-md': px(sizeMd) } : {}),
+		...(sizeLg ? { '--size-lg': px(sizeLg) } : {}),
 	}}
 	{...fluid ? { 'data-fluid': fluid } : {}}
 	{...sizeSm ? { 'data-size-sm': sizeSm } : {}}

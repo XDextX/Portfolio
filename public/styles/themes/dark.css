@@ -12,6 +12,9 @@
     /* On a dark background the brand gold already gives 6.66:1 — use as is. */
     --accent-text: var(--brand-accent);
 
+    /* Error / alert text on the dark blue main background. */
+    --danger-color: #F2B8B5;
+
     /* The bar tones do not work as text on dark (1.2-1.5:1).
        Lighter variants: 8.6:1 / 7.4:1 / 7.9:1 */
     --clr-beginner-text: #FBBF24;
