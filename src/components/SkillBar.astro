@@ -1,5 +1,5 @@
 ---
-import { LEVEL_PCT, LEVEL_COLOR, LEVEL_TEXT_COLOR, levelLabelMap, type TechLevel } from '../data/levelLabels';
+import { LEVEL_FILL, LEVEL_COLOR, LEVEL_TEXT_COLOR, levelLabelMap, type TechLevel } from '../data/levelLabels';
 
 export interface Props {
 	name: string;
@@ -9,24 +9,21 @@ export interface Props {
 }
 
 const { name, logo, level, locale = 'es' } = Astro.props;
-const pct   = LEVEL_PCT[level];
-const color = LEVEL_COLOR[level];
+const fill      = LEVEL_FILL[level];
+const color     = LEVEL_COLOR[level];
 const textColor = LEVEL_TEXT_COLOR[level];
-const label = levelLabelMap[locale][level];
+const label     = levelLabelMap[locale][level];
 ---
 
 <li class='bar-row'>
 	<img src={logo} alt='' width='22' height='22' loading='lazy' />
 	<span class='bar-name'>{name}</span>
-	<div
-		class='bar-track'
-		role='progressbar'
-		aria-valuenow={pct}
-		aria-valuemin={0}
-		aria-valuemax={100}
-		aria-label={`${name}: ${label}`}
-	>
-		<div class='bar-fill' style={`--pct:${pct}%;--clr:${color}`} />
+	<!-- The bar repeats what the label beside it says in words, so it is hidden
+	     from assistive tech. It used to be a role="progressbar" with
+	     aria-valuenow, which made a reader announce "85 percent" and then say
+	     "Avanzado" again — a precision the data does not have, stated twice. -->
+	<div class='bar-track' aria-hidden='true'>
+		<div class='bar-fill' style={`--pct:${fill}%;--clr:${color}`} />
 	</div>
 	<span class='level-tag' style={`color:${textColor}`}>{label}</span>
 </li>
@@ -44,7 +41,7 @@ const label = levelLabelMap[locale][level];
 
 	.bar-name {
 		font-size: var(--fs-sm);
-		font-weight: 600;
+		font-weight: 500;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -57,16 +54,37 @@ const label = levelLabelMap[locale][level];
 		overflow: hidden;
 	}
 
+	/* The width is the truth and it lives in CSS. It used to be `width: 0`,
+	   with `.animated` (added by TechGrid's script) carrying the real value —
+	   so with JavaScript off the component rendered ten empty tracks and said
+	   nothing at all. The animation is now the enhancement rather than the
+	   value: no script, no motion, and the bar is still at its level. */
 	.bar-fill {
 		height: 100%;
-		width: 0;
+		width: var(--pct);
 		background: var(--clr);
 		border-radius: 999px;
-		transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 	}
 
 	.bar-fill.animated {
-		width: var(--pct);
+		animation: bar-grow 0.7s var(--ease) both;
+	}
+
+	@keyframes bar-grow {
+		from {
+			width: 0;
+		}
+		to {
+			width: var(--pct);
+		}
+	}
+
+	/* A 0.7s width animation is exactly the kind of motion reduced-motion is
+	   asking not to see. The bar is still correct, it just arrives. */
+	@media (prefers-reduced-motion: reduce) {
+		.bar-fill.animated {
+			animation: none;
+		}
 	}
 
 	.level-tag {

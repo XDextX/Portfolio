@@ -108,6 +108,7 @@ main,
 .btn-action,
 .theme-btn,
 .bar-track,
+.bar-fill,
 .level-tag {
     transition:
         background-color 180ms var(--ease),
@@ -126,6 +127,7 @@ main,
     .btn-action,
     .theme-btn,
     .bar-track,
+    .bar-fill,
     .level-tag {
         transition: none !important;
     }

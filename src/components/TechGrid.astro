@@ -163,13 +163,24 @@ const byCategory = groupBy(items, (t) => t.category ?? 'Other');
 		margin-bottom: var(--sp-2);
 	}
 
+	/* The category name is a group heading, and the data already spells it the
+	   way it should read — "Frontend", not "FRONTEND". Forcing uppercase and
+	   0.06em of tracking on top of that was shouting a word that was already
+	   written correctly, and it is the single loudest template tell on the page.
+
+	   Hierarchy here is carried by size, which is the only thing that scales:
+	   the section <h2> is --fs-xl, a category is --fs-base, and the items in it
+	   are --fs-sm. Nothing else has to shout to be found.
+
+	   .contact-label keeps its uppercase treatment on purpose: it names a channel
+	   (Email, GitHub, LinkedIn), and in sentence case "Email" reads as the common
+	   noun rather than the name. Same look, different meaning — which is only
+	   legible because the two are no longer the same thing. */
 	.cat-label {
-		font-size: var(--fs-xs);
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: var(--neutral-600);
-		margin: 0 0 var(--sp-2) 0;
+		font-size: var(--fs-base);
+		font-weight: 600;
+		color: var(--text-secondary);
+		margin: 0 0 var(--sp-3) 0;
 	}
 
 	.panel.hidden {
