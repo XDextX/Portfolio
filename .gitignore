@@ -37,6 +37,12 @@ skills-lock.json
 # Memory.md: estado de trabajo del agente, personal y efimero. No se versiona.
 Memory.md
 
+# bloque/: planes de ejecucion por bloque. NUNCA se versionan. Son notas de
+# trabajo que existen solo hasta que el bloque se cierra, y cuando se acaba el
+# ultimo bloque la carpeta se borra entera. Versionarlos dejaria un arbol de
+# planes historicos que ya no describe el sitio.
+bloque/
+
 .vscode/
 .vercel/
 .playwright-report/
