@@ -10,6 +10,14 @@ const { repo } = Astro.props;
 // A repo without a README answers 404 with a JSON error body. Reading that as
 // text would print `{"error":"README not found"}` inside the article, so the
 // status is checked and a missing README gets its own message instead.
+//
+// set:html below is remote HTML and is not sanitised here. That is a decision,
+// not an oversight: the source is GitHub's own readme endpoint, which sanitises
+// the markdown it renders, and the repos shown are the owner's own. Putting it
+// behind DOMPurify or a hand-written allow-list would cost more than the risk is
+// worth here. If a README from a source that does not sanitise ever reaches
+// this component, sanitise at the endpoint instead — one entry point rather than
+// one consumer — and note that decision here too.
 let readmeText = '';
 let available = false;
 
