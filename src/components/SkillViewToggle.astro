@@ -70,6 +70,18 @@ import { t } from '@i18n/index';
 </div>
 
 <style>
+	/*
+	 * The button's radius is the group's minus the group's own padding.
+	 *
+	 * It used to be calc(var(--radius-md) - 2px), and that 2px came from
+	 * nowhere: the padding above is 0.2rem, so the real inset is 3.2px and the
+	 * arithmetic should have said so. Change --radius-md and the hardcoded 2
+	 * would have stayed behind, no longer meaning "the group less its inset".
+	 * Writing it as the token minus 0.2rem keeps the relationship stated.
+	 *
+	 * A pill radius was the other option and the wrong one: at 32px square it
+	 * rounds the corners nearly off and stops reading as a button.
+	 */
 	.view-toggle {
 		display: flex;
 		gap: 0.25rem;
@@ -85,7 +97,7 @@ import { t } from '@i18n/index';
 		justify-content: center;
 		width: 2rem;
 		height: 2rem;
-		border-radius: calc(var(--radius-md) - 2px);
+		border-radius: calc(var(--radius-md) - 0.2rem);
 		border: none;
 		background: transparent;
 		color: var(--neutral-600);
@@ -100,8 +112,21 @@ import { t } from '@i18n/index';
 		color: var(--text-color);
 	}
 
+	/*
+	 * --neutral-200, which is also --tag-surface in light: one colour for a
+	 * soft fill inside the sheet, everywhere.
+	 *
+	 * It used to be var(--bg-color), and that token only existed in light.css —
+	 * dark.css never defined it. So in dark the declaration fell through to the
+	 * light value and the active button painted #E4E8EE, a near-white grey from
+	 * the warm era, on top of the navy sheet. A token defined in one theme and
+	 * read in both is worse than no token: nothing errors, and the fallback is
+	 * another theme's palette. --neutral-100 was not an option either, because in
+	 * dark it *is* --card-background and the selected button would vanish into
+	 * the card.
+	 */
 	.toggle-btn.active {
-		background: var(--bg-color);
+		background: var(--neutral-200);
 		color: var(--accent-text);
 	}
 </style>

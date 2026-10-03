@@ -15,6 +15,21 @@ import path from 'path';
 
 const ROOT = process.cwd();
 
+/**
+ * Strips CSS and JS comments, so a token named inside a note is not counted as
+ * a use of it.
+ *
+ * This matters as soon as anyone explains a bug in the source. The note that
+ * documents why `--bg-color` was removed names the token, and reading that as a
+ * real use fails a test about a token that no longer exists — the guard
+ * reporting its own explanation. A note about a token is not a use of it.
+ */
+function stripComments(src: string): string {
+    return src
+        .replace(/\/\*[\s\S]*?\*\//g, ' ')
+        .replace(/^\s*\/\/.*$/gm, ' ');
+}
+
 function walk(dir: string, exts: string[]): string[] {
     if (!fs.existsSync(dir)) return [];
     return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -45,7 +60,7 @@ function collectDefined(): Set<string> {
     const files = [...CSS_FILES, ...SOURCE_FILES];
 
     for (const file of files) {
-        const src = fs.readFileSync(file, 'utf-8');
+        const src = stripComments(fs.readFileSync(file, 'utf-8'));
         for (const m of src.matchAll(/['"]?(--[a-z0-9-]+)['"]?\s*:/gi)) defined.add(m[1]);
     }
     return defined;
@@ -56,7 +71,7 @@ function collectUsed(): Map<string, { fallback: boolean; where: string }> {
     const used = new Map<string, { fallback: boolean; where: string }>();
 
     for (const file of SOURCE_FILES) {
-        const src = fs.readFileSync(file, 'utf-8');
+        const src = stripComments(fs.readFileSync(file, 'utf-8'));
         const where = path.relative(ROOT, file);
 
         // Capture whether a comma (fallback) follows the token name.
