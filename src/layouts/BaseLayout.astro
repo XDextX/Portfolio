@@ -3,6 +3,7 @@ import { ClientRouter } from 'astro:transitions';
 import '../styles/global.css';
 import LanguageSwitcher from '@components/LanguageSwitcher.astro';
 import ThemeSwitch from '@components/ThemeSwitch.astro';
+import { ABOUT } from '../data/about';
 
 interface Props {
 	title?: string;
@@ -11,17 +12,28 @@ interface Props {
 	locale?: 'es' | 'en';
 }
 
+/*
+ * The identity lives in src/data/about.ts. These defaults used to spell the
+ * person's name out in three places — the title, the description and
+ * og:site_name — so changing it meant editing all of them and missing one leaves
+ * a search result under the old name. They are built from ABOUT.name and
+ * ABOUT.title instead, and og:site_name reads from the same string.
+ *
+ * The description is prose and stays here: it describes the site, not the
+ * person, and a translator has no reason to read it.
+ */
 const {
-	title = 'German Montero Ramirez - Full-Stack Developer',
-	description = 'Portafolio de German Montero Ramirez: .NET Core, Angular SSR, Java, SSE y optimizacion SQL. Proyectos, experiencia y contacto.',
+	title = `${ABOUT.name} - ${ABOUT.title}`,
+	description = `Portafolio de ${ABOUT.name}: .NET Core, Angular SSR, Java, SSE y optimizacion SQL. Proyectos, experiencia y contacto.`,
 	jsonLd,
 	locale = 'es',
 } = Astro.props as Props;
 
-const site      = 'https://portfolio-dext.vercel.app';
-const image     = `${site}/og-cover.png`;
-const canonical = `${site}${Astro.url.pathname}`;
-const htmlLang  = locale === 'es' ? 'es-CR' : 'en-US';
+const site       = 'https://portfolio-dext.vercel.app';
+const image      = `${site}/og-cover.png`;
+const canonical  = `${site}${Astro.url.pathname}`;
+const htmlLang   = locale === 'es' ? 'es-CR' : 'en-US';
+const siteName   = `${ABOUT.name} - Portfolio`;
 
 /*
  * Styles. 05-fonts.css must come first: @font-face has to be known before
@@ -52,7 +64,7 @@ const htmlLang  = locale === 'es' ? 'es-CR' : 'en-US';
 	<meta property='og:url'         content={canonical} />
 	<meta property='og:image'       content={image} />
 	<meta property='og:locale'      content={htmlLang.replace('-', '_')} />
-	<meta property='og:site_name'   content='German Montero – Portfolio' />
+	<meta property='og:site_name'   content={siteName} />
 
 	<!-- Twitter / X -->
 	<meta name='twitter:card'        content='summary_large_image' />

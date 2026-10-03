@@ -29,7 +29,11 @@ const locale = applyLocale(Astro);
 
 	.code {
 		font-size: clamp(4rem, 18vw, 9rem);
-		font-weight: 800;
+		/* 700, not 800. The self-hosted variable font declares 100-700, so an
+		   800 was clamped to 700 by the browser while this file claimed
+		   otherwise — the declaration and the rendering disagreed with nothing
+		   in the console. Write what actually renders. */
+		font-weight: 700;
 		line-height: 1;
 		color: var(--accent-text);
 		margin: 0;
