@@ -131,9 +131,18 @@ import { t } from '@i18n/index';
 		inline-size: 34px;
 	}
 
-	.theme-btn:hover {
-		background: var(--neutral-200);
-	}
+	/* No hover rule here on purpose. The theme owns it, in light.css and
+	   dark.css, because a theme-specific hover cannot live in a component.
+
+	   This used to carry `background: var(--neutral-200)` and it was never
+	   visible in a rest-state screenshot. Its selector compiles to
+	   (0,3,0) against the (0,2,0) of `:root .theme-btn:hover` in the theme
+	   files, so in light it won on cascade order and painted the old neutral
+	   under the gold border and gold icon: measured #DCE2E9 against a
+	   white ground. In dark the `:root[data-theme="dark"]` variant reaches
+	   (0,4,0) and wins, so the same control hovered two different ways
+	   depending on the theme — and the gold fell from 6.18 to 4.73 contrast
+	   in light, where it had been measured at 6.18 all along. */
 
 	/* The icon shows the theme you are switching TO, not the current one.
    Light theme -> moon (going to dark). Dark theme -> sun (going to light).
