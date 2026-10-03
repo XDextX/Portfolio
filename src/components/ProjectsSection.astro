@@ -105,13 +105,13 @@ const viewAll = t('projects.viewAll');
 					'[data-projects-toggle]',
 				);
 				const grid = root.querySelector<HTMLElement>('[data-projects-grid]');
-				// The label lives in its own element: rewriting childNodes[0]
-				// depended on the button's first child being a text node, which
-				// any whitespace or markup change would silently break.
-				const label = root.querySelector<HTMLElement>(
-					'[data-projects-toggle-label]',
-				);
-				if (!toggle || !grid || !label) return;
+				// The button carries both labels and CSS reveals one of them, so
+				// the width never changes with the state. What still changes is
+				// what a screen reader gets, and that is carried by aria-expanded
+				// below plus the visible text — so no label text is rewritten here.
+				// Rewriting childNodes[0] was the previous approach and it
+				// depended on the button's first child being a text node.
+				if (!toggle || !grid) return;
 
 				const hiddenItems = Array.from(
 					grid.querySelectorAll<HTMLElement>('.project-item--hidden'),
@@ -123,9 +123,6 @@ const viewAll = t('projects.viewAll');
 
 					toggle.setAttribute('aria-expanded', String(willExpand));
 					toggle.classList.toggle('open', willExpand);
-					label.textContent = willExpand
-						? (toggle.dataset.less ?? '')
-						: (toggle.dataset.more ?? '');
 
 					hiddenItems.forEach((item, i) => {
 						if (willExpand) {

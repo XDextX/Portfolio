@@ -40,8 +40,8 @@
 			"message": "No projects to show. Add the topic {{topic}} to your repos on GitHub."
 		},
 		"showMore": "Show more projects",
-		"showLess": "Show less",
-		"viewAll": "View all →"
+		"showLess": "Show less projects",
+		"viewAll": "View all"
 	},
 	"skills": {
 		"title": "Skills",

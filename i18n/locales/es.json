@@ -40,8 +40,8 @@
 			"message": "No hay proyectos para mostrar. Agrega el topic {{topic}} a tus repos en GitHub."
 		},
 		"showMore": "Ver más proyectos",
-		"showLess": "Ver menos",
-		"viewAll": "Ver todos →"
+		"showLess": "Ver menos proyectos",
+		"viewAll": "Ver todos"
 	},
 	"skills": {
 		"title": "Habilidades",

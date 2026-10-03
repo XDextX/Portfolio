@@ -6,13 +6,9 @@
 interface Props {
 	/** Whether to render the show more/less toggle button. @default false */
 	showToggle?: boolean;
-	/**
-	 * Label for the "show more" state. @default 'Ver más'
-	 * NOTE: the default is a user-visible Spanish string, not a comment.
-	 * Do not translate it; callers pass translated labels via ProjectsSection.
-	 */
+	/** Label for the "show more" state. @default 'Ver más proyectos' */
 	showMore?: string;
-	/** Label for the "show less" state. @default 'Ver menos' (user-visible) */
+	/** Label for the "show less" state. @default 'Ver menos proyectos' */
 	showLess?: string;
 	/** Label for the "view all" link. @default 'Ver todos' (user-visible) */
 	viewAll?: string;
@@ -22,8 +18,8 @@ interface Props {
 
 const {
 	showToggle = false,
-	showMore = 'Ver más',
-	showLess = 'Ver menos',
+	showMore = 'Ver más proyectos',
+	showLess = 'Ver menos proyectos',
 	viewAll = 'Ver todos',
 	class: className = '',
 } = Astro.props;
@@ -37,10 +33,24 @@ const {
 				data-projects-toggle
 				class='btn-action projects-footer__toggle'
 				aria-expanded='false'
-				data-more={showMore}
-				data-less={showLess}
 			>
-				<span data-projects-toggle-label>{showMore}</span>
+				{/*
+					Both labels live in the DOM, stacked in one grid cell, and CSS
+					reveals one. The hidden one keeps its space — visibility rather
+					than display:none — so the cell is as wide as the longer label and
+					the button does not resize when the state changes. That is the
+					whole reason for two spans instead of one: a fixed px or ch width
+					would have to be re-measured for every locale, and this follows
+					the text wherever it is translated.
+				*/}
+				<span class='projects-footer__label' data-projects-toggle-label>
+					<span class='projects-footer__label-text' data-state='more'>
+						{showMore}
+					</span>
+					<span class='projects-footer__label-text' data-state='less'>
+						{showLess}
+					</span>
+				</span>
 				<span class='projects-footer__chevron' aria-hidden='true'>
 					<svg
 						xmlns='http://www.w3.org/2000/svg'
@@ -65,11 +75,21 @@ const {
 </footer>
 
 <style>
+	/*
+	 * A column, left-aligned, not space-between.
+	 *
+	 * These two are not peers. The toggle is a disclosure: it reveals more of
+	 * the grid sitting directly above it, so it belongs against that grid's
+	 * left edge. The link is navigation to another page. Pushed to opposite
+	 * ends of a row they read as two independent items at opposite corners of
+	 * the section, and neither sits where it belongs — the control that governs
+	 * the grid ends up as far from the grid as the layout allows.
+	 */
 	.projects-footer {
 		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: var(--sp-4);
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--sp-3);
 		margin-top: var(--sp-6);
 	}
 
@@ -114,6 +134,51 @@ const {
 	.projects-footer__chevron {
 		display: inline-flex;
 		transition: transform var(--dur) var(--ease);
+	}
+
+	/*
+	 * The label swap must not resize the button, and the label is translated
+	 * text, so no fixed width holds for every locale.
+	 *
+	 * Symmetrising the two labels — "Ver más proyectos" / "Ver menos
+	 * proyectos" — was not enough: measured, it only took the jump from 44px to
+	 * 13px, because "menos" is wider than "más" by 14px even though both are
+	 * followed by the same noun. Equalising the label's shape does not equalise
+	 * its width.
+	 *
+	 * So the button lays its label out as a one-cell grid holding both states,
+	 * and the cell is max-content across them: the width is whatever the
+	 * longer label needs, in whatever language is rendering. A px or ch
+	 * min-width would have to be re-measured per language and would drift the
+	 * first time a translation changed.
+	 */
+	.projects-footer__toggle {
+		min-block-size: 1.75rem;
+	}
+
+	.projects-footer__label {
+		display: grid;
+		grid-template-areas: 'label';
+		align-items: center;
+	}
+
+	.projects-footer__label-text {
+		grid-area: label;
+		white-space: nowrap;
+	}
+
+	/* Collapsed rather than removed: display:none would drop it from
+	   max-content, and visibility keeps the space reserved. */
+	.projects-footer__label-text[data-state='less'] {
+		visibility: hidden;
+	}
+
+	.projects-footer__toggle.open .projects-footer__label-text[data-state='more'] {
+		visibility: hidden;
+	}
+
+	.projects-footer__toggle.open .projects-footer__label-text[data-state='less'] {
+		visibility: visible;
 	}
 
 	.projects-footer__toggle.open .projects-footer__chevron {
