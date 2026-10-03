@@ -51,6 +51,11 @@
 			"list": "Compact list"
 		}
 	},
+	"about": {
+		"cv": "Download CV",
+		"actions": "Actions",
+		"location": "Location"
+	},
 	"experience": {
 		"title": "Experience"
 	},

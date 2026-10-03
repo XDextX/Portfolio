@@ -1,6 +1,7 @@
 ---
 import AvatarCircle from './AvatarCircle.astro';
 import { ABOUT, JsonLdAbout } from '../data/about';
+import { t } from '@i18n/index';
 
 export interface Props {
 	lang?: 'es' | 'en';
@@ -10,9 +11,12 @@ export interface Props {
 const { lang = 'es', withJsonLd = true } = Astro.props;
 const personJsonLd = withJsonLd ? JsonLdAbout : null;
 
-const cvLabel     = lang === 'es' ? 'Descargar CV' : 'Download CV';
-const actionsLabel = lang === 'es' ? 'Acciones' : 'Actions';
-const locationLabel = lang === 'es' ? 'Ubicación' : 'Location';
+// Through t(), not a lang ternary. These were `lang === 'es' ? 'Descargar CV' :
+// 'Download CV'`, which puts prose in the component where no translator looks
+// and makes a locale switch depend on a second mechanism beside this one.
+const cvLabel       = t('about.cv');
+const actionsLabel  = t('about.actions');
+const locationLabel = t('about.location');
 
 /*
  * Two markup decisions, kept here rather than in the template: Astro emits
@@ -184,14 +188,11 @@ const locationLabel = lang === 'es' ? 'Ubicación' : 'Location';
 		font-weight: 700;
 		text-decoration: none;
 		border: 1px solid transparent;
-		transition:
-			opacity var(--dur) var(--ease),
-			transform var(--dur) var(--ease);
+		transition: opacity var(--dur) var(--ease);
 	}
 
 	.btn-cv:hover {
 		opacity: 0.88;
-		transform: translateY(-1px);
 		text-decoration: none;
 		color: #fff;
 	}
@@ -209,14 +210,12 @@ const locationLabel = lang === 'es' ? 'Ubicación' : 'Location';
 		text-decoration: none;
 		transition:
 			border-color var(--dur) var(--ease),
-			color var(--dur) var(--ease),
-			transform var(--dur) var(--ease);
+			color var(--dur) var(--ease);
 	}
 
 	.btn-social:hover {
 		border-color: var(--accent-text);
 		color: var(--accent-text);
-		transform: translateY(-1px);
 		text-decoration: none;
 	}
 

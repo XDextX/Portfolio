@@ -51,6 +51,11 @@
 			"list": "Lista compacta"
 		}
 	},
+	"about": {
+		"cv": "Descargar CV",
+		"actions": "Acciones",
+		"location": "Ubicación"
+	},
 	"experience": {
 		"title": "Experiencia laboral"
 	},
