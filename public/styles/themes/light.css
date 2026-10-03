@@ -12,32 +12,30 @@
     --bg: #E4E8EE;          /* behind the sheet */
     --main-bg: #FBFCFD;     /* the sheet itself */
 
-    /* Foreground / text */
-    --fg: #16202C;
+    /* Foreground / text.
+       One literal per value, and every other name is var() of it — two literals
+       for one colour means two values, and the theme that stops redefining one
+       leaves the other stale. --fg, --text-color and --text-main were three
+       copies of the same ink; --text-main had no reader at all and is gone. */
     --text-color: #16202C;
-    --text-main: #16202C;
+    --fg: var(--text-color);
     --text-secondary: #566274;
-    --text-inverse: #FFFFFF;
 
-    /* Brand — deliberately unchanged. This is the identity; only the ground
-       moved. */
-    --brand-text: var(--brand-primary);
-    --color-brand: var(--brand-primary);
-    --color-brand-600: var(--brand-primary-light);
-    --color-brand-700: var(--brand-primary);
+    /* Brand lives in 00-tokens.css: it is the identity, not a step of this
+       theme's ground, and both themes read the same values. */
 
     /* Neutral scale — cool, hue ~215 */
-    --neutral-0: #FFFFFF;
     --neutral-50: #F4F6F9;
     --neutral-100: #EAEEF3;
     --neutral-200: #DCE2E9;
-    --neutral-600: #566274;
+    --neutral-600: var(--text-secondary);
     --neutral-800: #1B2634;
     --neutral-900: #101822;
 
     /* Borders & surfaces */
-    --color-border: #DCE2E9;
+    --color-border: var(--neutral-200);
     --card-background: #FFFFFF;
+    --neutral-0: var(--card-background);
 
     /* Chip surface: a small labelled surface — a GitHub topic, a skill. It has
        to differ from BOTH --main-bg and --card-background, because chips appear
@@ -45,14 +43,14 @@
        is invisible on a card. --neutral-200 is the lightest step that still
        separates from this near-white sheet; --text-secondary stays at 4.8:1
        on top of it. */
-    --tag-surface: #DCE2E9;
+    --tag-surface: var(--neutral-200);
 
     /* Accent legible on the sheet (#FBFCFD): 6.4:1 — passes AA.
        The brand gold stays reserved for surfaces. */
     --accent-text: #7A5D10;
 
     /* Gold primary button with white text: 6.18:1 — passes AA. */
-    --accent-surface: #7A5D10;
+    --accent-surface: var(--accent-text);
 
     /* Error / alert text on the sheet: ~6.6:1 — passes AA. */
     --danger-color: #B3261E;

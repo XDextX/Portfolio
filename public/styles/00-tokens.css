@@ -5,6 +5,24 @@
     --brand-accent: #E3C770;
     --brand-accent-dark: #BFA258;
 
+    /* Brand aliases — theme-independent by design, so they live here rather
+       than in a theme file.
+
+       They were in light.css, which meant dark read them from there: --color-brand
+       scoped to (0,1,1) as `:root .theme-btn`-style rules lost to a scoped
+       (0,3,0), and --color-brand-700 filled `.btn`'s background with light's
+       navy. Nothing errored and nothing looked broken in a screenshot — the
+       404's `.btn` is overridden by `.btn--primary` in that page, so the wrong
+       value never reached the screen. It was live for `a { color: … }`'s
+       fallback and for the focus ring.
+
+       A token that means "the brand" is the same in every theme. A token that
+       means "a step of this theme's neutral ramp" belongs in the theme file. */
+    --brand-text: var(--brand-primary);
+    --color-brand: var(--brand-primary);
+    --color-brand-600: var(--brand-primary-light);
+    --color-brand-700: var(--brand-primary);
+
     /* Accent for TEXT. The brand gold (#E3C770) on a light ground gives only
        1.35:1 and is unreadable; the themes lower this to a dark tone.
        Use --accent-text for text colour and --brand-accent for

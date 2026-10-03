@@ -12,24 +12,45 @@
        is not the near-black-plus-acid-accent default. */
     --main-bg: #243972;
 
-    /* Raised surfaces: one step up from the sheet, so cards sit forward */
-    --card-background: #2B4372;
+    /* Raised surfaces: one step up from the sheet, so cards sit forward.
+       --card-background is --neutral-100 and --tag-surface is --neutral-50;
+       both are declared below, in terms of the step they mean. */
 
     /* Tag surface: a filled label (a GitHub topic). It recedes here rather than
        advancing — --neutral-50 is below the card, where --neutral-100 *is* the
-       card colour and the tag would vanish. Keeps --text-secondary at 6.5:1. */
-    --tag-surface: #1F3059;
+       card colour and the tag would vanish. Keeps --text-secondary at 6.5:1.
+       Declared in terms of the ramp below. */
 
-    /* Text */
-    --text-main: #F5F7FA;
-    --text-secondary: #A9B6CD;
+    /* Text.
+       One literal per value, and every other name is var() of it — two literals
+       for one colour means two values, and the theme that stops redefining one
+       leaves the other stale. --fg, --text-color and --text-main were three
+       copies of the same ink; --text-main had no reader at all and is gone. */
     --text-color: #F5F7FA;
-    --fg: #F5F7FA;
+    --fg: var(--text-color);
+    --text-secondary: #A9B6CD;
 
     --brand-text: var(--brand-accent);
 
     /* On navy the brand gold already gives 6.66:1 — use as is. */
     --accent-text: var(--brand-accent);
+
+    /* Primary button fill, and it must NOT be the brand gold.
+       dark.css did not set this, so it inherited #E3C770 from 00-tokens.css and
+       every primary button on this theme put white on light gold: measured
+       1.66:1, against 4.5:1 for text. Three places hardcode `color: #fff` on
+       top of it — the hero's download button, the 404's button and
+       .btn-action.primary — plus .icon-btn on hover. The "Ir al inicio" button
+       was genuinely hard to read.
+
+       So --accent-text (the gold, which is the right contrast for TEXT on navy)
+       and --accent-surface (a dark fill to put white text on) are different jobs.
+       Note this is deliberately NOT var(--accent-text): same hue, different
+       lightness, because white sits on top of one and not the other.
+
+       The same value as light.css, for the same reason: this token is a fill
+       under hardcoded white, not a theme-relative choice. */
+    --accent-surface: #7A5D10;
 
     /* Error / alert text on the navy field. */
     --danger-color: #F2B8B5;
@@ -41,16 +62,20 @@
     --clr-advanced-text: #6EE7A8;
 
     /* Neutral scale — navy steps, so a chip, a track and a card all belong to
-       the same hue. */
-    --neutral-0: #16233F;
+       the same hue. Each surface name is var() of the step it means, so the
+       ramp has one source and a name can never drift off it. */
     --neutral-50: #1F3059;
     --neutral-100: #2B4372;
     --neutral-200: #3A578F;
-    --neutral-600: #A9B6CD;
+    --neutral-600: var(--text-secondary);
     --neutral-800: #E8EDF5;
     --neutral-900: #FFFFFF;
 
-    --color-border: #3A578F;
+    --neutral-0: var(--bg);
+
+    --color-border: var(--neutral-200);
+    --tag-surface: var(--neutral-50);
+    --card-background: var(--neutral-100);
 
     color-scheme: dark;
 }
