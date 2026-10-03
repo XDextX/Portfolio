@@ -116,9 +116,19 @@ import { t } from '@i18n/index';
 		color: var(--text-color);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-md);
-		padding: 0.3rem 0.5rem;
+		padding: 0;
 		cursor: pointer;
 		transition: background var(--dur) var(--ease);
+		/* Must match .language-switcher exactly: these two sit in one row and a
+		   sub-pixel difference reads as crooked. Both were measured at 29.00 and
+		   29.59 before this, because each derived its height from a different
+		   padding. An explicit height with border-box (global, 01-base.css)
+		   stops padding from adding to it.
+
+		   A literal, not a token: two controls are not a design system, and a
+		   --control-h would imply there is one. */
+		block-size: 30px;
+		inline-size: 34px;
 	}
 
 	.theme-btn:hover {

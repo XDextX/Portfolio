@@ -101,9 +101,18 @@ const htmlLang  = locale === 'es' ? 'es-CR' : 'en-US';
 </html>
 
 <style>
+	/*
+	 * align-items: center so the two controls are centred on one line rather
+	 * than aligned by flex-start, and an explicit gap because there was none:
+	 * measured, the select's right edge touched the theme button's left edge
+	 * exactly, 0px apart, so the space depended on nothing at all. Reordering
+	 * the two children in the markup would have silently changed it.
+	 */
 	.layout-topbar {
 		display: flex;
+		align-items: center;
 		justify-content: flex-end;
+		gap: var(--sp-3);
 		padding: 0.75rem 1rem;
 	}
 </style>
