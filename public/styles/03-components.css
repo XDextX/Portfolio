@@ -1,3 +1,22 @@
+/*
+ * Shared component styles.
+ *
+ * This sheet is not scoped, so a class here applies everywhere. That is why
+ * .btn-action lives here rather than in either of the two components that use
+ * it: Astro scopes each component's <style> to that component, so a class two
+ * components need cannot live in one of them. Before this, it was duplicated in
+ * ProjectCard.astro and ProjectsFooter.astro, and the two copies had already
+ * drifted — the footer one carried cursor: pointer and font-family: inherit and
+ * the card one did not. Neither difference was visible: 01-base.css already
+ * gives links a pointer, and <a> inherits font-family on its own. The risk was
+ * the drift, not a present bug.
+ *
+ * Only rules something actually renders belong here. Everything below was
+ * checked against the markup in src/ before being kept; the removed set was
+ * .pill and its five sizes, .filled.*, .outlined and its four variants, .badge,
+ * .btn.primary and .btn.ghost — 89 lines, none of them reachable.
+ */
+
 .btn {
     align-items: center;
     gap: var(--sp-2);
@@ -6,18 +25,12 @@
     border: 1px solid transparent;
     background: var(--color-brand-700);
     font-weight: 700;
-    transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
-    /* box-shadow: -53px -53px 1px -50px rgba(0, 0, 0, 0.6) inset; */
-    border-bottom: 3px solid rgba(0, 0, 0, 0.2);
-    border-right: 3px solid rgba(0, 0, 0, 0.2);
     cursor: pointer;
     display: inline-block;
-    transition: 0.15s ease;
-}
-
-.btn.primary {
-    background: var(--bg-color);
-    color: var(--text-main);
+    /* One declaration. This had two: "transform ... box-shadow ..." above and
+       "0.15s ease" below, and the second silently won, so the first never
+       applied. The surviving value is the one that was rendering. */
+    transition: .15s ease;
 }
 
 .btn:hover {
@@ -29,103 +42,48 @@
     transform: translateY(0);
 }
 
-.btn.ghost {
-    background: transparent;
-    border-color: var(--color-brand-600);
-}
-
 .card {
     border-radius: var(--radius-lg);
     padding: var(--sp-4);
     box-shadow: var(--shadow-sm);
 }
 
-.pill {
-    display: inline-block;
+.btn-action {
+    display: inline-flex;
     align-items: center;
-    gap: .4rem;
-    padding: .1rem .5rem;
-    border-radius: 999px;
-    border: 1px solid var(--neutral-200);
-    background: var(--neutral-50);
-    color: var(--neutral-800);
-    white-space: nowrap;
-}
-
-.pill.xs {
-    font-size: var(--fs-xs);
-}
-
-.pill.sm {
-    font-size: var(--fs-sm);
-}
-
-
-.pill.md {
-    font-size: var(--fs-base);
-}
-
-.pill.lg {
-    font-size: var(--fs-lg);
-}
-
-.pill.xl {
-    font-size: var(--fs-xl);
-}
-
-.filled.neutral {
-    background: var(--neutral-50);
-    color: #333;
-    border-color: var(--neutral-200);
-}
-
-.filled.info {
-    background: #eaf2ff;
-    color: #2257a3;
-    border-color: #cfe2ff;
-}
-
-.filled.success {
-    background: #eaf7ec;
-    color: #287a37;
-    border-color: #c9e6cd;
-}
-
-.filled.warning {
-    background: #fff5e6;
-    color: #a66300;
-    border-color: #ffe0b3;
-}
-
-.outlined {
+    gap: 0.3rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
     background: transparent;
-}
-
-.outlined.neutral {
-    color: #555;
-    border-color: #d4d4d8;
-}
-
-.outlined.info {
-    color: #2257a3;
-    border-color: #cfe2ff;
-}
-
-.outlined.success {
-    color: #287a37;
-    border-color: #c9e6cd;
-}
-
-.outlined.warning {
-    color: #a66300;
-    border-color: #ffe0b3;
-}
-
-.badge {
-    padding: .25rem .5rem;
-    border-radius: .5rem;
+    color: var(--text-color);
     font-size: var(--fs-xs);
-    background: var(--neutral-100);
-    color: var(--neutral-800);
-    border: 1px solid var(--neutral-200);
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition:
+        border-color var(--dur) var(--ease),
+        background var(--dur) var(--ease),
+        color var(--dur) var(--ease);
+}
+
+/* Hover moves the border to the brand gold and the text with it, the same
+   signal the chips, the cards and the footer toggle use. One meaning for hover
+   across the site is the point. */
+.btn-action:hover {
+    border-color: var(--accent-text);
+    color: var(--accent-text);
+    text-decoration: none;
+}
+
+.btn-action.primary {
+    background: var(--accent-surface);
+    border-color: var(--accent-surface);
+    color: #fff;
+}
+
+.btn-action.primary:hover {
+    opacity: 0.88;
+    color: #fff;
 }

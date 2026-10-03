@@ -81,6 +81,11 @@
     border-color: var(--neutral-200);
 }
 
+/* Hover moves the border to the gold and the icon with it, matching light.css.
+   This used to change only the background to --neutral-200, dropping the icon
+   from 8.31 to 6.08 contrast while leaving the state carried by a surface
+   shift rather than a colour change. */
 :root[data-theme="dark"] .theme-btn:hover {
-    background: var(--neutral-200);
+    border-color: var(--accent-text);
+    color: var(--accent-text);
 }

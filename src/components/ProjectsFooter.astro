@@ -93,44 +93,6 @@ const {
 		margin-top: var(--sp-6);
 	}
 
-	/* Reuse btn-action pattern from ProjectCard */
-	.btn-action {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.3rem;
-		padding: 0.3rem 0.7rem;
-		border-radius: var(--radius-md);
-		border: 1px solid var(--color-border);
-		background: transparent;
-		color: var(--text-color);
-		font-size: var(--fs-xs);
-		font-weight: 600;
-		text-decoration: none;
-		cursor: pointer;
-		font-family: inherit;
-		transition:
-			border-color var(--dur) var(--ease),
-			background var(--dur) var(--ease),
-			color var(--dur) var(--ease);
-	}
-
-	.btn-action:hover {
-		border-color: var(--accent-text);
-		color: var(--accent-text);
-		text-decoration: none;
-	}
-
-	.btn-action.primary {
-		background: var(--accent-surface);
-		border-color: var(--accent-surface);
-		color: #fff;
-	}
-
-	.btn-action.primary:hover {
-		opacity: 0.88;
-		color: #fff;
-	}
-
 	.projects-footer__chevron {
 		display: inline-flex;
 		transition: transform var(--dur) var(--ease);

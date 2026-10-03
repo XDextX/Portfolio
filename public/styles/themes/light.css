@@ -113,6 +113,12 @@
     border-color: var(--neutral-200);
 }
 
+/* Hover moves the border to the gold and the icon with it — the same signal the
+   chips, the cards and the action buttons use, so hover means one thing on this
+   site. The rule used to change only the background, which both weakened the
+   signal (a surface shift, not a colour change) and lowered the icon's contrast
+   from 16.44 to 14.11 while doing it. */
 :root .theme-btn:hover {
-    background: var(--neutral-100);
+    border-color: var(--accent-text);
+    color: var(--accent-text);
 }
