@@ -1,5 +1,17 @@
 ---
 import { t } from '@i18n/index';
+
+/*
+ * Both icons are always in the DOM; CSS shows the one for the current theme.
+ * That is why the note on which is which belongs here rather than beside the
+ * markup — Astro emits anything in the template body verbatim, and three of
+ * these notes were reaching every visitor on every page.
+ *
+ * Sun: shown in dark mode, meaning "switch to light".
+ * Moon: shown in light mode, meaning "switch to dark".
+ * The three small circles on the moon are craters, so the shape reads as a moon
+ * rather than a plain circle at 18px.
+ */
 ---
 
 <button
@@ -10,7 +22,6 @@ import { t } from '@i18n/index';
 	data-label-light={t('layout.themeToLight')}
 	aria-label={t('layout.themeToDark')}
 >
-	<!-- Sun: shown in dark mode, meaning "switch to light" -->
 	<svg
 		class='icon icon--sun'
 		xmlns='http://www.w3.org/2000/svg'
@@ -29,7 +40,6 @@ import { t } from '@i18n/index';
 			d='M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41'
 		></path>
 	</svg>
-	<!-- Moon: shown in light mode, meaning "switch to dark" -->
 	<svg
 		class='icon icon--moon'
 		xmlns='http://www.w3.org/2000/svg'
@@ -44,7 +54,6 @@ import { t } from '@i18n/index';
 		aria-hidden='true'
 	>
 		<path d='M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z'></path>
-		<!-- Craters, so the shape reads as a moon rather than a plain circle at 18px -->
 		<circle cx='15.5' cy='8' r='1.1' fill='currentColor' stroke='none' opacity='0.45'></circle>
 		<circle cx='8' cy='13.5' r='1.4' fill='currentColor' stroke='none' opacity='0.35'></circle>
 		<circle cx='12' cy='18' r='0.9' fill='currentColor' stroke='none' opacity='0.3'></circle>
