@@ -9,6 +9,9 @@ const read = (...parts: string[]) =>
  * `proyectos/[name].astro` redirects to /404 when the repo lookup fails, but
  * `src/pages/404.astro` did not exist: the redirect landed on Astro's default
  * error page. Verified live before and after adding it.
+ *
+ * Locale parity is a separate concern and lives in `i18n.test.ts`, which checks
+ * every page rather than only this one.
  */
 describe('404 route', () => {
     it('src/pages/404.astro exists', async () => {
@@ -32,27 +35,38 @@ describe('404 route', () => {
 
         // t() returning the key when a translation is missing is silent, so the
         // keys must exist in both locales.
-        const keys = [...page.matchAll(/t\(['"]([\w.]+)['"]/g)].map((m) => m[1]);
+        const keys = [...page.matchAll(/\bt\(\s*['"]([\w.]+)['"]/g)].map((m) => m[1]);
         expect(keys.length).toBeGreaterThan(0);
 
         const en = JSON.parse(await read('i18n', 'locales', 'en.json'));
         const es = JSON.parse(await read('i18n', 'locales', 'es.json'));
+        const resolve = (obj: unknown, key: string) =>
+            key.split('.').reduce<unknown>((acc, part) => {
+                if (acc == null || typeof acc !== 'object') return undefined;
+                return (acc as Record<string, unknown>)[part];
+            }, obj);
 
         for (const key of keys) {
-            const resolve = (obj: any) =>
-                key.split('.').reduce((acc, part) => (acc == null ? acc : acc[part]), obj);
-
-            expect(resolve(en), `missing in en.json: ${key}`).toBeTruthy();
-            expect(resolve(es), `missing in es.json: ${key}`).toBeTruthy();
+            expect(resolve(en, key), `missing in en.json: ${key}`).toBeTruthy();
+            expect(resolve(es, key), `missing in es.json: ${key}`).toBeTruthy();
         }
     });
-});
 
-describe('i18n locale parity', () => {
-    it('both locales define the same top-level keys', async () => {
-        const en = JSON.parse(await read('i18n', 'locales', 'en.json'));
-        const es = JSON.parse(await read('i18n', 'locales', 'es.json'));
+    it('is not shadowed by a Resume route', async () => {
+        // `Resume.astro` once lived in src/pages/ and Astro registered it as
+        // /Resume, duplicating / with conflicting canonical and hreflang tags. It
+        // is a component now; this asserts it stayed one.
+        const component = path.resolve(process.cwd(), 'src', 'components', 'Resume.astro');
+        expect((await fs.stat(component)).isFile()).toBe(true);
 
-        expect(Object.keys(es).sort()).toEqual(Object.keys(en).sort());
+        const pages = path.resolve(process.cwd(), 'src', 'pages');
+        const registered = await fs.readdir(pages, { withFileTypes: true });
+
+        expect(
+            registered
+                .filter((e) => e.isFile() && e.name.toLowerCase() === 'resume.astro')
+                .map((e) => e.name),
+            'Resume.astro must not live in src/pages/ — Astro would register it as a route',
+        ).toEqual([]);
     });
 });
