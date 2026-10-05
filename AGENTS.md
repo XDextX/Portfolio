@@ -38,8 +38,8 @@ asserted as ">= 1 with unique ids", not a fixed count, so adding a contact chann
 
 ### A guard that cannot fail is worse than no guard
 
-Three of the tests below were green while the exact thing they exist to prevent was happening in the
-repo. All three failures had the same shape: the guard did not look where the violation actually was.
+Six of the tests below were green while the exact thing they exist to prevent was happening in the
+repo. All six failures had the same shape: the guard did not look where the violation actually was.
 
 - **A length threshold cannot tell a label from a note.** `comments.test.ts` rejected HTML comments over
   90 characters; four real prose notes of 47-72 characters sailed through, and the threshold looked
@@ -50,6 +50,17 @@ repo. All three failures had the same shape: the guard did not look where the vi
 - **A scanner can silently drop half a file.** The same test set `skipUntil` on any `<script>` and
   cleared it on `</script>`. `AboutSection` has a self-closing `<script type="application/ld+json" />`,
   so everything after that line left the analysis for good.
+- **A brace inside a CSS comment swallows the rule after it.** `tokens.test.ts` looked for duplicate
+  declarations with `/\{([^{}]*)\}/g` over raw CSS. `00-tokens.css` carries a note quoting
+  ``a { color: … }``, and that `{` paired with the `}` closing `:root`, so the scan read **193 characters
+  of that file out of 6389** and never saw a token. Strip comments first — the other three tests in the
+  same file already did, which is why only this one was blind.
+- **A hardcoded list of files goes stale silently.** `viewtransitions.test.ts` iterated five component
+  names. A sixth component with a `DOMContentLoaded` binding passed all seventeen tests, because the
+  guard only read the names it had been told about. Derive the list from the filesystem.
+- **An assertion can be satisfied by something other than the thing.** `aboutsection.test.ts` asserted
+  `toContain('AvatarCircle')`, which the import path `'./AvatarCircle.astro'` satisfies on its own —
+  replacing the component entirely, usage and import, stayed green. Ask what else in the file matches.
 
 So: **prove a guard still bites before reporting green.** Inject a violation and watch it fail — do not
 conclude it works because the suite passed. A green suite that has never failed is untested. And when a
@@ -303,8 +314,13 @@ helpers; on components, a typed `interface Props`. Examples: `src/data/levelLabe
 `src/types/github.ts`.
 
 **Centralised fetch mocks.** Use `tests/helpers/github-mocks.ts`
-(`mockGitHubSearchResponse`, `mockGitHubRepoResponse`, `mockErrorResponse`, `sequenceFetch`) plus
-`vi.unstubAllGlobals()` in `afterEach`. Do not repeat the GitHub `fetch` shape in every spec.
+(`mockGitHubSearchResponse`, `mockGitHubRepoResponse`) plus `vi.unstubAllGlobals()` in `afterEach`.
+Do not repeat the GitHub `fetch` shape in every spec.
+
+The file once also exported `mockErrorResponse`, `sequenceFetch` and a `FetchStub` type. No test
+imported them, and `tests/README.md` documented them as if they were in use — so a reader would reach
+for a helper that nothing exercised. They are gone. **Add a mock helper when a test needs it, not
+before**, or it is documentation of an untested path.
 
 ## Quick file reference
 
@@ -332,10 +348,20 @@ filter it also picks up `e2e/about.spec.ts` and fails on a missing Playwright ru
 |---|---|
 | `tests/tokens.test.ts` | every `var(--x)` resolves; no token alive only on a hardcoded fallback; no duplicate declaration per rule. Strips comments first |
 | `tests/comments.test.ts` | every HTML comment in a template body is on the sixteen-label allowlist; no `//` line in the markup region |
-| `tests/viewtransitions.test.ts` | client scripts re-bind on `astro:page-load`; no `is:inline`, no `currentScript`, no global id in any component |
-| `tests/contact.test.ts` | contact shape; **icon paths are root-absolute and exist in `public/`** |
-| `tests/notfound.test.ts` | the `/404` redirect target exists and its keys are in both locales |
-| `tests/about.test.ts`, `tests/aboutsection.test.ts`, `tests/github-helpers.test.ts` | data invariants and GitHub helper behaviour |
+| `tests/viewtransitions.test.ts` | client scripts re-bind on `astro:page-load`; no `is:inline`, no `currentScript`, no global id in any component. The component list is **derived** from the filesystem, not written out |
+| `tests/visual-language.test.ts` | no hover lifts; no `font-weight` past 700; no hover signals by background alone; prose goes through `t()`; the person's name has one source; `--accent-surface` clears 4.5:1 under white in both themes |
+| `tests/contact.test.ts` | contact shape and non-empty labels; **each `href` agrees with its own `value`** (mailto for email, an https URL whose host+path the value shows); `sameAs` only on browsable profiles; **icon paths are root-absolute and exist in `public/`** |
+| `tests/about.test.ts` | `ABOUT.resumeUrl` points at a real file in `public/`; `ABOUT.socials` carries the email channel; `AboutSection` reads both from `ABOUT` |
+| `tests/i18n.test.ts` | both locales share top-level keys; **every `t()` key used in any `src/` file** resolves in both. Comments stripped first |
+| `tests/notfound.test.ts` | the `/404` redirect target exists and its keys are in both locales; `Resume.astro` has not moved back into `pages/` |
+| `tests/github-helpers.test.ts` | `ghListByTopic` / `ghRepo` / `ghSearch`: response shape, `user:` scoping, `perPage` |
+
+Two files are **not** in this table on purpose. `sortRepos()` and `ghRepoReadme()` are exported from
+`src/pages/lib/github.ts` and have no tests; `sortRepos` is the single ranking both `/` and `/proyectos`
+use, so a drift shows the same repo in two positions across routes. Add them before changing either.
+
+A note on `tests/helpers/`: keep it to what a test actually imports. It is not a place to describe
+shapes a future test might want.
 
 ## Working on components one at a time
 
@@ -485,6 +511,13 @@ It is enabled by `"prepare": "husky"` in `package.json`, which runs on every `np
   task **does not** imply committing: leave the changes in the working tree.
 - If unsure whether to commit, **ask** instead of deciding on your own.
 - Normal state: uncommitted changes in the working tree, unpushed commits.
+- **`git checkout -- .` destroys work that was never committed.** It restores from the index, so any
+  edit made since the last commit is gone — and it fails silently, so the loss is only noticed later.
+  This repo's normal state is uncommitted work, which makes this the default way to lose a session.
+  When a probe or experiment needs to undo one mutation, revert **the files it touched** by explicit
+  path, and hash the directories you did not mean to touch before and after to prove they survived.
+  `git checkout -- <path>` on a path that is *untracked* (a file a script just created) does nothing
+  at all — delete those by hand.
 
 ## Memory
 - `Memory.md` is your memory. Keep it small (50 lines max); summarise what is stale and delete it.
