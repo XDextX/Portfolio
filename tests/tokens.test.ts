@@ -157,8 +157,20 @@ describe('design tokens', () => {
     it('stylesheet custom properties are unique per theme layer', () => {
         // A duplicate declaration in the same rule usually means a copy-paste
         // that silently overrides an earlier value.
+        //
+        // Comments come off first, and that is not tidiness. A `{ … }` written
+        // inside a CSS comment pairs with the next real `}`, so a note quoting a
+        // declaration swallows the whole rule that follows it. 00-tokens.css has
+        // one — a backtick-quoted `a { color: … }` explaining a past fallback —
+        // and it matched the `}` that closed `:root`, so this scan read 193
+        // characters of that file out of 6389 and never saw a single token.
+        // Every duplicate in the largest token file passed.
+        //
+        // That is the same shape as the `skipUntil` bug in comments.test.ts: a
+        // scanner that silently drops most of its subject is worse than no
+        // scanner, because it reports having checked. Widen what it reads.
         for (const file of CSS_FILES) {
-            const src = fs.readFileSync(file, 'utf-8');
+            const src = stripComments(fs.readFileSync(file, 'utf-8'));
             const blocks = src.matchAll(/\{([^{}]*)\}/g);
             for (const block of blocks) {
                 const seen = new Map<string, number>();
