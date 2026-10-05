@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { ghListByTopic, ghRepo, ghSearch } from '../src/pages/lib/github';
 import { mockGitHubSearchResponse, mockGitHubRepoResponse } from './helpers/github-mocks';
+// Same module as `@type/github`, which is what the source itself imports. One
+// spelling for one file: two paths for one type is two places to update.
 import type { GitHubRepo } from '@type/github';
 
 const defaultOwner: GitHubRepo['owner'] = {

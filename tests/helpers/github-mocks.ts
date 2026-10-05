@@ -1,6 +1,6 @@
-import type { GitHubRepo } from "../../src/types/github";
+import type { GitHubRepo } from '@type/github';
 
-/** Minimal Response-like factory used for fetch stubs in tests */
+/** Minimal Response-like factory used for fetch stubs in tests. */
 function makeResponse<T>(body: T | null, status = 200) {
     const ok = status >= 200 && status < 300;
     return {
@@ -11,31 +11,13 @@ function makeResponse<T>(body: T | null, status = 200) {
     } as unknown as Response;
 }
 
+/** A successful search result carrying `items`. */
 export function mockGitHubSearchResponse(items: GitHubRepo[] = []) {
     return makeResponse({ items }, 200);
 }
 
+/** A single-repo response, or a 404 when `repo` is null. */
 export function mockGitHubRepoResponse(repo: GitHubRepo | null) {
     if (!repo) return makeResponse(null, 404);
     return makeResponse(repo, 200);
 }
-
-/** Create an error Response (non-OK) with optional json body */
-export function mockErrorResponse(status = 500, body: unknown = null) {
-    return makeResponse(body as any, status);
-}
-
-/**
- * Build a fetch stub function that yields responses in sequence.
- * Example: vi.stubGlobal('fetch', sequenceFetch([r1, r2]));
- */
-export function sequenceFetch(responses: Response[]) {
-    let i = 0;
-    return async () => {
-        const r = responses[Math.min(i, responses.length - 1)];
-        i += 1;
-        return r;
-    };
-}
-
-export type FetchStub = () => Promise<Response>;
