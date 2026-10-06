@@ -196,7 +196,9 @@ components a typed `interface Props`. Examples: `src/data/levelLabels.ts`, `src/
 - **Never index into `childNodes` to swap a label.** `toggle.childNodes[0].textContent = …` breaks the
   moment someone adds whitespace. Better: do not swap text at all — the show-more button carries
   both labels and CSS reveals one, so the width cannot change with state. When you must rewrite, give
-  the label its own element (`data-projects-toggle-label`) and target that.
+  the label its own element and target that by class; do not invent a `data-*` hook for it, because
+  `ProjectsFooter` ended up carrying one that nothing read, two lines after this rule said the CSS
+  route was the better one.
 - **A label swap must not resize the control, nor depend on a hardcoded width.** Two translated
   strings differ in length in every language, so a fixed `min-width` in `px` or `ch` is wrong
   somewhere. Stack both states in one `grid-template-areas` cell with `visibility: hidden` on the
