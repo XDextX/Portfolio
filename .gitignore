@@ -45,5 +45,11 @@ bloque/
 
 .vscode/
 .vercel/
-.playwright-report/
-.github/
+
+# playwright: el reporte HTML pesa ~500 KB y test-results/.last-run.json se
+# reescribe en cada corrida, asi que ensucian el arbol sin aportar nada.
+# El directorio real NO lleva punto delante: la regla anterior decia
+# .playwright-report/, que no existe, y por eso ambos artefactos acabaron
+# versionados.
+playwright-report/
+test-results/
