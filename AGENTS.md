@@ -525,7 +525,8 @@ ask, rather than dressing it as a result.
 | `public/styles/themes/{light,dark}.css` | theme-specific values, including per-theme hovers |
 
 ## Memory
-
+- **Read `Memory.md` before proposing anything** — it holds the current state and the decisions
+  already taken.
 - `Memory.md` is your memory. Keep it small (50 lines max); summarise what is stale and delete it. Its
   language is your call — this file stays English.
 - **Split of roles:** the *non-negotiable* rules live in `docs/constitution.md`; the *working* rules
@@ -534,3 +535,4 @@ ask, rather than dressing it as a result.
 - If something comes up often enough, propose a new rule — here, or in the constitution if it is
   genuinely non-negotiable.
 - After each task, update `Memory.md`. Update this file only when a rule actually changed.
+## Limits
