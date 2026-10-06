@@ -32,22 +32,10 @@ const Tag = href ? 'a' : 'span';
 </Tag>
 
 <style>
-	/* It is a chip, not a row of text: this is a link to the technology's site,
-	   and an element you can click has to look like one. An earlier pass here
-	   removed the fill, the border and the radius together, which left logo and
-	   label floating on the sheet with nothing to say "pressable" — and the
-	   hover fill it used (--neutral-100) measured 1.13:1 against that sheet, so
-	   it did not register either.
-
-	   What changed is the radius and the weight, not the affordance: a lozenge at
-	   999px on a 32px row is the generic look, --radius-sm is a chip. Weight 500
-	   because ten rows at 600 is a wall, and the dot is 8px because it is now
-	   the thing carrying the level.
-
-	   Hover moves colour instead of background. A fill alone cannot work on a
-	   near-white sheet — every light grey lands near 1.2:1 — so the text and the
-	   border go to --accent-text, which is 5.2:1 here and 7.9:1 in the dark
-	   theme, and it keeps navy and gold as the only chroma on the page. */
+	/* A clickable element has to look like one. An earlier pass removed fill,
+	   border and radius together and left it floating; the hover fill it used
+	   (--neutral-100) measured 1.13:1 against the sheet. Hover moves colour, not
+	   background: a fill alone lands near 1.2:1, so it goes to --accent-text. */
 	.chip {
 		display: inline-flex;
 		align-items: center;

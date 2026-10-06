@@ -60,13 +60,10 @@ const tagline = t('contact.tagline');
 		max-width: unset;
 	}
 
-	/* The list is a flex row, so each <li> is a flex item and its automatic
-	   minimum size is its min-content width. The contact value is
-	   white-space: nowrap so that it can ellipsize, which means its min-content
-	   width is the whole address — the item then refuses to shrink and pushes
-	   past the container. Measured: 84px of horizontal scroll at a 360px
-	   viewport, 30px at 414px. Zeroing the minimum lets the card shrink and the
-	   ellipsis finally do its job. */
+	/* Each <li> is a flex item whose automatic minimum is its min-content width,
+	   and the nowrap value ellipsizes — so the minimum is the whole address and
+	   the item refuses to shrink. Measured 84px of scroll at 360px, 30px at
+	   414px. Zeroing it lets the card shrink and the ellipsis work. */
 	.contact-list > li {
 		min-width: 0;
 	}

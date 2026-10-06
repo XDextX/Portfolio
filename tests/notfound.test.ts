@@ -8,10 +8,7 @@ const read = (...parts: string[]) =>
 /**
  * `proyectos/[name].astro` redirects to /404 when the repo lookup fails, but
  * `src/pages/404.astro` did not exist: the redirect landed on Astro's default
- * error page. Verified live before and after adding it.
- *
- * Locale parity is a separate concern and lives in `i18n.test.ts`, which checks
- * every page rather than only this one.
+ * error page. Locale parity lives in i18n.test.ts, which checks every page.
  */
 describe('404 route', () => {
     it('src/pages/404.astro exists', async () => {

@@ -35,18 +35,10 @@
     /* On navy the brand gold already gives 6.66:1 — use as is. */
     --accent-text: var(--brand-accent);
 
-    /* Primary button fill, and it must NOT be the brand gold.
-       dark.css did not set this, so it inherited #E3C770 from 00-tokens.css and
-       every primary button on this theme put white on light gold: measured
-       1.66:1, against 4.5:1 for text. Three places hardcode `color: #fff` on
-       top of it — the hero's download button, the 404's button and
-       .btn-action.primary — plus .icon-btn on hover. The "Ir al inicio" button
-       was genuinely hard to read.
-
-       So --accent-text (the gold, which is the right contrast for TEXT on navy)
-       and --accent-surface (a dark fill to put white text on) are different jobs.
-       Note this is deliberately NOT var(--accent-text): same hue, different
-       lightness, because white sits on top of one and not the other.
+    /* Primary button fill, and it must NOT be the brand gold. Unset here it
+       inherited #E3C770 from 00-tokens.css: white on light gold, 1.66:1 against
+       4.5:1, with four places hardcoding `color: #fff` on it. Same hue as
+       --accent-text, different lightness — white sits on this one, not that. */
 
        The same value as light.css, for the same reason: this token is a fill
        under hardcoded white, not a theme-relative choice. */

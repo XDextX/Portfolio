@@ -1,21 +1,8 @@
 /* ── Typography ──
-   Two self-hosted families, no third-party request at runtime.
-
-   IBM Plex Sans carries every piece of UI and body text. It is an engineered
-   grotesque: the flared 'a' and flat-sided curves give it a voice, which the
-   previous system stack (ui-sans-serif, system-ui, Segoe UI, …) could not —
-   the site had document.fonts.size === 0, so every visitor saw whatever their
-   OS happened to ship.
-
-   IBM Plex Mono is for code and small data only: star counts, dates, hashes.
-   Two weights, latin subset, because the mono never carries prose.
-
-   Plex Sans is served as a variable font (font-weight: 100 700), so all four
-   weights cost one file per subset rather than one file per weight. Latin-ext
-   is kept as insurance for accented names; latin alone covers Spanish.
-
-   unicode-range is preserved from Google Fonts so a browser only downloads the
-   subset it needs. Total: 4 files, ~105 KB, and no request leaves the origin. */
+   Two self-hosted families, no third-party request at runtime. Plex Sans carries
+   all UI and body text — the flared 'a' gives it a voice the system stack could
+   not, where document.fonts.size === 0. Plex Mono is code only. Variable
+   (100 700): 4 files, ~105 KB, no request leaves the origin. */
 
 @font-face {
     font-family: 'IBM Plex Sans';

@@ -141,12 +141,9 @@ const byCategory = groupBy(items, (t) => t.category ?? 'Other');
 		justify-content: flex-end;
 	}
 
-	/* Chips are small, so two columns always fit comfortably.
-	   Bars need real width for the progress track: SkillBar spends ~260px on
-	   its logo, name and level tag before the track starts, so a 2-column grid
-	   squeezed the track down to 31px (and to 0px below ~546px of content).
-	   auto-fit only splits into two once each column clears 420px; below that
-	   it stays single-column, which is what keeps the track visible. */
+	/* Bars need real width: SkillBar spends ~260px on logo, name and level tag
+	   before the track starts, so 2 columns squeezed it to 31px, and to 0px below
+	   ~546px of content. auto-fit only splits once each column clears 420px. */
 	.chip-grid {
 		display: grid;
 		grid-template-columns: repeat(2, 1fr);
@@ -163,19 +160,11 @@ const byCategory = groupBy(items, (t) => t.category ?? 'Other');
 		margin-bottom: var(--sp-2);
 	}
 
-	/* The category name is a group heading, and the data already spells it the
-	   way it should read — "Frontend", not "FRONTEND". Forcing uppercase and
-	   0.06em of tracking on top of that was shouting a word that was already
-	   written correctly, and it is the single loudest template tell on the page.
-
-	   Hierarchy here is carried by size, which is the only thing that scales:
-	   the section <h2> is --fs-xl, a category is --fs-base, and the items in it
-	   are --fs-sm. Nothing else has to shout to be found.
-
-	   .contact-label keeps its uppercase treatment on purpose: it names a channel
-	   (Email, GitHub, LinkedIn), and in sentence case "Email" reads as the common
-	   noun rather than the name. Same look, different meaning — which is only
-	   legible because the two are no longer the same thing. */
+	/* The data already spells the category the way it should read — "Frontend",
+	   not "FRONTEND" — so uppercasing plus 0.06em of tracking was shouting a
+	   correct word. Hierarchy is carried by size: h2 --fs-xl, category --fs-base,
+	   items --fs-sm. .contact-label keeps uppercase because "Email" in sentence
+	   case reads as the common noun. */
 	.cat-label {
 		font-size: var(--fs-base);
 		font-weight: 600;

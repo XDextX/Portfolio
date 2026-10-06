@@ -21,14 +21,9 @@ export const levelVariantMap: Record<TechLevel, 'warning' | 'info' | 'success'> 
 } as const;
 
 /**
- * How much of the track a level fills: one third, two thirds, all of it.
- *
- * A level is one of three ordered values, not a measurement, so the fill is
- * quantised to thirds. It used to be 25 / 55 / 85, which claimed that an
- * intermediate skill is 55% of something measurable, and that the gap up to
- * advanced is wider than the gap up from beginner — neither of which is in the
- * data, both of which the numbers invited a reader to assume. Do not read this
- * as a percentage of proficiency. It is a fraction of the bar.
+ * How much of the track a level fills: one third, two thirds, all of it. A level
+ * is one of three ordered values, not a measurement, so the fill is quantised.
+ * It was 25 / 55 / 85, which claimed a measurable 55% that is not in the data.
  */
 export const LEVEL_FILL: Record<TechLevel, number> = {
 	advanced: 100,
@@ -37,11 +32,9 @@ export const LEVEL_FILL: Record<TechLevel, number> = {
 };
 
 /**
- * Bar and dot colour: a graphic element, so it is not held to text contrast.
- * Note this resolves through --clr-*, which the light theme lowers for label
- * legibility, so a light-theme bar is the darker tone. That is deliberate — the
- * dark tones separate from the light track by 4.1:1, where the raw saturated
- * ones would land near 1.7:1 and vanish into it.
+ * Bar and dot colour: a graphic element, so not held to text contrast. This
+ * resolves through --clr-*, which light lowers for label legibility, so a light
+ * bar is the darker tone: the raw tones land near 1.7:1 against the light track.
  */
 export const LEVEL_COLOR: Record<TechLevel, string> = {
 	advanced:     'var(--clr-advanced, #22c55e)',

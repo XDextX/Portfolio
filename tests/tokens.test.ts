@@ -3,26 +3,17 @@ import fs from 'fs';
 import path from 'path';
 
 /**
- * A custom property that is read but never defined does not fail loudly: the
- * declaration using it becomes "invalid at computed-value time" and the browser
- * silently falls back to the initial value. That is how AvatarCircle ended up
- * with `border: 0px none` for weeks — `--avatar-ring` existed nowhere and the
- * whole `border` shorthand was discarded with no error in the console.
- *
- * These tests assert on the token data itself, not on any particular markup, so
- * they survive refactors.
+ * A custom property read but never defined fails silently: the declaration is
+ * "invalid at computed-value time", so the browser drops it and nothing appears
+ * in the console. `AvatarCircle` shipped `border: 0px none` for weeks.
  */
 
 const ROOT = process.cwd();
 
 /**
- * Strips CSS and JS comments, so a token named inside a note is not counted as
- * a use of it.
- *
- * This matters as soon as anyone explains a bug in the source. The note that
- * documents why `--bg-color` was removed names the token, and reading that as a
- * real use fails a test about a token that no longer exists — the guard
- * reporting its own explanation. A note about a token is not a use of it.
+ * Strips CSS and JS comments, so a token named inside a note is not read as a
+ * use of it. The note documenting why `--bg-color` was removed names the token,
+ * and counting that fails a test about a token that no longer exists.
  */
 function stripComments(src: string): string {
     return src
@@ -45,14 +36,9 @@ const CSS_FILES = [
 ];
 
 /**
- * Every `.astro` and `.ts` that can read a token.
- *
- * `src/data` has to be in here. `levelLabels.ts` holds the only code in the repo
- * that reads a token from inside a JS string —
- * `'var(--clr-beginner-text, var(--clr-beginner))'` — and a scan that skipped it
- * called three live tokens dead. `AGENTS.md` calls `src/data/*.ts` editable
- * content, but it still emits CSS values into `style` attributes, so it is a
- * reader of tokens and has to be scanned as one.
+ * Every `.astro` and `.ts` that can read a token. `src/data` has to be in here:
+ * `levelLabels.ts` is the only place a token is read from inside a JS string,
+ * and a scan that skipped it called three live tokens dead.
  */
 const SOURCE_FILES = [
     ...walk(path.join(ROOT, 'src', 'components'), ['.astro', '.ts']),
@@ -155,20 +141,10 @@ describe('design tokens', () => {
     });
 
     it('stylesheet custom properties are unique per theme layer', () => {
-        // A duplicate declaration in the same rule usually means a copy-paste
-        // that silently overrides an earlier value.
-        //
-        // Comments come off first, and that is not tidiness. A `{ … }` written
-        // inside a CSS comment pairs with the next real `}`, so a note quoting a
-        // declaration swallows the whole rule that follows it. 00-tokens.css has
-        // one — a backtick-quoted `a { color: … }` explaining a past fallback —
-        // and it matched the `}` that closed `:root`, so this scan read 193
-        // characters of that file out of 6389 and never saw a single token.
-        // Every duplicate in the largest token file passed.
-        //
-        // That is the same shape as the `skipUntil` bug in comments.test.ts: a
-        // scanner that silently drops most of its subject is worse than no
-        // scanner, because it reports having checked. Widen what it reads.
+        // Comments come off first, and that is not tidiness: a `{ … }` inside a
+        // CSS comment pairs with the next real `}`, so a note quoting a
+        // declaration swallows the rule after it. One did in 00-tokens.css, and
+        // the scan read 193 of that file's 6389 characters and never saw a token.
         for (const file of CSS_FILES) {
             const src = stripComments(fs.readFileSync(file, 'utf-8'));
             const blocks = src.matchAll(/\{([^{}]*)\}/g);
@@ -191,18 +167,8 @@ describe('design tokens', () => {
 
 /**
  * A token declared in one theme and read in both is worse than a missing one:
- * nothing errors, and the fallback is the other theme's palette.
- *
- * `--bg-color` lived in light.css only. The skills view toggle read it, so in
- * dark the selected button painted `#E4E8EE` — a near-white grey from the
- * palette this site moved off — on top of the navy sheet. The first test in this
- * file could not see it: the token was defined *somewhere*, which is all it
- * checks.
- *
- * The scope is deliberately narrow. A theme file is allowed to add tokens the
- * other does not define, as long as nothing reads them; `:root[data-theme=…]`
- * and `:root` selectors mean a value declared in either sheet reaches both
- * themes. So the rule is only about tokens that are actually read.
+ * nothing errors and the fallback is the other theme's palette. `--bg-color`
+ * lived in light.css only, so in dark the skills toggle painted `#E4E8EE`.
  */
 describe('theme token coverage', () => {
     const THEME_DIR = path.join(ROOT, 'public', 'styles', 'themes');
@@ -252,27 +218,9 @@ describe('theme token coverage', () => {
 
     it('a semantic name is declared in terms of a token, never as a second literal', () => {
         /*
-         * `--bg-color` and `--bg` both read #E4E8EE in light, and that is what
-         * let one theme drift: the name that stopped being redefined is the one a
-         * reader silently kept on the old value.
-         *
-         * The site is full of deliberate aliases — `--text-color` over the
-         * foreground ramp, `--color-border` over `--neutral-200`, `--tag-surface`
-         * over `--neutral-200` again. They exist so a component can say what a
-         * colour *means* rather than where it sits in a ramp, and they are how a
-         * theme file makes that mapping explicit.
-         *
-         * **Two literals mean two values, and a theme that redefines one leaves
-         * the other stale.** One literal plus `var(--the-other)` means the link is
-         * enforced by the cascade and cannot drift. So the rule is: where a value
-         * appears under two names in a theme, at most one of them may be a
-         * literal; the rest must be written in terms of it.
-         *
-         * That is eleven real violations today — `--fg`, `--text-color` and
-         * `--text-main` are three names for one ink — and it is the point of the
-         * test. A version of this that only demanded "one name per value" would
-         * have reported the same eleven with no way to tell a healthy alias from a
-         * broken one.
+         * Two literals under one value means two values: a theme redefining one
+         * leaves the other stale. Aliases are deliberate, so one name is the
+         * literal and the rest `var()` of it. Eleven real violations so far.
          */
         const offenders: string[] = [];
 
@@ -304,15 +252,9 @@ describe('theme token coverage', () => {
 
     it('no token is declared in a theme and read by nobody', () => {
         /*
-         * Dead token surface. `--text-inverse` and `--color-brand-600` sat in
-         * light.css with zero readers; the first audit pass listed them as
-         * "defined in one theme" when in fact nothing read them at all.
-         *
-         * A reader counts anywhere it can appear, including from another token's
-         * value: `--clr-beginner-text` is declared as
-         * `var(--clr-beginner-text, var(--clr-beginner))` in `levelLabels.ts`, so
-         * the first version of this test — scanning components for `var()` only —
-         * called it dead and reported eleven false positives in one go.
+         * Dead token surface: `--text-inverse` and `--color-brand-600` sat in
+         * light.css with zero readers. A reader counts inside another token's
+         * value too — scanning components only called `--clr-beginner-text` dead.
          */
         const shared = base();
         const used = collectUsed();

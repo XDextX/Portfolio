@@ -35,13 +35,9 @@ const {
 				aria-expanded='false'
 			>
 				{/*
-					Both labels live in the DOM, stacked in one grid cell, and CSS
-					reveals one. The hidden one keeps its space — visibility rather
-					than display:none — so the cell is as wide as the longer label and
-					the button does not resize when the state changes. That is the
-					whole reason for two spans instead of one: a fixed px or ch width
-					would have to be re-measured for every locale, and this follows
-					the text wherever it is translated.
+					Both labels live in the DOM in one grid cell and CSS reveals one.
+					The hidden one keeps its space — visibility, not display:none —
+					so the cell is as wide as the longer label and never resizes.
 				*/}
 				<span class='projects-footer__label'>
 					<span class='projects-footer__label-text' data-state='more'>
@@ -76,14 +72,9 @@ const {
 
 <style>
 	/*
-	 * A column, left-aligned, not space-between.
-	 *
-	 * These two are not peers. The toggle is a disclosure: it reveals more of
-	 * the grid sitting directly above it, so it belongs against that grid's
-	 * left edge. The link is navigation to another page. Pushed to opposite
-	 * ends of a row they read as two independent items at opposite corners of
-	 * the section, and neither sits where it belongs — the control that governs
-	 * the grid ends up as far from the grid as the layout allows.
+	 * A column, left-aligned, not space-between. These two are not peers: the
+	 * toggle discloses the grid above it, so it belongs at that grid's left edge,
+	 * while the link is navigation. At opposite ends they read as unrelated.
 	 */
 	.projects-footer {
 		display: flex;
@@ -99,20 +90,9 @@ const {
 	}
 
 	/*
-	 * The label swap must not resize the button, and the label is translated
-	 * text, so no fixed width holds for every locale.
-	 *
-	 * Symmetrising the two labels — "Ver más proyectos" / "Ver menos
-	 * proyectos" — was not enough: measured, it only took the jump from 44px to
-	 * 13px, because "menos" is wider than "más" by 14px even though both are
-	 * followed by the same noun. Equalising the label's shape does not equalise
-	 * its width.
-	 *
-	 * So the button lays its label out as a one-cell grid holding both states,
-	 * and the cell is max-content across them: the width is whatever the
-	 * longer label needs, in whatever language is rendering. A px or ch
-	 * min-width would have to be re-measured per language and would drift the
-	 * first time a translation changed.
+	 * Symmetrising the labels was not enough: measured, it only took the jump
+	 * from 44px to 13px, because "menos" is 14px wider than "más" though both
+	 * are followed by the same noun. So both states stack in a one-cell grid.
 	 */
 	.projects-footer__toggle {
 		min-block-size: 1.75rem;

@@ -48,15 +48,9 @@ describe('CONTACTS shape', () => {
 });
 
 /**
- * `value` is the text a visitor reads and `href` is where it takes them. They
- * are two fields, so nothing but a test stops them drifting apart — and a
- * mismatch ships a button that says one thing and goes somewhere else.
- *
- * The rule is derived from each contact's own fields rather than written out as
- * a list of expected addresses, so the suite never carries the person's details
- * and changing a channel is an edit to `contacts.ts` alone. That also removes
- * the contradiction with visual-language.test.ts, which holds that person
- * identity has exactly one source.
+ * `value` is the text a visitor reads and `href` is where it takes them, so
+ * nothing but a test stops them drifting. Derived from each contact's own
+ * fields, so the suite never carries the person's details.
  */
 describe('CONTACTS href agrees with its own value', () => {
     it('an email href is mailto: followed by that contact’s address', () => {

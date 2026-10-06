@@ -59,24 +59,9 @@ describe('ABOUT.socials', () => {
 });
 
 /**
- * AboutSection must read its CV link and its socials from ABOUT rather than
- * spelling either out in the template. These two assertions read the component's
- * source on purpose: the failure they guard is a literal creeping back into the
- * markup, which no assertion on the data can see. Everything else in this file is
- * asserted on data or on the filesystem.
- *
- * Two assertions that used to live here are deliberately absent.
- *
- * There is no check that the component mentions `AvatarCircle` by name. It could
- * not fail: `toContain('AvatarCircle')` is satisfied by the import path
- * `'./AvatarCircle.astro'` alone, so replacing the component outright — usage
- * and import — left the suite green.
- *
- * There is no "no locale ternary here" check either. The component's frontmatter
- * carries a note quoting the `lang === 'es' ? …` pair it replaced, so a source
- * scan flags the comment explaining the fix. visual-language.test.ts reads the
- * code with comments stripped, which is the only version of that assertion that
- * means anything.
+ * AboutSection must read its CV link and socials from ABOUT, not from literals
+ * in the template. Two checks once lived here are gone: `toContain('AvatarCircle')`
+ * passed on the import path, and a ternary check flagged its own explanatory note.
  */
 describe('AboutSection sources its data from ABOUT', () => {
     it('links the CV through ABOUT.resumeUrl', () => {

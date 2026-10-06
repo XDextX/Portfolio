@@ -3,21 +3,9 @@ import fs from 'fs';
 import path from 'path';
 
 /**
- * Three mechanical rules about what may appear in a template, none of which had
- * a guard. All three were satisfied only because a comment explains why the thing
- * is absent — `ContactSection` says "No itemscope here on purpose" and
- * `ProjectsSection` says "Rewriting childNodes[0] was the previous approach".
- *
- * That is the whole design constraint. A naive scan fails on the first run,
- * because the note explaining a rule contains the string the rule forbids: the
- * guard reports its own explanation. Same shape as the token note in
- * tokens.test.ts and the locale ternary quoted in AboutSection's frontmatter, so
- * comments come off first here too.
- *
- * A second consequence: a scan that finds nothing returns an empty list, which is
- * indistinguishable from a clean run. Two of the three rules below pass *because*
- * the count is zero, so `the scanner reads the code` below is what keeps that
- * honest.
+ * Three rules AGENTS.md states and nothing checked. All three were held in place
+ * by a comment explaining their absence, so a naive scan fails on the first run
+ * by reading the note that explains the rule. Comments come off first.
  */
 
 const ROOT = process.cwd();
@@ -120,22 +108,10 @@ describe('JSON-LD', () => {
 });
 
 /**
- * The anti-FOUC theme script is the one script in this repo that must be
- * `is:inline`: a bundled module runs after the document has painted, which is
- * the flash the script exists to prevent. It is plain JS and interpolates
- * nothing.
- *
- * This started as a narrower check — "no script that interpolates is is:inline",
- * which only looked inside the opening tag. Adding `is:inline` to a script that
- * interpolates in its *body* passed it, so the rule was claiming more than it
- * checked. An allowlist does not have that problem: "is:inline appears here and
- * nowhere else" needs no parsing to be sure of, and it catches a new use whatever
- * shape the expression takes.
- *
- * The one entry is named rather than pattern-matched so that removing the
- * exception is a decision, not an oversight.
- */
-describe('is:inline has exactly one legitimate use', () => {
+ * The anti-FOUC theme script is the one script that must be `is:inline`: a
+ * bundled module runs after the first paint, the flash it prevents. This started
+ * narrower, checking only the opening tag. An allowlist needs no parsing.
+ */describe('is:inline has exactly one legitimate use', () => {
     const ALLOWED = new Set(['src/layouts/BaseLayout.astro']);
 
     it('appears only on the anti-FOUC theme script', () => {

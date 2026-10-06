@@ -3,14 +3,8 @@ import { t } from '@i18n/index';
 
 /*
  * Both icons are always in the DOM; CSS shows the one for the current theme.
- * That is why the note on which is which belongs here rather than beside the
- * markup — Astro emits anything in the template body verbatim, and three of
- * these notes were reaching every visitor on every page.
- *
- * Sun: shown in dark mode, meaning "switch to light".
- * Moon: shown in light mode, meaning "switch to dark".
- * The three small circles on the moon are craters, so the shape reads as a moon
- * rather than a plain circle at 18px.
+ * The note lives here because Astro emits the template body verbatim. Sun shows
+ * in dark (switch to light), moon in light; the moon's circles are craters.
  */
 ---
 
@@ -119,30 +113,18 @@ import { t } from '@i18n/index';
 		padding: 0;
 		cursor: pointer;
 		transition: background var(--dur) var(--ease);
-		/* Must match .language-switcher exactly: these two sit in one row and a
-		   sub-pixel difference reads as crooked. Both were measured at 29.00 and
-		   29.59 before this, because each derived its height from a different
-		   padding. An explicit height with border-box (global, 01-base.css)
-		   stops padding from adding to it.
-
-		   A literal, not a token: two controls are not a design system, and a
-		   --control-h would imply there is one. */
+		/* Must match .language-switcher exactly: measured 29.00 and 29.59 before,
+		   each deriving height from different padding. Explicit block-size plus
+		   border-box (global, 01-base.css) stops padding adding to it. */
 		block-size: 30px;
 		inline-size: 34px;
 	}
 
-	/* No hover rule here on purpose. The theme owns it, in light.css and
-	   dark.css, because a theme-specific hover cannot live in a component.
-
-	   This used to carry `background: var(--neutral-200)` and it was never
-	   visible in a rest-state screenshot. Its selector compiles to
-	   (0,3,0) against the (0,2,0) of `:root .theme-btn:hover` in the theme
-	   files, so in light it won on cascade order and painted the old neutral
-	   under the gold border and gold icon: measured #DCE2E9 against a
-	   white ground. In dark the `:root[data-theme="dark"]` variant reaches
-	   (0,4,0) and wins, so the same control hovered two different ways
-	   depending on the theme — and the gold fell from 6.18 to 4.73 contrast
-	   in light, where it had been measured at 6.18 all along. */
+	/* No hover rule here on purpose: the theme owns it, in light.css and dark.css,
+	   because a theme-specific hover cannot live in a component. This used to
+	   carry `background: var(--neutral-200)`, compiling to (0,3,0) against the
+	   (0,2,0) of `:root .theme-btn:hover` — so in light it won on cascade order
+	   and painted #DCE2E9 under the gold, dropping gold contrast 6.18 → 4.73. */
 
 	/* The icon shows the theme you are switching TO, not the current one.
    Light theme -> moon (going to dark). Dark theme -> sun (going to light).

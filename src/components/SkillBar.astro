@@ -10,12 +10,8 @@ export interface Props {
 
 /*
  * The bar repeats what the label beside it says in words, so it is hidden from
- * assistive tech. It used to be a role="progressbar" with aria-valuenow, which
- * made a reader announce "85 percent" and then say "Avanzado" again — a
- * precision the data does not have, stated twice.
- *
- * The note lives here because Astro emits anything in the template body
- * verbatim: this one was shipping 271 characters to every visitor.
+ * assistive tech. It used to announce "85 percent" and then "Avanzado" again —
+ * a precision the data lacks, stated twice. This shipped 271 characters a page.
  */
 
 const { name, logo, level, locale = 'es' } = Astro.props;

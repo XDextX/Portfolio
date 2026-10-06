@@ -3,14 +3,9 @@ import fs from 'fs';
 import path from 'path';
 
 /**
- * `t()` returns the key itself when a translation is missing, so a key that was
- * never added to a locale file renders as `projects.viewAll` to a visitor and
- * throws nothing. The only thing that catches it is a check that the key exists
- * on both sides.
- *
- * The scope is every file that can call `t()`, not just the 404 page it grew out
- * of. Reading one page's keys is a guard that says nothing about the other
- * twenty components.
+ * `t()` returns the key itself when a translation is missing, so a key absent
+ * from a locale file renders as `projects.viewAll` and throws nothing. Scope is
+ * every file that can call `t()`, not the one page this grew out of.
  */
 
 const ROOT = process.cwd();

@@ -3,16 +3,9 @@ import fs from 'fs';
 import path from 'path';
 
 /**
- * The visual language, enforced rather than described.
- *
- * AGENTS.md states these as rules with the failure mode each one prevents. This
- * file turns the mechanical ones into checks, because a rule that only lives in
- * prose is a rule that quietly stops being true. Three of the guards in this repo
- * were green while the exact thing they existed to prevent was happening; every
- * one of them had looked where the violation was not.
- *
- * Two are asserted here. The rest — the palette itself, the type scale, the font
- * pairing — are decisions about taste and belong to a human looking at the page.
+ * The visual language, enforced rather than described. A rule that only lives in
+ * prose quietly stops being true, so the mechanical ones become checks here.
+ * The palette and the type scale are taste, and belong to a human looking at it.
  */
 
 const ROOT = process.cwd();
@@ -41,15 +34,9 @@ function stripComments(src: string): string {
 describe('visual language', () => {
     it('no hover lifts an element', () => {
         // "Hover means the border turns gold, and nothing lifts." Three rules
-        // said translateY(-1px) on hover: the hero's download and social buttons
-        // and .btn in 03-components.css. The first two also changed the border,
-        // so they carried both signals and disagreed with each other about what
-        // hover is; the third only lifted, which is a different signal again.
-        //
-        // `.btn` is the one case allowed to lift, and the reason is recorded in
-        // the file rather than assumed: it is a standalone 404 call to action
-        // with no hover of its own, so it has nothing else to signal. Named
-        // explicitly so deleting the exception is a decision, not an oversight.
+        // said translateY(-1px): the hero's download and social buttons, which
+        // also changed the border, and .btn, which only lifted. `.btn` is allowed
+        // to lift: a standalone 404 call to action with no hover of its own.
         const LIFT_ALLOWED = new Set(['.btn']);
 
         const offenders: string[] = [];
@@ -108,16 +95,11 @@ describe('visual language', () => {
     });
 
     it('no hover rule sets a background and nothing else', () => {
-        // "Never signal hover with a background change alone." A surface shift is
-        // the weakest channel available and it lowers the contrast of whatever
-        // sits on the surface: the theme toggle went from 16.44 to 14.11 in light
-        // and 8.31 to 6.08 in dark.
+        // "Never signal hover with a background change alone." A surface shift
+        // is the weakest channel and it lowers the contrast of whatever sits on
+        // it: the theme toggle went 16.44 → 14.11 in light, 8.31 → 6.08 in dark.
         //
-        // The check is deliberately narrow — the rule has to contain a background
-        // declaration, because a hover that sets only `color` is not the problem.
-        // A version of this that flagged every hover rule without a `color` in it
-        // reported ThemeSwitch's gold hover, which is exactly the rule the change
-        // was meant to produce.
+        // Narrow on purpose — the rule must contain a background declaration.
         const offenders: string[] = [];
 
         for (const file of ALL_FILES) {
@@ -150,12 +132,8 @@ describe('visual language', () => {
         // "Inline `lang === 'es' ? … : …` survives a locale switch and ships
         // Spanish to English readers." AboutSection held three of them.
         //
-        // A BCP 47 tag is not a translation and is allowed: `'es-CR'` versus
-        // `'en-US'` picks a language *region* for `Intl` and for the html lang
-        // attribute, and there is nothing to translate in it. The first version of
-        // this test tried to allow that with a pattern on the value and reported
-        // three locale-code ternaries as prose — the check belongs on the shape of
-        // the value, not on what the ternary selects.
+        // A BCP 47 tag is not a translation and is allowed: 'es-CR' picks a
+        // region for Intl and the html lang attribute.
         const isLanguageTag = (s: string) => /^[a-z]{2,3}-[A-Za-z]{2,4}$/.test(s);
         const offenders: string[] = [];
 
@@ -220,18 +198,9 @@ describe('visual language', () => {
 
     it('a surface that white text sits on is dark in both themes', () => {
         /*
-         * `--accent-surface` carried #E3C770 in dark and nobody measured it: the
-         * theme file never set it, so it inherited the value from 00-tokens.css.
-         * Every primary button on that theme put white on light gold at 1.66:1
-         * against 4.5:1 for text, and the 404's button was hard to read. The rule
-         * existed — AGENTS.md has said "must stay dark in both themes" since the
-         * first design block, for exactly this reason — but prose is not a check.
-         *
-         * Three components hardcode `color: #fff` on this token, so the token has
-         * to hold under white text rather than merely look like the accent.
-         * Lightness, not hue: in dark it is the same gold family as
-         * `--accent-text`, and deliberately NOT var() of it, because white sits on
-         * one and not the other.
+         * `--accent-surface` carried #E3C770 in dark: the theme file never set it,
+         * so it inherited from 00-tokens.css and every primary button put white on
+         * light gold at 1.66:1. AGENTS.md said "dark in both themes" all along.
          */
         const AA_TEXT = 4.5;
 

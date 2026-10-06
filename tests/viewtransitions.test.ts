@@ -11,23 +11,9 @@ const componentNames = () =>
     fs.readdirSync(COMPONENT_DIR).filter((f) => f.endsWith('.astro'));
 
 /**
- * Every component that ships a *client* script — anything that is not JSON-LD —
- * derived from what is on disk.
- *
- * This was a hardcoded list of five names. It was right on the day it was
- * written and wrong the moment a sixth component added a script: a
- * `DOMContentLoaded` binding in `SkillChip.astro` passed all seventeen tests,
- * because the guard only read the five names it had been told about. A list that
- * has to be remembered is a list that goes stale silently.
- *
- * The list stays narrow on purpose. A JSON-LD block has no listener to re-bind,
- * so asking one of it would be a rule with no meaning — and AboutSection's only
- * script is such a block, which is exactly why it never appeared here.
- *
- * `is:inline` is not checked here. It belongs to `markup.test.ts`, which owns it
- * as an allowlist of the single legitimate use and scans pages and layouts as
- * well as components. Two guards for one rule is two places to forget to update,
- * and this one had already been the weaker of the pair.
+ * Components shipping a *client* script — anything that is not JSON-LD — derived
+ * from disk. This was a hardcoded list of five names: right when written, wrong
+ * the moment a sixth added a script. `is:inline` belongs to markup.test.ts.
  */
 const componentsWithClientScript = () =>
     componentNames().filter((n) =>

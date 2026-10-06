@@ -1,11 +1,8 @@
-/* Light theme — the base layer. dark.css overrides every token it needs when
-   data-theme="dark" is set, so this only needs the plain :root.
-
-   The canvas is a COOL neutral, not the warm cream this used to use
-   (#F4EFD9 body / #EDE8D0 sheet). Cream plus a warm gold is the most
-   recognisable "generated" palette there is, and it was cancelling out the
-   navy-and-gold as a deliberate pair. Cooling the ground lets the brand be the
-   only chroma on the page: three steps of light, one accent. */
+/* Light theme — the base layer. dark.css overrides what it needs when
+   data-theme="dark" is set, so this only needs the plain :root. The canvas is a
+   COOL neutral, not the warm cream (#F4EFD9 / #EDE8D0) this used: cream plus a
+   warm gold is the most recognisable generated palette there is, and it cancels
+   the navy-and-gold pair into a default. */
 :root {
 
     /* Backgrounds */
@@ -37,12 +34,11 @@
     --card-background: #FFFFFF;
     --neutral-0: var(--card-background);
 
-    /* Chip surface: a small labelled surface — a GitHub topic, a skill. It has
-       to differ from BOTH --main-bg and --card-background, because chips appear
-       on the sheet and inside cards, and a chip filled with --card-background
-       is invisible on a card. --neutral-200 is the lightest step that still
-       separates from this near-white sheet; --text-secondary stays at 4.8:1
-       on top of it. */
+    /* Chip surface: a small labelled surface. It has to differ from BOTH
+       --main-bg and --card-background, since chips appear on the sheet and
+       inside cards, and one filled with --card-background vanishes on a card.
+       --neutral-200 is the lightest step that still separates; --text-secondary
+       stays at 4.8:1 on top. */
     --tag-surface: var(--neutral-200);
 
     /* Accent legible on the sheet (#FBFCFD): 6.4:1 — passes AA.
@@ -69,14 +65,11 @@
     color-scheme: light;
 }
 
-/* Component rules for the light theme.
-   Single `:root` selector, not `:root:not([data-theme]), :root[data-theme="light"]`.
-   dark.css is linked after this file and covers the same selectors, so
-   when data-theme="dark" it overrides these anyway. The extra selector only
-   duplicated every block for no behavioural gain.
-
-   .pill is deliberately absent: it renders zero elements, and the seven rules
-   that used to maintain it in both themes were pure weight. */
+/* Component rules for the light theme. Single `:root` selector: dark.css is
+   linked after and covers the same selectors, so data-theme="dark" overrides
+   these anyway — the extra selector duplicated every block for no gain.
+   .pill is absent: it renders zero elements and seven rules maintained it in
+   both themes for nothing. */
 
 /* ── Body ── */
 :root body {

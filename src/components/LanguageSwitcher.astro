@@ -55,19 +55,9 @@ const hint = t('layout.languageSwitcher');
 	}
 
 	/*
-	 * The label is the control's box.
-	 *
-	 * It used to be two unboxed things: the word "Idioma" and a select with its
-	 * own border, so the chrome read as one loose control rather than a group.
-	 * The label is also what associates the text with the select implicitly, so
-	 * making the label the box keeps the association and needs no id — which
-	 * matters, because a global id here would collide on a second instance.
-	 *
-	 * The select loses its own border and background so there is one frame
-	 * instead of two nested ones. It keeps appearance:auto on purpose: the
-	 * native control brings the platform's own dropdown affordance, and
-	 * replacing that means reimplementing keyboard navigation, roles, Escape
-	 * and the mobile picker.
+	 * The label is the control's box, which also associates it implicitly — no
+	 * id, and a global one collides on a second instance. The select keeps
+	 * appearance:auto: the native control brings the platform affordance.
 	 */
 	.language-switcher {
 		display: inline-flex;
@@ -78,16 +68,10 @@ const hint = t('layout.languageSwitcher');
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-md);
 		padding: 0 0.6rem;
-		/* Must match .theme-btn exactly: the two controls sit in one row and a
-		   sub-pixel difference reads as crooked. Both were measured at 29.00
-		   and 29.59 before this, because each derived its height from a
-		   different padding — 4px 12px against 4.8px 8px. An explicit height
-		   with border-box (set globally in 01-base.css) stops padding from
-		   adding to it.
-
-		   A literal, not a token: two controls are not a design system, and a
-		   --control-h would imply there is one. If a third control ever needs to
-		   match, that is when the token starts meaning something. */
+		/* Must match .theme-btn exactly: measured 29.00 and 29.59 before, each
+		   deriving height from different padding. An explicit block-size plus
+		   border-box (global, 01-base.css) stops padding adding to it. A literal,
+		   not a token — two controls are not a design system. */
 		block-size: 30px;
 	}
 

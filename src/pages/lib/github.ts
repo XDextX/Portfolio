@@ -68,17 +68,9 @@ export async function ghRepoReadme({ user, name }: { user: string; name: string 
 }
 
 /**
- * Order repositories for display. Shared by the home page and /proyectos so the
- * same repo never shows up in two different positions across routes.
- *
- * Ranking, most significant first:
- *   1. stars (desc)
- *   2. forks (desc)
- *   3. repos with a live demo before those without
- *   4. name (asc), which makes the order total and therefore stable
- *
- * @param repos Repositories to rank. The input array is not mutated.
- * @returns A new array in display order.
+ * Order repos: stars desc, forks desc, has-demo first, then name asc so the
+ * order is total and stable. Shared by / and /proyectos so a repo cannot land
+ * in two positions. @param repos not mutated. @returns a new array.
  */
 export function sortRepos(repos: GitHubRepo[]): GitHubRepo[] {
     return [...repos].sort((a, b) => {

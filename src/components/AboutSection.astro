@@ -19,18 +19,9 @@ const actionsLabel  = t('about.actions');
 const locationLabel = t('about.location');
 
 /*
- * Two markup decisions, kept here rather than in the template: Astro emits
- * anything in the template body verbatim, so a note written there reaches every
- * visitor as an HTML comment.
- *
- * Identity mark. The artwork is an opaque white square logo, so it is
- * presented as a square on a field rather than cropped into a circle and
- * framed like a portrait photo.
- *
- * The middle dot that used to sit between the job title and the location was
- * aria-hidden, so assistive tech heard "Full-Stack DeveloperCosta Rica" with no
- * separator at all, while sighted readers saw a bullet — a template tell that
- * added a pause and told nobody anything. The pin already marks the location.
+ * Kept here because Astro emits the template body verbatim. The artwork is an
+ * opaque white square, so it sits as a square rather than cropped like a
+ * portrait. The middle dot was aria-hidden, so AT read "DeveloperCosta Rica".
  */
 ---
 
@@ -118,14 +109,9 @@ const locationLabel = t('about.location');
 		gap: 0.4rem;
 	}
 
-	/* Fluid between the two sizes that actually work. A fixed --fs-4xl measured
-	   623px against a 780px column, so it holds one line on a desktop — but the
-	   same string in a 273px phone column needs three lines at 52px where 40px
-	   gives two. The clamp lands on 40px at 360px wide and reaches --fs-4xl by
-	   about 958px, so neither end pays for the other.
-
-	   Weight was 800, which is outside the 100-700 range the variable font
-	   declares: it was being clamped to 700 while the CSS claimed otherwise. */
+	/* Fluid between the two sizes that work: --fs-4xl measured 623px against a
+	   780px column (one line) but needs three at 52px in a 273px phone column,
+	   where 40px gives two. Weight was 800, outside the font's 100-700 range. */
 	.about-name {
 		font-size: clamp(2.5rem, 2rem + 2.2vw, var(--fs-4xl));
 		font-weight: 700;

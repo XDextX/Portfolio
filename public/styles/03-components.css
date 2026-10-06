@@ -1,20 +1,7 @@
 /*
- * Shared component styles.
- *
- * This sheet is not scoped, so a class here applies everywhere. That is why
- * .btn-action lives here rather than in either of the two components that use
- * it: Astro scopes each component's <style> to that component, so a class two
- * components need cannot live in one of them. Before this, it was duplicated in
- * ProjectCard.astro and ProjectsFooter.astro, and the two copies had already
- * drifted — the footer one carried cursor: pointer and font-family: inherit and
- * the card one did not. Neither difference was visible: 01-base.css already
- * gives links a pointer, and <a> inherits font-family on its own. The risk was
- * the drift, not a present bug.
- *
- * Only rules something actually renders belong here. Everything below was
- * checked against the markup in src/ before being kept; the removed set was
- * .pill and its five sizes, .filled.*, .outlined and its four variants, .badge,
- * .btn.primary and .btn.ghost — 89 lines, none of them reachable.
+ * Unscoped, so a class applies everywhere; .btn-action lives here because Astro
+ * scopes each <style>, and its two copies had drifted. No screenshot showed it:
+ * the risk was drift, not a bug. .pill and 88 unreachable lines went too.
  */
 
 .btn {

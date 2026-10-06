@@ -5,19 +5,11 @@
     --brand-accent: #E3C770;
     --brand-accent-dark: #BFA258;
 
-    /* Brand aliases — theme-independent by design, so they live here rather
-       than in a theme file.
-
-       They were in light.css, which meant dark read them from there: --color-brand
-       scoped to (0,1,1) as `:root .theme-btn`-style rules lost to a scoped
-       (0,3,0), and --color-brand-700 filled `.btn`'s background with light's
-       navy. Nothing errored and nothing looked broken in a screenshot — the
-       404's `.btn` is overridden by `.btn--primary` in that page, so the wrong
-       value never reached the screen. It was live for `a { color: … }`'s
-       fallback and for the focus ring.
-
-       A token that means "the brand" is the same in every theme. A token that
-       means "a step of this theme's neutral ramp" belongs in the theme file. */
+    /* Brand aliases — theme-independent, so they live here and not in a theme
+       file. In light.css they were, so dark read them from there and
+       --color-brand-700 filled `.btn` with light's navy: nothing errored and no
+       screenshot showed it, since the 404's `.btn` is overridden. "The brand" is
+       the same in every theme; a step of this theme's ramp is not. */
     --brand-text: var(--brand-primary);
     --color-brand: var(--brand-primary);
     --color-brand-600: var(--brand-primary-light);
@@ -109,14 +101,9 @@
 }
 
 /* ── Theme change transition ──
-   Scoped to the surfaces that actually change colour when the theme flips.
-   A `:root *` rule reached 791 of 881 elements on the home page, adding a
-   transition declaration to nodes that never animate. Components keep their
-   own hover transitions (--dur, 200ms) untouched because they declare a
-   shorthand that overrides this one.
-
-   Only color/background-color/border-color: `all` would also drag in
-   width/transform from the skill bars and card open animations. */
+   Scoped to surfaces that actually change colour on a flip: `:root *` reached
+   791 of 881 elements. Only color/background/border-color — `all` would drag in
+   the skill bars' width and transform. */
 body,
 main,
 .section,

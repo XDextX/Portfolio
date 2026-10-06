@@ -105,12 +105,10 @@ const viewAll = t('projects.viewAll');
 					'[data-projects-toggle]',
 				);
 				const grid = root.querySelector<HTMLElement>('[data-projects-grid]');
-				// The button carries both labels and CSS reveals one of them, so
-				// the width never changes with the state. What still changes is
-				// what a screen reader gets, and that is carried by aria-expanded
-				// below plus the visible text — so no label text is rewritten here.
-				// Rewriting childNodes[0] was the previous approach and it
-				// depended on the button's first child being a text node.
+				// Both labels live in the DOM and CSS reveals one, so the width
+				// never changes with state. aria-expanded carries it for screen
+				// readers, so no label text is rewritten — childNodes[0] was the
+				// previous approach and depended on the first child being text.
 				if (!toggle || !grid) return;
 
 				const hiddenItems = Array.from(

@@ -4,13 +4,8 @@ import path from 'path';
 
 /**
  * An implementation note written *inside* an Astro template is not a comment:
- * Astro emits it verbatim into the HTML response, so it ships to every visitor
- * and shows up in "view source" and DevTools. A `//` line in the template body
- * becomes a stray HTML comment; the note has to live in the frontmatter.
- *
- * Inside a template, a JSX-style brace comment is the only syntax Astro treats
- * as a real comment; a plain HTML comment always ships. Far better: put the note
- * in the frontmatter, where it never leaves the build.
+ * Astro emits it verbatim, so it ships to every visitor. Inside a template only
+ * a brace comment is treated as one; better, put the note in the frontmatter.
  */
 
 const ROOT = process.cwd();
@@ -29,6 +24,51 @@ const ASTRO_FILES = [
     ...walk(path.join(ROOT, 'src', 'pages'), ['.astro']),
     ...walk(path.join(ROOT, 'src', 'layouts'), ['.astro']),
 ];
+
+const CODE_FILES = [
+    ...walk(path.join(ROOT, 'src'), ['.astro', '.ts']),
+    ...walk(path.join(ROOT, 'tests'), ['.ts']),
+    ...walk(path.join(ROOT, 'public', 'styles'), ['.css']),
+];
+
+const MAX_COMMENT_LINES = 5;
+
+/**
+ * Comment blocks longer than MAX_COMMENT_LINES, as { line, n, kind }. Lines are
+ * 1-based against the whole file. A block marks its own lines covered so the run
+ * below cannot double-report, and reads raw text, so its labels avoid openers.
+ */
+function longCommentBlocks(src: string): { line: number; n: number; kind: string }[] {
+    const out: { line: number; n: number; kind: string }[] = [];
+    const lines = src.split(/\r?\n/);
+    const covered = new Set<number>();
+
+    for (const m of src.matchAll(/\/\*[\s\S]*?\*\//g)) {
+        const start = src.slice(0, m.index).split(/\r?\n/).length;
+        const n = m[0].split(/\r?\n/).length;
+        for (let i = start; i < start + n; i++) covered.add(i);
+        if (n > MAX_COMMENT_LINES) out.push({ line: start, n, kind: 'block' });
+    }
+
+    let run = 0;
+    let start = 0;
+    const flush = () => {
+        if (run > MAX_COMMENT_LINES) out.push({ line: start, n: run, kind: 'lines' });
+        run = 0;
+    };
+    lines.forEach((text, i) => {
+        if (covered.has(i + 1)) return flush();
+        if (/^\s*\/\//.test(text)) {
+            if (run === 0) start = i + 1;
+            run++;
+        } else {
+            flush();
+        }
+    });
+    flush();
+
+    return out.sort((a, b) => a.line - b.line);
+}
 
 type Region = { line: number; text: string };
 
@@ -79,16 +119,9 @@ function markupRegions(file: string): Region[] {
 }
 
 /**
- * The markup body as one string, so a comment can be matched whole.
- *
- * Measuring per line is the bug this guards against: a four-line note has a
- * short first line, passes a per-line length check, and still ships 290
- * characters to every visitor. Every occurrence of the block comment gets its
- * own entry, because one note inside a repeated component renders many times.
- *
- * The reported line is relative to the start of the markup region, not the
- * file, because regions are collected and joined. An absolute number would be
- * wrong and quietly so; treat it as "this far into the markup".
+ * The markup body as one string, so a comment can be matched whole. Measuring
+ * per line is the bug: a four-line note has a short first line, passes a
+ * per-line check and still ships 290 characters per page.
  */
 function markupComments(file: string): { line: number; body: string }[] {
     const regions = markupRegions(file);
@@ -134,18 +167,9 @@ describe('comments never leak into the markup', () => {
 
     it('every HTML comment in the template is a known short label', () => {
         /*
-         * An allowlist, not a length check.
-         *
-         * A length threshold cannot tell a label from a note: it passed four
-         * real notes of 47-72 characters while looking like it worked, because
-         * they were shorter than the limit. It also cannot tell a note from a
-         * label, which is the only thing that matters here — a note is prose
-         * addressed to whoever opens view-source, and no visitor should read it.
-         *
-         * So the permitted comments are enumerated. A new one has to be added
-         * deliberately, which is the point: adding `<!-- Header -->` is
-         * unremarkable, adding `<!-- why this is here -->` should be a decision
-         * someone makes on purpose rather than something they trip into.
+         * An allowlist, not a length check. A threshold cannot tell a label from
+         * a note: it passed four real notes of 47-72 characters. Enumerating them
+         * is the point — `<!-- Header -->` is unremarkable, `<!-- why -->` is not.
          */
         const ALLOWED = new Set([
             // BaseLayout: one per page, and they orient a reader of <head>.
@@ -188,5 +212,52 @@ describe('comments never leak into the markup', () => {
             `label to ALLOWED if it really is a label:\n  ` +
             offenders.join('\n  '),
         ).toEqual([]);
+    });
+});
+
+describe('comments stay short', () => {
+    it('no comment block runs past five lines', () => {
+        const offenders: string[] = [];
+
+        for (const file of CODE_FILES) {
+            for (const h of longCommentBlocks(fs.readFileSync(file, 'utf-8'))) {
+                offenders.push(
+                    `${path.relative(ROOT, file)}:${h.line}  ${h.n} lines  ${h.kind}`,
+                );
+            }
+        }
+
+        expect(
+            offenders,
+            `A comment nobody reads to the end is worse than none, because it\n` +
+            `looks like the subject is documented. Cut to ${MAX_COMMENT_LINES} lines:\n` +
+            `keep the number that justifies the decision, drop the retelling, and\n` +
+            `point at AGENTS.md when the rule already lives there:\n  ` +
+            offenders.join('\n  '),
+        ).toEqual([]);
+    });
+
+    it('the scanner detects a long block', () => {
+        // The slash is split so this fixture leaves no `/*` in the file: the
+        // scanner reads raw text, and a literal here made it flag its own test —
+        // matching from inside the string to a `*/` twenty lines away.
+        const s = '/';
+        const probe = [
+            s + '*', ' * one', ' * two', ' * three',
+            ' * four', ' * five', ' * six', ' ' + s + '*' + '/',
+        ].join('\n');
+
+        expect(longCommentBlocks(probe)).toHaveLength(1);
+        expect(longCommentBlocks(probe)[0].n).toBe(8);
+    });
+
+    it('the scanner leaves a short block alone', () => {
+        const s = '/';
+        const probe = [s + '/', ' one', ' two', ' three'].join('\n');
+        expect(longCommentBlocks(probe)).toEqual([]);
+    });
+
+    it('scans the files it claims to', () => {
+        expect(CODE_FILES.length).toBeGreaterThan(20);
     });
 });
