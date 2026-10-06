@@ -80,7 +80,8 @@ broken route in a scan; check it in the browser instead.
 | `tests/tokens.test.ts` | every `var(--x)` resolves; no token alive only on a hardcoded fallback; no duplicate declaration per rule. Strips comments before reading |
 | `tests/visual-language.test.ts` | no hover lifts; no `font-weight` past 700; no hover signals by background alone; prose goes through `t()`; the name has one source; `--accent-surface` clears 4.5:1 under white in both themes |
 | `tests/comments.test.ts` | every HTML comment in a template body is on the sixteen-label allowlist; no `//` line in the markup region |
-| `tests/viewtransitions.test.ts` | client scripts re-bind on `astro:page-load`; no `is:inline`, no `currentScript`, no global id in any component. The component list is **derived** from the filesystem |
+| `tests/markup.test.ts` | every `ld+json` block uses `set:html`; `is:inline` appears only on the anti-FOUC theme script; no `itemscope`, no `childNodes`. Strips comments first — two of these rules are held in place by the note that explains them |
+| `tests/viewtransitions.test.ts` | client scripts re-bind on `astro:page-load`; no `currentScript`, no global id in any component. The component list is **derived** from the filesystem, and excludes JSON-LD blocks — those have no listener to re-bind |
 | `tests/contact.test.ts` | shape and non-empty labels; **each `href` agrees with its own `value`**; `sameAs` only on browsable profiles; **icon paths are root-absolute and exist in `public/`** |
 | `tests/i18n.test.ts` | both locales share top-level keys; **every `t()` key used in any `src/` file** resolves in both |
 | `tests/about.test.ts` | `resumeUrl` points at a real file; `ABOUT.socials` carries the email channel; `AboutSection` reads both from `ABOUT` |
