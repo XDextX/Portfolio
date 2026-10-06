@@ -10,25 +10,35 @@ const read = (...parts: string[]) =>
 const componentNames = () =>
     fs.readdirSync(COMPONENT_DIR).filter((f) => f.endsWith('.astro'));
 
+const scriptTags = (name: string) =>
+    [...fs.readFileSync(path.join(COMPONENT_DIR, name), 'utf-8').matchAll(/<script[^>]*>/g)].map((m) => m[0]);
+
 /**
- * Every component that ships a client script, derived from what is on disk.
+ * Every component that ships any script, derived from what is on disk.
  *
  * This was a hardcoded list of five names. It was right on the day it was
  * written and wrong the moment a sixth component added a script: a
  * `DOMContentLoaded` binding in `SkillChip.astro` passed all seventeen tests,
  * because the guard only read the five names it had been told about. A list that
  * has to be remembered is a list that goes stale silently.
- *
- * A JSON-LD block is inert data rather than a client script, so it is excluded
- * by its type instead of by name.
  */
-function componentsWithScripts(): string[] {
-    return componentNames().filter((name) =>
-        /<script(?![^>]*application\/ld\+json)/.test(
-            fs.readFileSync(path.join(COMPONENT_DIR, name), 'utf-8'),
-        ),
-    );
-}
+const componentsWithAnyScript = () => componentNames().filter((n) => scriptTags(n).length > 0);
+
+/**
+ * The subset that ships a *client* script — anything that is not JSON-LD.
+ *
+ * The two rules below have different scopes, and reading both off one list is
+ * what put a blind spot here. `is:inline` is forbidden on **any** script: the bug
+ * it caused was `is:inline` plus `{JSON.stringify(x)}` emitting the expression
+ * as literal text, and AboutSection's only script is exactly that JSON-LD block,
+ * so excluding it left that component unchecked for the rule it most needed.
+ *
+ * `astro:page-load` is the opposite case. A JSON-LD block has no listener to
+ * re-bind, so demanding one would be a rule with no meaning — which is why the
+ * client list stays narrow rather than both lists becoming the wide one.
+ */
+const componentsWithClientScript = () =>
+    componentNames().filter((n) => scriptTags(n).some((t) => !/application\/ld\+json/.test(t)));
 
 /**
  * Con <ClientRouter /> el DOM se reemplaza en cada navegación: cualquier script
@@ -36,20 +46,33 @@ function componentsWithScripts(): string[] {
  * la primera transición. Estos tests son la red de seguridad para esa clase de bug.
  */
 describe('view transitions: client scripts must be re-bindable', () => {
-    const components = componentsWithScripts();
+    const withClientScript = componentsWithClientScript();
+    const withAnyScript = componentsWithAnyScript();
 
-    it('finds the components that ship a client script', () => {
+    it('finds components shipping a client script', () => {
         // A list that silently resolved to empty would turn every it.each below
         // into zero runs and the whole file would report green.
-        expect(components.length).toBeGreaterThan(0);
+        expect(withClientScript.length).toBeGreaterThan(0);
     });
 
-    it.each(components)('%s re-binds on astro:page-load', (name) => {
+    it('finds components shipping any script', () => {
+        // Same tripwire for the wider list. Without it, excluding every script
+        // would empty this one too and the is:inline rule would go unrun.
+        expect(withAnyScript.length).toBeGreaterThan(0);
+    });
+
+    it('the client list is the narrower of the two', () => {
+        // If these collapse back into one list, this is what notices - and the
+        // reason they were split is the reason this assertion exists.
+        expect(withAnyScript.length).toBeGreaterThan(withClientScript.length);
+    });
+
+    it.each(withClientScript)('%s re-binds on astro:page-load', (name) => {
         const src = read('src', 'components', name);
         expect(src).toContain("addEventListener('astro:page-load'");
     });
 
-    it.each(components)('%s does not use is:inline', (name) => {
+    it.each(withAnyScript)('%s does not use is:inline', (name) => {
         const src = read('src', 'components', name);
         expect(src).not.toContain('is:inline');
     });
