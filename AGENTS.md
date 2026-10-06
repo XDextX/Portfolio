@@ -377,6 +377,28 @@ physical addresses, tokens, API keys or passwords. This is constitution 9, with 
 `README.md` used to spell the name four times and carry the real `mailto:`. It no longer does, and it
 also documented an `og:image` path the layout never used.
 
+## Spec-driven development
+
+**A feature or a refactor starts with a spec, not with code.** Before touching anything, read
+`docs/constitution.md` and the active `specs/NNN-*.md`. Both are short, and both have been
+rewritten by people who had not read them — that is what the constitution's precedence line exists for.
+
+- **A spec is required for a feature or a refactor.** Not for everything: a typo, a token rename, a
+  comment or a formatting fix does not need one. This is a working rule rather than a constitutional
+  one because the line is a judgement, and dressing a judgement up as non-negotiable just moves the
+  argument somewhere it cannot be settled.
+- **When it is not clear whether a change is a feature or maintenance, ask.** Both ways cost:
+  a spec nobody needed wastes a cycle, and a missing spec is how the second version of the same idea
+  arrives. Asking is cheaper than either.
+- **What a spec contains is deliberately undecided.** The first real spec settles it and that
+  decision is recorded there. Do not invent a template in the meantime — an empty section reads as
+  coverage that does not exist, which is worse than an honest omission.
+- **A spec does not override the constitution or this file.** If a change appears to contradict
+  either, that contradiction *is* the finding: resolve it in those two files first, then in the code.
+  A spec is not a route around a rule.
+- **Reference the spec in the commits it produces.** A commit that cannot be traced to a spec is the
+  place drift starts, and it is invisible until someone asks why the code looks like that.
+
 ## Working on components one at a time
 
 Visual work is reviewed **per component** and approved before it is committed. Never redesign several
