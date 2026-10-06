@@ -256,6 +256,24 @@ leave the build.
 - Inside `<script>` and `<style>`, `//` is a real comment stripped at build. Only markup leaks.
 - A note in a stylesheet needs no such treatment, but it must not name a token as if it used one.
 
+### A comment is five lines, and the number is the point
+
+**No comment block runs past five lines.** `tests/comments.test.ts` enforces it across `.astro`, `.ts`
+and `.css`. Five is not a style preference: a block nobody reads to the end is worse than no block,
+because it looks like the subject is documented.
+
+- **Keep the number, cut the retelling.** A measurement is what makes a comment worth reading — "44px to
+  13px, because *menos* is 14px wider than *más*" killed a proposed fix that read as sound. But if
+  `AGENTS.md` already carries it, the comment points there instead of repeating it. Two copies drift,
+  and the one that drifts is the one nobody re-reads.
+- **A stale number is worse than no comment**, because it reads as current. If a comment cites a
+  measurement, the change that invalidates it has to touch the comment in the same commit.
+- **What earns its place:** why a non-obvious value is that value, what broke and how it was found, and
+  a warning whose failure is silent. Everything else is the code speaking for itself.
+- **A comment earns its keep by being wrong loudly.** If deleting it would change what the next person
+  does, keep it — compressed. If not, delete it rather than shortening it.
+
+
 ### Public asset paths
 
 Root-absolute, always: `"/icons/gmail.svg"`, `"/tech/react.svg"`, `"/cv/file.pdf"`. A relative
