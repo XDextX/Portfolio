@@ -1,4 +1,4 @@
-# 🌐 Portfolio – German Montero Ramírez
+# 🌐 Portfolio — Full-Stack Developer
 
 [![Astro](https://img.shields.io/badge/Astro-Framework-blueviolet?style=flat-square&logo=astro)](https://astro.build)
 [![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=flat-square&logo=vercel)](https://portfolio-dext.vercel.app)
@@ -107,13 +107,17 @@ GITHUB_TOPIC=tu_topic
 
 ## 🌍 SEO y Metadatos
 
-Ubicados en `src/layouts/BaseLayout.astro`:
+Ubicados en `src/layouts/BaseLayout.astro`. Nada se escribe a mano: el nombre y el
+título salen de `ABOUT`, y la imagen de `og-cover.png`.
 
 ```astro
-<meta name="description" content="Portafolio de German Montero Ramírez, Full-Stack Developer en Costa Rica." />
-<meta property="og:title" content="German Montero · Full-Stack Developer" />
-<meta property="og:image" content="/og-image.png" />
-<meta name="twitter:card" content="summary_large_image" />
+<title>{title}</title>
+<meta name='description' content={description} />
+<meta property='og:title'       content={title} />
+<meta property='og:description' content={description} />
+<meta property='og:image'       content={image} />
+<meta property='og:site_name'   content={siteName} />
+<meta name='twitter:card'        content='summary_large_image' />
 ```
 
 ---
@@ -133,7 +137,10 @@ Este proyecto está bajo la licencia MIT — ver el archivo [LICENSE](./LICENSE)
 
 ## 👋 Sobre mí
 
-Hola, soy German Montero Ramírez, desarrollador Full-Stack con más de 6 años de experiencia creando soluciones escalables y eficientes.  
+Desarrollador Full-Stack con más de 6 años de experiencia creando soluciones escalables y eficientes.  
 Actualmente me enfoco en mejorar mi portafolio y contribuir a proyectos open-source.
 
-🔗 [LinkedIn](https://www.linkedin.com/in/german-montero-ramirez/) · [GitHub](https://github.com/XDextX) · [Email](mailto:germonram@gmail.com)
+La identidad y los datos de contacto se definen una sola vez, en `src/data/about.ts` y
+`src/data/contacts.ts`. Este README no los duplica.
+
+🔗 [LinkedIn](https://www.linkedin.com/in/german-montero-ramirez/) · [GitHub](https://github.com/XDextX) · [Contacto](https://portfolio-dext.vercel.app)
