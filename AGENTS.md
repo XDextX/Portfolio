@@ -411,9 +411,12 @@ rewritten by people who had not read them — that is what the constitution's pr
 - **When it is not clear whether a change is a feature or maintenance, ask.** Both ways cost:
   a spec nobody needed wastes a cycle, and a missing spec is how the second version of the same idea
   arrives. Asking is cheaper than either.
-- **What a spec contains is deliberately undecided.** The first real spec settles it and that
-  decision is recorded there. Do not invent a template in the meantime — an empty section reads as
-  coverage that does not exist, which is worse than an honest omission.
+- **What a spec contains is settled by `.opencode/commands/spec.md`**, which carries the
+  template and the rules a spec has to respect. That is the only copy — the template is not
+  restated here, because a second copy is a second thing to forget to update. The command
+  file is gitignored, so it lives per machine: change it there, not here.
+- **Every RF carries the check that settles it.** A requirement with no check is prose that
+  reads like coverage, which is worse than an honest omission.
 - **A spec does not override the constitution or this file.** If a change appears to contradict
   either, that contradiction *is* the finding: resolve it in those two files first, then in the code.
   A spec is not a route around a rule.
