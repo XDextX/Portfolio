@@ -75,6 +75,13 @@
 		"back": "Back to projects",
 		"breadcrumb": "Breadcrumb"
 	},
+	"seo": {
+		"home": {
+			"title": "Home: {{role}}",
+			"techs": "TypeScript, .NET and Angular",
+			"description": "Portfolio of {{role}}: {{techs}}. Projects, experience and contact."
+		}
+	},
 	"notFound": {
 		"title": "Page not found",
 		"message": "The page you were looking for does not exist.",

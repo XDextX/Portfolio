@@ -6,6 +6,7 @@ import { t } from '@i18n/index';
 import Readme from '@components/Readme.astro';
 import type { GitHubRepo } from '@type/github';
 import { applyLocale } from '@utils/locale';
+import { projectDescription, projectEntity } from '@utils/seo';
 import LanguageBadge from '@components/LanguageBadge.astro';
 
 const { name } = Astro.params;
@@ -22,7 +23,10 @@ const repo = (await repository.json()) as GitHubRepo;
 
 const intlLocale = locale === 'es' ? 'es-CR' : 'en-US';
 const title = `${repo.name} - ${t('projects.title')}`;
-const desc = repo.description ?? t('project.meta.noDescription');
+// One resolution, three readers: the paragraph below, the layout's description
+// and the entity. `lang` stays out of the entity — its `N/A` is a badge label,
+// not a language (RF-7).
+const desc = projectDescription(repo, t('project.meta.noDescription'));
 const lang = repo.language ?? 'N/A';
 const hasDemo = !!repo.homepage && String(repo.homepage).trim() !== '';
 const topics: string[] = Array.isArray(repo.topics) ? repo.topics : [];
@@ -42,15 +46,11 @@ const directions = [
 	{ label: repo.name, href: `/proyectos/${repo.name}` },
 ];
 
-const jsonLd = {
-	'@context': 'https://schema.org',
-	'@type': 'SoftwareApplication',
-	name: repo.name,
+const jsonLd = projectEntity({
+	repo,
 	url: `${Astro.url.origin}/proyectos/${repo.name}`,
-	applicationCategory: 'DeveloperApplication',
-	operatingSystem: 'Any',
 	description: desc,
-};
+});
 ---
 
 <BaseLayout title={title} description={desc} jsonLd={jsonLd} locale={locale}>

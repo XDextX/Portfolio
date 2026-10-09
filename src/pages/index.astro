@@ -1,11 +1,21 @@
 ---
 import Resume from '../components/Resume.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { ABOUT } from '../data/about';
+import { t } from '@i18n/index';
 import { applyLocale } from '@utils/locale';
+import { homeDescription } from '@utils/seo';
 
 const locale = applyLocale(Astro);
+
+// D-9: the suffix is a literal here, as in the other two routes, so the key
+// carries only the part that comes before it.
+const title = `${t('seo.home.title', { role: ABOUT.title })} - Portfolio`;
+const description = homeDescription(
+	t('seo.home.description', { role: ABOUT.title, techs: t('seo.home.techs') })
+);
 ---
 
-<BaseLayout locale={locale}>
+<BaseLayout locale={locale} title={title} description={description}>
 	<Resume locale={locale} />
 </BaseLayout>

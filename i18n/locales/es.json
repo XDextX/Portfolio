@@ -75,6 +75,13 @@
 		"back": "Volver a proyectos",
 		"breadcrumb": "Ruta de navegación"
 	},
+	"seo": {
+		"home": {
+			"title": "Inicio: {{role}}",
+			"techs": "TypeScript, .NET, Angular",
+			"description": "Portafolio de {{role}}: {{techs}}. Proyectos, experiencia y contacto."
+		}
+	},
 	"notFound": {
 		"title": "Página no encontrada",
 		"message": "La página que buscabas no existe.",
