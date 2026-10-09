@@ -1,6 +1,6 @@
 # Spec 002 — Social preview card
 
-**Status:** proposed
+**Status:** borrador
 
 ## Context and goal
 

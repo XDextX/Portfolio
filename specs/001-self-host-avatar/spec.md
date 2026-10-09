@@ -1,6 +1,6 @@
 # Spec 001 — Self-host the avatar
 
-**Status:** rejected
+**Status:** rechazada
 
 ## Decision (2026-10-06)
 

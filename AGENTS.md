@@ -18,7 +18,7 @@ Site content is deliberately Spanish — `i18n/locales/es.json`, `ABOUT.bio.es`,
 | Command | Status |
 |---|---|
 | `npm run build` | works (~4s) |
-| `npm test` | works — 61 tests, 9 files |
+| `npm test` | works — 110 tests, 11 files |
 | `npx playwright test` | works (1 test, ~7s, spawns its own dev server on :4321) |
 | `npm run lint` | **broken** — `eslint` is not a dependency and there is no config |
 | `npm run format` | **broken** — `prettier` is not a dependency and there is no config |
@@ -86,10 +86,13 @@ broken route in a scan; check it in the browser instead.
 | `tests/i18n.test.ts` | both locales share top-level keys; **every `t()` key used in any `src/` file** resolves in both |
 | `tests/about.test.ts` | `resumeUrl` points at a real file; `ABOUT.socials` carries the email channel; `AboutSection` reads both from `ABOUT` |
 | `tests/notfound.test.ts` | the `/404` redirect target exists and its keys resolve; `Resume.astro` has not moved back into `pages/` |
-| `tests/github-helpers.test.ts` | `ghListByTopic` / `ghRepo` / `ghSearch`: response shape, `user:` scoping, `perPage` |
+| `tests/github-helpers.test.ts` | `ghListByTopic` / `ghRepo` / `ghSearch`: response shape, `user:` scoping, `perPage`; **`sortRepos`** ranking and **input-not-mutated**; **`ghRepoReadme`** body, HTML `Accept`, 404-as-null, throw on anything else |
+| `tests/seo.test.ts` | per-page metadata: home title and description, generated length and word boundary **over the real locale string**, project entity typed `SoftwareSourceCode` with no `applicationCategory`/`operatingSystem`, `programmingLanguage` omitted when absent, and no drift between the description the route resolves and the one the entity carries |
 
-**`sortRepos()` and `ghRepoReadme()` have no tests.** `sortRepos` is the single ranking both `/` and
-`/proyectos` use, so a drift shows the same repo in two positions. Add them before changing either.
+`sortRepos()` is the single ranking both `/` and `/proyectos` use, so a drift shows the same
+repo in two positions. Its guard names the repos so the alphabetical order **contradicts**
+the key under test: written the obvious way, dropping the forks comparison still produced
+the same order, and the assertion passed with that line deleted.
 
 Keep `tests/helpers/` to what a test actually imports. It once exported `mockErrorResponse`,
 `sequenceFetch` and a `FetchStub` type that nothing used, and a README advertised all three as if
@@ -116,7 +119,8 @@ the same shape: the guard did not look where the violation actually was.
   token. The other three tests in the same file already stripped comments, which is why only this one
   was blind.
 - **A hardcoded list of files goes stale silently.** `viewtransitions.test.ts` iterated five component
-  names. A sixth component with a `DOMContentLoaded` binding passed all seventeen tests.
+  names. A sixth component with a `DOMContentLoaded` binding passed all seventeen tests — seventeen
+  being the count then; the file has fewer now, and the number is not the point.
 - **An assertion can be satisfied by something other than the thing.** One test asserted
   `toContain('AvatarCircle')`, which the import path `'./AvatarCircle.astro'` satisfies alone —
   replacing the component entirely, usage and import, stayed green. Ask what else in the file
