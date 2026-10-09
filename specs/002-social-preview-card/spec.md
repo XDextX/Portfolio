@@ -62,7 +62,7 @@ cannot fetch. No one on the site itself sees this.
 
 ## Out of scope
 
-- **The avatar stays remote.** `specs/001` was rejected on purpose and this does not
+- **The avatar stays remote.** `specs/001-self-host-avatar/` was rejected on purpose and this does not
   reopen it. Note the interaction: with no local raster image other than this card, a
   platform that finds no usable `og:image` falls back to the first `<img>` on the page,
   which is the remote GitHub avatar. Removing `og:image` (the rejected alternative) would
