@@ -7,18 +7,22 @@ projects come live from the GitHub API.
 test, command or file that settles it. Read it before proposing anything. It is deliberately not
 summarised or repeated here — a second copy of a rule is a second thing to forget to update, and the
 copy that drifts is the one people read. This file is the working detail underneath: how those rules
-apply here, and the traps this repo has actually hit.
+apply here, and the traps this repo has actually hit. It is grouped as **Workflow** (how
+work happens), **Rules** (what the code must obey), **Tooling** (git, MCP, memory) and
+**Reference** (the lookup tables).
 
 **Language.** Code, comments, JSDoc and these documents are English. `Memory.md` is the agent's call.
 Site content is deliberately Spanish — `i18n/locales/es.json`, `ABOUT.bio.es`, strings like
 `'Ver más proyectos'` — because that is the translation target, not an inconsistency.
 
-## Commands — verified working vs. broken
+## Workflow
+
+### Commands — verified working vs. broken
 
 | Command | Status |
 |---|---|
 | `npm run build` | works (~4s) |
-| `npm test` | works — 124 tests, 11 files |
+| `npm test` | works — 127 tests, 11 files |
 | `npx playwright test` | works (1 test, ~7s, spawns its own dev server on :4321) |
 | `npm run lint` | **broken** — `eslint` is not a dependency and there is no config |
 | `npm run format` | **broken** — `prettier` is not a dependency and there is no config |
@@ -29,7 +33,7 @@ not add a formatting pass "to match" — there is no formatter config to match. 
 tool is not added to make a check pass; that applies here too. If they are ever fixed, add them to
 `.husky/pre-commit` in the same change.
 
-### Running tests
+#### Running tests
 
 ```bash
 npm test                          # = vitest --run tests   (the positional `tests` arg scopes it)
@@ -41,7 +45,7 @@ Do **not** run bare `npx vitest --run`. Without the `tests` filter it also picks
 and fails on a missing Playwright runtime. This is the single most likely way to get a confusing red
 result.
 
-## Verifying
+### Verifying
 
 A green build and green tests **do not** catch render bugs. Start a dev server and hit the pages:
 
@@ -59,7 +63,7 @@ pages render per request. Checking the shipped HTML means fetching a running ser
 A 404 route throws in PowerShell's `Invoke-WebRequest` under `-ErrorAction Stop`, which looks like a
 broken route in a scan; check it in the browser instead.
 
-### Environment traps
+#### Environment traps
 
 - **The repo lives under OneDrive and the watcher lies.** Vite misses changes because the sync
   swallows events. Twice the log showed no `[watch]` line for a component just edited, while the
@@ -71,67 +75,71 @@ broken route in a scan; check it in the browser instead.
   3.125px and an identity matrix when the settled values were 100% and a 180° rotation.
 - **The working tree is CRLF** (`core.autocrlf=true`). An anchor written with `\n` never matches —
   normalise before comparing, or a probe silently finds nothing.
-- **`git checkout -- .` destroys uncommitted work, silently.** See the git section.
+- **`git checkout -- .` destroys uncommitted work, silently.** See the **Git** section.
 
-## Tests
+### Spec-driven development
 
-| File | Guards |
-|---|---|
-| `tests/tokens.test.ts` | every `var(--x)` resolves; no token alive only on a hardcoded fallback; no duplicate declaration per rule. Strips comments before reading |
-| `tests/visual-language.test.ts` | no hover lifts; no `font-weight` past 700; no hover signals by background alone; prose goes through `t()`; the name has one source; `--accent-surface` clears 4.5:1 under white in both themes |
-| `tests/comments.test.ts` | every HTML comment in a template body is on the sixteen-label allowlist; no `//` line in the markup region |
-| `tests/markup.test.ts` | every `ld+json` block uses `set:html`; `is:inline` appears only on the anti-FOUC theme script; no `itemscope`, no `childNodes`. Strips comments first — two of these rules are held in place by the note that explains them |
-| `tests/viewtransitions.test.ts` | client scripts re-bind on `astro:page-load`; no `currentScript`, no global id in any component. The component list is **derived** from the filesystem, and excludes JSON-LD blocks — those have no listener to re-bind |
-| `tests/contact.test.ts` | shape and non-empty labels; **each `href` agrees with its own `value`**; `sameAs` only on browsable profiles; **icon paths are root-absolute and exist in `public/`** |
-| `tests/i18n.test.ts` | both locales share top-level keys; **every `t()` key used in any `src/` file** resolves in both |
-| `tests/about.test.ts` | `resumeUrl` points at a real file; `ABOUT.socials` carries the email channel; `AboutSection` reads both from `ABOUT` |
-| `tests/notfound.test.ts` | the `/404` redirect target exists and its keys resolve; `Resume.astro` has not moved back into `pages/` |
-| `tests/github-helpers.test.ts` | `ghListByTopic` / `ghRepo` / `ghSearch`: response shape, `user:` scoping, `perPage`; **`sortRepos`** ranking and **input-not-mutated**; **`ghRepoReadme`** body, HTML `Accept`, 404-as-null, throw on anything else |
-| `tests/seo.test.ts` | per-page metadata: home title and description, generated length and word boundary **over the real locale string**, project entity typed `SoftwareSourceCode` with no `applicationCategory`/`operatingSystem`, `programmingLanguage` omitted when absent, and no drift between the description the route resolves and the one the entity carries |
+**A feature or a refactor starts with a spec, not with code.** Before touching anything, read
+`docs/constitution.md` and the active `specs/NNN-*.md`. Both are short, and both have been
+rewritten by people who had not read them — that is what the constitution's precedence line exists for.
 
-`sortRepos()` is the single ranking both `/` and `/proyectos` use, so a drift shows the same
-repo in two positions. Its guard names the repos so the alphabetical order **contradicts**
-the key under test: written the obvious way, dropping the forks comparison still produced
-the same order, and the assertion passed with that line deleted.
+- **A spec is required for a feature or a refactor.** Not for everything: a typo, a token rename, a
+  comment or a formatting fix does not need one. This is a working rule rather than a constitutional
+  one because the line is a judgement, and dressing a judgement up as non-negotiable just moves the
+  argument somewhere it cannot be settled.
+- **When it is not clear whether a change is a feature or maintenance, ask.** Both ways cost:
+  a spec nobody needed wastes a cycle, and a missing spec is how the second version of the same idea
+  arrives. Asking is cheaper than either.
+- **What a spec contains is settled by the `sdd` skill**, in `.agents/skills/sdd/SKILL.md`,
+  which carries the template and the rules a spec has to respect. That is the only copy — the
+  template is not restated here, because a second copy is a second thing to forget to update.
+  It is gitignored, so it lives per machine: change it there, not here.
+- **Every RF carries the check that settles it.** A requirement with no check is prose that
+  reads like coverage, which is worse than an honest omission.
+- **A spec does not override the constitution or this file.** If a change appears to contradict
+  either, that contradiction *is* the finding: resolve it in those two files first, then in the code.
+  A spec is not a route around a rule.
+- **Reference the spec in the commits it produces.** A commit that cannot be traced to a spec is the
+  place drift starts, and it is invisible until someone asks why the code looks like that.
 
-Keep `tests/helpers/` to what a test actually imports. It once exported `mockErrorResponse`,
-`sequenceFetch` and a `FetchStub` type that nothing used, and a README advertised all three as if
-they were in use — so a reader reached for a helper nothing exercised. They are gone. **Add a mock
-helper when a test needs it, not before.**
+### Working on components one at a time
 
-### A guard that cannot fail is worse than no guard
+Visual work is reviewed **per component** and approved before it is committed. Never redesign several
+components and present them as a batch.
 
-Six guards here were green while the exact thing they exist to prevent was happening. All six had
-the same shape: the guard did not look where the violation actually was. Each one, with its
-mechanism: `docs/incidents.md`.
+1. Change **one** component. Show it in both themes — light and dark.
+2. **Stop and wait for approval.** Do not commit an unapproved component, and do not start the next
+   while waiting.
+3. On approval, commit that component, then move on.
 
-So: **prove a guard still bites before reporting green.** Inject the violation, watch it fail, then
-revert. A green suite that has never failed is untested. When a guard is right, the fix is to widen
-what it reads, never to relax what it accepts — all six times it was the former. Stripping comments
-is the recurring instance: a note explaining why a token was removed is not a use of it, and a
-frontmatter note quoting a removed `lang === 'es' ? …` is not a locale ternary.
+How to group the commit:
 
-**Undo a probe by explicit path, never `git checkout -- .`** — see the Git section below. This cost a
-rewritten `tests/` and made fourteen healthy guards look dead in one sitting.
+- **One component per commit.** A token or layout change belongs to the work that motivated it.
+- **This file and `docs/constitution.md` get their own `docs:` commit**, never folded into a
+  component commit.
+- **The caller's prop change counts as part of the component** when it is what makes the change
+  visible — a component with a single caller needs a new prop to do anything. Redesigning the caller
+  is separate work.
+- **A block that mixes scopes gets split**, even mid-block.
+- Which component is next and what is pending is **state**: `Memory.md`, not here.
 
-## Environment variables
+#### Re-review your own proposal before showing it
 
-Read via `import.meta.env` only — never `process.env`. In `.env`:
+Read each proposal back as a senior reviewer looking for inconsistency, contradiction and incongruity,
+and say plainly what that turned up. Not padding — the findings have to be real. This surfaced,
+repeatedly:
 
-- `GITHUB_USERNAME` — defaults to `XDextX` in code
-- `GITHUB_TOKEN` — optional, avoids rate limits. Server-side only; never let it reach a client bundle
-- `GITHUB_TOPIC` — currently `""`. When empty, `ghListByTopic` falls back to `user:XDextX` (all public
-  repos) and the topic filter on `/proyectos` becomes a no-op
-- `DEFAULT_LOCALE` — **dead config.** Nothing reads it. The default is the hardcoded
-  `const DEFAULT_LOCALE: Locale = 'es'` in `src/utils/locale.ts`
+Four proposals were wrong on arrival — unmeasured, announced from arithmetic, computed from a
+value never fetched, and false on the page. Each one: `docs/incidents.md`.
 
-`.env` is gitignored and holds a live GitHub PAT in plaintext. Never commit it, never echo it.
+**Prefer a number to an adjective, and say which one you have.** "Looks broken" is not a finding;
+"144px to 100px" is. When a claim cannot be defended with a measurement, present it as an opinion and
+ask, rather than dressing it as a result.
 
-Note `GITHUB_TOPIC` is read in three places (`ProjectsSection.astro`, `proyectos/index.astro`,
-`api/github-list.json.ts`). That is deliberate and public — it is not a secret, and per-page reading
-lets each route decide its own filter. `GITHUB_TOKEN` is the one with a single reader.
 
-## Structure
+## Rules
+
+### Structure
 
 - **Never leave a page component in `src/pages/`.** Astro registers it as a route even if it is only
   used as a component. `Resume.astro` lived there and served `/Resume`, duplicating `/` with
@@ -139,8 +147,6 @@ lets each route decide its own filter. `GITHUB_TOKEN` is the one with a single r
 - **One source per datum.** `ABOUT.socials` is derived from `CONTACTS` by id. The literal name and
   the real address live in `src/data/about.ts` and `src/data/contacts.ts` and nowhere else; a public
   profile may be linked, never spelled out again (constitution 9).
-- **Public URLs need a leading slash.** `resumeUrl` is `/cv/...`, not `cv/...` — the relative form
-  resolved incorrectly from `/proyectos`.
 - **JSON-LD with `set:html`, never `is:inline` plus interpolation.** `is:inline` disables expression
   evaluation, so `{JSON.stringify(x)}` emitted as literal text. Fixed in `AboutSection.astro` and
   `BaseLayout.astro`; do not reintroduce it.
@@ -149,7 +155,7 @@ lets each route decide its own filter. `GITHUB_TOKEN` is the one with a single r
 - Prefer an explicit `sameAs: true` on a contact over re-deriving "is this publishable?" from another
   field. One flag, read by whoever needs it.
 
-## Code conventions
+### Code conventions
 
 **TypeScript by default.** A file that is not `.ts` carries its reason: no compiler, no
 runner, or no dependency that would justify one. `.mjs` and `.js` are for the case where
@@ -183,7 +189,7 @@ have diverged, and report honestly which it is: a visible bug, or a latent risk.
 **JSDoc on public helpers and components.** One description line plus `@param`/`@returns`; on
 components a typed `interface Props`. Examples: `src/data/levelLabels.ts`, `src/types/github.ts`.
 
-### Interactive markup needs a stable hook, not a positional one
+#### Interactive markup needs a stable hook, not a positional one
 
 - **Never index into `childNodes` to swap a label.** `toggle.childNodes[0].textContent = …` breaks the
   moment someone adds whitespace. Better: do not swap text at all — the show-more button carries
@@ -212,7 +218,7 @@ components a typed `interface Props`. Examples: `src/data/levelLabels.ts`, `src/
   rather than a shared token: two controls are not a design system, and `--control-h` would imply one.
   **When a third control has to match, that is when a token starts meaning something.**
 
-### Client scripts under `<ClientRouter />`
+#### Client scripts under `<ClientRouter />`
 
 `<ClientRouter />` (view transitions) is **enabled on purpose and stays**.
 
@@ -231,7 +237,7 @@ components a typed `interface Props`. Examples: `src/data/levelLabels.ts`, `src/
 `tests/viewtransitions.test.ts` enforces all of this, over a component list **derived from the
 filesystem**. If you must skip a rule, do it explicitly and update that test.
 
-### Comments do not belong in the template
+#### Comments do not belong in the template
 
 **Anything between the frontmatter fences and the markup is not a comment.** Astro emits it verbatim
 into the response, so a `//` note in the template ships to every visitor as a stray HTML comment and
@@ -247,7 +253,7 @@ leave the build.
 - Inside `<script>` and `<style>`, `//` is a real comment stripped at build. Only markup leaks.
 - A note in a stylesheet needs no such treatment, but it must not name a token as if it used one.
 
-### A comment is five lines, and the number is the point
+#### A comment is five lines, and the number is the point
 
 **No comment block runs past five lines.** `tests/comments.test.ts` enforces it across `.astro`, `.ts`
 and `.css`. Five is not a style preference: a block nobody reads to the end is worse than no block,
@@ -265,14 +271,15 @@ because it looks like the subject is documented.
   does, keep it — compressed. If not, delete it rather than shortening it.
 
 
-### Public asset paths
+#### Public asset paths
 
 Root-absolute, always: `"/icons/gmail.svg"`, `"/tech/react.svg"`, `"/cv/file.pdf"`. A relative
 `src="icons/x.svg"` resolves against the *current route*, so it works on `/` and `/proyectos` but 404s
-on `/proyectos/<name>`. This is the `resumeUrl` bug again; `tests/contact.test.ts` asserts the leading
-slash and that the file exists, for every contact.
+on `/proyectos/<name>`. `resumeUrl` is `/cv/...`, not `cv/...` — the relative form resolved
+incorrectly from `/proyectos`. `tests/contact.test.ts` asserts the leading slash and that the
+file exists, for every contact.
 
-## Design tokens are an invariant, not a convention
+### Design tokens are an invariant, not a convention
 
 A custom property that is read but never defined **fails silently**. `var(--missing)` makes the whole
 declaration "invalid at computed-value time", so the browser drops it and falls back to the initial
@@ -300,7 +307,7 @@ for weeks against a token that existed nowhere, and the avatar rendered `0px non
 - **Run `tests/tokens.test.ts` before claiming a styling change is done.** It fails on a typo
   (`--color-bordr`) and on an invented token, so it is not vacuous.
 
-## CSS that silently does nothing
+### CSS that silently does nothing
 
 - **`attr()` only works for `content` properties.** `attr(data-size px)` in a size declaration is
   invalid everywhere. Emit a custom property and read it from the media query instead.
@@ -316,7 +323,7 @@ for weeks against a token that existed nowhere, and the avatar rendered `0px non
   is 577px and about 72 characters. Never reason about `ch` as glyphs.
 - **Fixed-size decorative markup is a duplicate waiting to happen.** When you catch one, say so.
 
-## Visual language
+### Visual language
 
 A deliberate identity, not a starting point. Read this before changing any colour, font or radius.
 Each rule states the failure mode it prevents, so the reasoning survives the specific value.
@@ -371,7 +378,7 @@ Each rule states the failure mode it prevents, so the reasoning survives the spe
   in opposite corners, and the control governing the grid sat as far from it as the layout allowed. A
   disclosure goes under what it discloses, left-aligned.
 
-## Never document sensitive data
+### Never document sensitive data
 
 Do not write into this file, `Memory.md`, `README.md`, `docs/`, commit messages or any other repo
 document: paths containing the real user name (`C:\Users\<your-user>\...`), emails, full names,
@@ -388,66 +395,10 @@ physical addresses, tokens, API keys or passwords. This is constitution 9, with 
 
 `README.md` used to spell the name four times and carry the real `mailto:`; it no longer does.
 
-## Spec-driven development
 
-**A feature or a refactor starts with a spec, not with code.** Before touching anything, read
-`docs/constitution.md` and the active `specs/NNN-*.md`. Both are short, and both have been
-rewritten by people who had not read them — that is what the constitution's precedence line exists for.
+## Tooling
 
-- **A spec is required for a feature or a refactor.** Not for everything: a typo, a token rename, a
-  comment or a formatting fix does not need one. This is a working rule rather than a constitutional
-  one because the line is a judgement, and dressing a judgement up as non-negotiable just moves the
-  argument somewhere it cannot be settled.
-- **When it is not clear whether a change is a feature or maintenance, ask.** Both ways cost:
-  a spec nobody needed wastes a cycle, and a missing spec is how the second version of the same idea
-  arrives. Asking is cheaper than either.
-- **What a spec contains is settled by `.opencode/commands/spec.md`**, which carries the
-  template and the rules a spec has to respect. That is the only copy — the template is not
-  restated here, because a second copy is a second thing to forget to update. The command
-  file is gitignored, so it lives per machine: change it there, not here.
-- **Every RF carries the check that settles it.** A requirement with no check is prose that
-  reads like coverage, which is worse than an honest omission.
-- **A spec does not override the constitution or this file.** If a change appears to contradict
-  either, that contradiction *is* the finding: resolve it in those two files first, then in the code.
-  A spec is not a route around a rule.
-- **Reference the spec in the commits it produces.** A commit that cannot be traced to a spec is the
-  place drift starts, and it is invisible until someone asks why the code looks like that.
-
-## Working on components one at a time
-
-Visual work is reviewed **per component** and approved before it is committed. Never redesign several
-components and present them as a batch.
-
-1. Change **one** component. Show it in both themes — light and dark.
-2. **Stop and wait for approval.** Do not commit an unapproved component, and do not start the next
-   while waiting.
-3. On approval, commit that component, then move on.
-
-How to group the commit:
-
-- **One component per commit.** A token or layout change belongs to the work that motivated it.
-- **This file and `docs/constitution.md` get their own `docs:` commit**, never folded into a
-  component commit.
-- **The caller's prop change counts as part of the component** when it is what makes the change
-  visible — a component with a single caller needs a new prop to do anything. Redesigning the caller
-  is separate work.
-- **A block that mixes scopes gets split**, even mid-block.
-- Which component is next and what is pending is **state**: `Memory.md`, not here.
-
-### Re-review your own proposal before showing it
-
-Read each proposal back as a senior reviewer looking for inconsistency, contradiction and incongruity,
-and say plainly what that turned up. Not padding — the findings have to be real. This surfaced,
-repeatedly:
-
-Four proposals were wrong on arrival — unmeasured, announced from arithmetic, computed from a
-value never fetched, and false on the page. Each one: `docs/incidents.md`.
-
-**Prefer a number to an adjective, and say which one you have.** "Looks broken" is not a finding;
-"144px to 100px" is. When a claim cannot be defended with a measurement, present it as an opinion and
-ask, rather than dressing it as a result.
-
-## MCP: chrome-devtools
+### MCP: chrome-devtools
 
 `opencode.json` runs `npx chrome-devtools-mcp@latest` with no flags: the MCP finds a Chromium on its own.
 
@@ -463,7 +414,7 @@ ask, rather than dressing it as a result.
 - **Wait for a real gap between tool calls before reading a settled value.** A `wait_for` on text
   matches text in the DOM even when it is `visibility: hidden`.
 
-## Git
+### Git
 
 `.husky/pre-commit` runs `npm test` and **cancels the commit** on failure, enabled by
 `"prepare": "husky"` on every `npm install`.
@@ -487,7 +438,80 @@ ask, rather than dressing it as a result.
   paths only, and hash what you did not mean to touch before and after. `git checkout -- <untracked>`
   does nothing at all: delete those by hand.
 
-## Quick file reference
+### Memory
+- **Read `Memory.md` before proposing anything** — it holds the current state and the decisions
+  already taken.
+- `Memory.md` is your memory. Keep it small (50 lines max); summarise what is stale and delete it. Its
+  language is your call — this file stays English.
+- **Split of roles:** the *non-negotiable* rules live in `docs/constitution.md`; the *working* rules
+  live only here. `Memory.md` is state and context only — what was done, what is pending, what is
+  verified. Do not duplicate a rule across the three: change it in the one place it belongs.
+- If something comes up often enough, propose a new rule — here, or in the constitution if it is
+  genuinely non-negotiable.
+- After each task, update `Memory.md`. Update this file only when a rule actually changed.
+
+
+## Reference
+
+### Tests
+
+| File | Guards |
+|---|---|
+| `tests/tokens.test.ts` | every `var(--x)` resolves; no token alive only on a hardcoded fallback; no duplicate declaration per rule. Strips comments before reading |
+| `tests/visual-language.test.ts` | no hover lifts; no `font-weight` past 700; no hover signals by background alone; prose goes through `t()`; the name has one source; `--accent-surface` clears 4.5:1 under white in both themes |
+| `tests/comments.test.ts` | every HTML comment in a template body is on the sixteen-label allowlist; no `//` line in the markup region |
+| `tests/markup.test.ts` | every `ld+json` block uses `set:html`; `is:inline` appears only on the anti-FOUC theme script; no `itemscope`, no `childNodes`. Strips comments first — two of these rules are held in place by the note that explains them |
+| `tests/viewtransitions.test.ts` | client scripts re-bind on `astro:page-load`; no `currentScript`, no global id in any component. The component list is **derived** from the filesystem, and excludes JSON-LD blocks — those have no listener to re-bind |
+| `tests/contact.test.ts` | shape and non-empty labels; **each `href` agrees with its own `value`**; `sameAs` only on browsable profiles; **icon paths are root-absolute and exist in `public/`** |
+| `tests/i18n.test.ts` | both locales share top-level keys; **every `t()` key used in any `src/` file** resolves in both |
+| `tests/about.test.ts` | `resumeUrl` points at a real file; `ABOUT.socials` carries the email channel; `AboutSection` reads both from `ABOUT` |
+| `tests/notfound.test.ts` | the `/404` redirect target exists and its keys resolve; `Resume.astro` has not moved back into `pages/` |
+| `tests/github-helpers.test.ts` | `ghListByTopic` / `ghRepo` / `ghSearch`: response shape, `user:` scoping, `perPage`; **`sortRepos`** ranking and **input-not-mutated**; **`ghRepoReadme`** body, HTML `Accept`, 404-as-null, throw on anything else |
+| `tests/seo.test.ts` | per-page metadata: home title and description, generated length and word boundary **over the real locale string**, project entity typed `SoftwareSourceCode` with no `applicationCategory`/`operatingSystem`, `programmingLanguage` omitted when absent, and no drift between the description the route resolves and the one the entity carries |
+
+`sortRepos()` is the single ranking both `/` and `/proyectos` use, so a drift shows the same
+repo in two positions. Its guard names the repos so the alphabetical order **contradicts**
+the key under test: written the obvious way, dropping the forks comparison still produced
+the same order, and the assertion passed with that line deleted.
+
+Keep `tests/helpers/` to what a test actually imports. It once exported `mockErrorResponse`,
+`sequenceFetch` and a `FetchStub` type that nothing used, and a README advertised all three as if
+they were in use — so a reader reached for a helper nothing exercised. They are gone. **Add a mock
+helper when a test needs it, not before.**
+
+#### A guard that cannot fail is worse than no guard
+
+Six guards here were green while the exact thing they exist to prevent was happening. All six had
+the same shape: the guard did not look where the violation actually was. Each one, with its
+mechanism: `docs/incidents.md`.
+
+So: **prove a guard still bites before reporting green.** Inject the violation, watch it fail, then
+revert. A green suite that has never failed is untested. When a guard is right, the fix is to widen
+what it reads, never to relax what it accepts — all six times it was the former. Stripping comments
+is the recurring instance: a note explaining why a token was removed is not a use of it, and a
+frontmatter note quoting a removed `lang === 'es' ? …` is not a locale ternary.
+
+**Undo a probe by explicit path, never `git checkout -- .`** — see the **Git** section. This cost a
+rewritten `tests/` and made fourteen healthy guards look dead in one sitting.
+
+### Environment variables
+
+Read via `import.meta.env` only — never `process.env`. In `.env`:
+
+- `GITHUB_USERNAME` — defaults to `XDextX` in code
+- `GITHUB_TOKEN` — optional, avoids rate limits. Server-side only; never let it reach a client bundle
+- `GITHUB_TOPIC` — currently `""`. When empty, `ghListByTopic` falls back to `user:XDextX` (all public
+  repos) and the topic filter on `/proyectos` becomes a no-op
+- `DEFAULT_LOCALE` — **dead config.** Nothing reads it. The default is the hardcoded
+  `const DEFAULT_LOCALE: Locale = 'es'` in `src/utils/locale.ts`
+
+`.env` is gitignored and holds a live GitHub PAT in plaintext. Never commit it, never echo it.
+
+Note `GITHUB_TOPIC` is read in three places (`ProjectsSection.astro`, `proyectos/index.astro`,
+`api/github-list.json.ts`). That is deliberate and public — it is not a secret, and per-page reading
+lets each route decide its own filter. `GITHUB_TOKEN` is the one with a single reader.
+
+### Quick file reference
 
 | File | Responsibility |
 |---|---|
@@ -504,16 +528,3 @@ ask, rather than dressing it as a result.
 | `i18n/locales/{es,en}.json` | UI strings; edit **both together** |
 | `public/styles/03-components.css` | shared, unscoped: `.btn`, `.card`, `.btn-action` |
 | `public/styles/themes/{light,dark}.css` | theme-specific values, including per-theme hovers |
-
-## Memory
-- **Read `Memory.md` before proposing anything** — it holds the current state and the decisions
-  already taken.
-- `Memory.md` is your memory. Keep it small (50 lines max); summarise what is stale and delete it. Its
-  language is your call — this file stays English.
-- **Split of roles:** the *non-negotiable* rules live in `docs/constitution.md`; the *working* rules
-  live only here. `Memory.md` is state and context only — what was done, what is pending, what is
-  verified. Do not duplicate a rule across the three: change it in the one place it belongs.
-- If something comes up often enough, propose a new rule — here, or in the constitution if it is
-  genuinely non-negotiable.
-- After each task, update `Memory.md`. Update this file only when a rule actually changed.
-## Limits
