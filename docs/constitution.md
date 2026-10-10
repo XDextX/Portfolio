@@ -11,8 +11,8 @@ in the code. `AGENTS.md` elaborates these and wins on any conflict.
    *Check:* the only host in `src/` a browser **fetches** is
    `avatars.githubusercontent.com`; the rest are namespaces and outbound links.
 3. **A mechanical rule ships with a guard.** If a rule can be settled by
-   reading files, a test settles it. Prose is not a check. *Check:* the test
-   table in `AGENTS.md` names a file per mechanical rule.
+   reading files, a test settles it. Prose is not a check. *Check:* the rule in
+   `AGENTS.md` names the test that settles it.
 4. **A guard must fail once.** Never call a test green before injecting the
    violation it exists for and watching it go red; six guards here were green
    while doing the exact thing they forbid. *Check:* the commit names it.
