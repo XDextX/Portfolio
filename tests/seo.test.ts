@@ -12,6 +12,7 @@ import { TECH } from '../src/data/tech';
 import { ABOUT } from '../src/data/about';
 import { init, setLocale, t } from '../i18n/i18n';
 import type { GitHubRepo } from '@type/github';
+import type { Readings } from '../scripts/og-cover.ts';
 
 const locale = (name: 'es' | 'en') =>
     JSON.parse(fs.readFileSync(path.join(process.cwd(), 'i18n', 'locales', `${name}.json`), 'utf-8'));
@@ -381,5 +382,547 @@ describe('projectEntity description (RF-6, non-divergence)', () => {
 
     it('carries the translated fallback verbatim where the repository has none', () => {
         expect(entityFor({ description: null }).description).toBe(FALLBACK);
+    });
+});
+
+// ── Spec 002, RF-4: the generator that draws the social preview card ────────
+//
+// Nothing here reaches a browser (plan D2): the card's readings are exported as
+// data, so a token renamed in the sheet turns this file red in a second, and no
+// check on an already-rendered PNG ever could.
+
+const ROOT = process.cwd();
+const GENERATOR = path.join(ROOT, 'scripts', 'og-cover.ts');
+const SHEET_DIR = path.join(ROOT, 'public', 'styles');
+const PUBLIC_DIR = path.join(ROOT, 'public');
+const PAGES_DIR = path.join(ROOT, 'src', 'pages');
+
+/**
+ * CSS and JS comments off before anything is parsed. The sheet's own notes name
+ * `--brand-primary` (00-tokens.css:8-12), so a reader on raw text finds the
+ * token in the paragraph that explains why it exists.
+ */
+function stripComments(src: string): string {
+    return src
+        .replace(/\/\*[\s\S]*?\*\//g, ' ')
+        .replace(/^\s*\/\/.*$/gm, ' ');
+}
+
+/**
+ * `--name: value` by THIS file's reader. Importing the generator's own parser
+ * would have the check compare the generator against itself, and then it would
+ * agree with any wrong value.
+ */
+function sheetTokens(file: string = path.join(SHEET_DIR, '00-tokens.css')): Record<string, string> {
+    const src = stripComments(fs.readFileSync(file, 'utf-8'));
+    const out: Record<string, string> = {};
+
+    for (const m of src.matchAll(/(--[a-z0-9-]+)\s*:\s*([^;]+);/gi)) out[m[1]] = m[2].trim();
+
+    return out;
+}
+
+/**
+ * Throws a named error rather than letting a missing generator reach
+ * `readFileSync` or an `import()`: either surfaces as an ENOENT or a
+ * module-resolution stack trace, which is not a failure anyone can act on.
+ */
+function requireGenerator(): void {
+    if (!fs.existsSync(GENERATOR)) {
+        throw new Error(
+            `scripts/og-cover.ts does not exist, so there is no generator here to read from:\n` +
+                `nothing can redraw the card and RF-4 has nothing to import.`,
+        );
+    }
+}
+
+/**
+ * The generator's own readings, imported on demand rather than at the top of
+ * the file: a static import takes the whole suite down at collection the moment
+ * the generator is deleted.
+ */
+async function readings(): Promise<Readings> {
+    requireGenerator();
+
+    const { readTokens } = await import('../scripts/og-cover.ts');
+
+    return readTokens(SHEET_DIR);
+}
+
+describe('the og-cover generator (T-S4b)', () => {
+    it('ships the generator, and the readings came out of it', async () => {
+        expect(
+            fs.existsSync(GENERATOR),
+            `scripts/og-cover.ts does not exist. A card with no generator beside it\n` +
+                `leaves nothing that can redraw it, and RF-4 has nothing to import.`,
+        ).toBe(true);
+
+        expect(
+            Object.keys((await readings()).tokens).length,
+            'the generator exported no readings at all',
+        ).toBeGreaterThan(0);
+    });
+});
+
+describe('the og-cover readings (T-S4a, RF-4)', () => {
+    it('draws with tokens the sheet declares, at the sheet own values', async () => {
+        const read = (await readings()).tokens;
+        const sheet = sheetTokens();
+        const drifted = Object.entries(read).filter(([name, value]) => value !== sheet[name]);
+
+        expect(
+            drifted,
+            `The generator draws with these at a value 00-tokens.css does not declare:\n` +
+                `  ${drifted.map(([n, v]) => `${n}: ${v} (sheet: ${sheet[n]})`).join('\n  ')}`,
+        ).toEqual([]);
+
+        // The second half, and the one a rename goes red on: the sheet no longer
+        // declares the token, so both readers see `undefined`, the equality
+        // above agrees with itself, and only this can still tell.
+        const unread = Object.entries(read).filter(([, v]) => typeof v !== 'string' || v.trim() === '');
+
+        expect(
+            unread.map(([name]) => name),
+            `The generator draws with these and read no value for them, so a renamed\n` +
+                `token renders undefined in the card instead of failing the run.`,
+        ).toEqual([]);
+    });
+
+    it('names only font files that are really there under public/fonts', async () => {
+        const { fonts } = await readings();
+
+        // Without this the loop below is satisfied by an empty list, and a
+        // generator that exported no font at all passes the check that the
+        // fonts it names exist. Every assertion here has to have a body.
+        expect(
+            fonts.length,
+            'the generator exported no font paths, so the check that they exist is empty',
+        ).toBeGreaterThan(0);
+
+        for (const font of fonts) {
+            const full = path.join(ROOT, 'public', font);
+
+            expect(
+                font.startsWith('/fonts/'),
+                `${font} is not under /fonts, so it resolves against the current route`,
+            ).toBe(true);
+            expect(
+                fs.existsSync(full) && fs.statSync(full).isFile(),
+                `${font} is named by the generator but ${path.relative(ROOT, full)} does not exist`,
+            ).toBe(true);
+        }
+    });
+});
+
+// ── Spec 002, RF-7: the accent drawn on the card's ground ──────────────────
+//
+// The two token names live in the generator and nowhere in this file. A test
+// that named them would assert on a pair it picked rather than on the one the
+// card draws, and redrawing the card on another gold would stay green.
+async function cardContrast(): Promise<number> {
+    requireGenerator();
+    const { contrastRatio } = await import('../scripts/og-cover.ts');
+    const { palette } = await readings();
+
+    // Named rather than a TypeError on the next line: "cannot read property of
+    // undefined" is a stack trace, and RF-7's check has to be actionable.
+    if (!palette || typeof palette.accent !== 'string' || typeof palette.ground !== 'string') {
+        throw new Error(
+            `the generator exports no accent/ground pair, so there is nothing here to\n` +
+                `compute RF-7's ratio from.`,
+        );
+    }
+
+    return contrastRatio(palette.accent, palette.ground);
+}
+
+describe('the og-cover contrast (T-S7, RF-7)', () => {
+    it('draws the accent on the ground at 4.5:1 or better', async () => {
+        const ratio = await cardContrast();
+
+        expect(
+            ratio,
+            `The card draws its accent on its ground at ${ratio.toFixed(2)}:1, under the\n` +
+                `4.5:1 RF-7 requires. Measured, not assumed — this number used to live in\n` +
+                `a comment on dark.css and nowhere else.`,
+        ).toBeGreaterThanOrEqual(4.5);
+    });
+
+    // Half (a): falsify the formula against references whose correct answer is
+    // known. Without this, `return 99`, a swapped numerator and an unexpanded
+    // byte average all satisfy the `>= 4.5` above, while RF-7 says *computed*.
+    // 21.0000 kills a constant, 1.0000 a swapped numerator, 4.5422 a dropped
+    // sRGB transfer function — a byte average without expanding.
+    it('reproduces the WCAG references: black on white 21, white on white 1, #767676 on white 4.5422', async () => {
+        requireGenerator();
+        const { contrastRatio } = await import('../scripts/og-cover.ts');
+
+        // 21.0000 — the WCAG maximum. No constant or byte average without
+        // expanding gives this; only the full sRGB transfer function does.
+        expect(
+            contrastRatio('#000000', '#FFFFFF'),
+            'black on white must be 21.0000, the WCAG maximum. A constant or a\n' +
+                'swapped numerator cannot produce this.',
+        ).toBe(21);
+
+        // 1.0000 — the WCAG minimum. A swapped numerator gives 1 here too, but
+        // the 21 above already caught it; this is the floor.
+        expect(
+            contrastRatio('#FFFFFF', '#FFFFFF'),
+            'white on white must be 1.0000, the WCAG minimum.',
+        ).toBe(1);
+
+        // 4.5422 — the canonical threshold grey. This is the only one of the
+        // three that detects a dropped sRGB transfer function: a byte average
+        // without expanding gives a different number exactly here, which is
+        // where this card's gold lives.
+        expect(
+            contrastRatio('#767676', '#FFFFFF'),
+            '#767676 on white must be 4.5422. A byte average without expanding\n' +
+                'the sRGB transfer function gives a different number here.',
+        ).toBeCloseTo(4.5422, 4);
+    });
+});
+
+describe('the og-cover generator source (T-LANG)', () => {
+    // Two halves as two tests, because in one test the first failing expect
+    // hides the second: a probe that replaces the import with a literal then
+    // only ever shows the missing import, and the literal half looks untested.
+    it('imports ABOUT from the data module', () => {
+        // Comments off first: a note quoting the import would satisfy a grep
+        // while the file imported nothing, which is the six-guard shape.
+        requireGenerator();
+        const src = stripComments(fs.readFileSync(GENERATOR, 'utf-8'));
+        const imported = src.match(
+            /import\s*\{[^}]*\bABOUT\b[^}]*\}\s*from\s*['"][^'"]*data\/about\.ts['"]/,
+        );
+
+        expect(
+            imported,
+            `scripts/og-cover.ts does not import ABOUT from src/data/about.ts. Without it\n` +
+                `the card carries its own copy of the name and the role, and a second\n` +
+                `source for the identity is exactly what there must not be.`,
+        ).not.toBeNull();
+    });
+
+    it('spells out no value of ABOUT', () => {
+        requireGenerator();
+        const src = stripComments(fs.readFileSync(GENERATOR, 'utf-8'));
+
+        // Both values read out of the data module and looked for as text. Typed
+        // in here, this would compare the file against this file's own copy, and
+        // then it could never go red.
+        for (const value of [ABOUT.name, ABOUT.title]) {
+            expect(
+                src,
+                `scripts/og-cover.ts spells out a value that lives in src/data/about.ts, so\n` +
+                    `the card is drawn from a literal rather than from the module.`,
+            ).not.toContain(value);
+        }
+    });
+});
+
+// ── Spec 002, RF-5: the card is served as a static file, not a route ────────
+//
+// One behaviour over two listings: `public/` holds the PNG and nothing that
+// renders it, and `src/pages/` gains no route matching `og-cover`. The same
+// listing settles the Security NFR — the card is the only file added.
+
+/** Every file under `dir`, recursively. */
+function filesUnder(dir: string): string[] {
+    const out: string[] = [];
+    const walk = (current: string) => {
+        for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+            const full = path.join(current, entry.name);
+            if (entry.isDirectory()) walk(full);
+            else out.push(full);
+        }
+    };
+    walk(dir);
+    return out;
+}
+
+describe('the og-cover listings (T-S5a, T-S5b, RF-5)', () => {
+    it('public/ holds og-cover.png and nothing that renders it beside it', () => {
+        const files = fs.readdirSync(PUBLIC_DIR);
+
+        expect(
+            files,
+            `public/ holds no og-cover.png, so every share resolves a 404.`,
+        ).toContain('og-cover.png');
+
+        // Astro serves `public/` verbatim, so any of these is fetched by the
+        // browser as a separate asset. An HTML file beside the PNG means the
+        // card is also rendered by the visitor's browser — RF-5 forbids that.
+        const renderers = files.filter((f) => /^og-cover\.(html|css|js)$/i.test(f));
+        expect(
+            renderers,
+            `public/ holds files that render the card beside the PNG: ` +
+                `${renderers.join(', ')}. RF-5: nothing renders the card in the\n` +
+                `visitor's browser — delete them, not this guard.`,
+        ).toEqual([]);
+    });
+
+    it('src/pages/ gains no route matching og-cover', () => {
+        const routes = filesUnder(PAGES_DIR)
+            .map((f) => path.relative(PAGES_DIR, f))
+            .filter((rel) => /og-cover/i.test(rel));
+
+        expect(
+            routes,
+            `src/pages/ has routes matching og-cover: ${routes.join(', ')}.\n` +
+                `RF-5: a route serving the card renders it in the visitor's browser\n` +
+                `and lets it drift from the site's own CSS and fonts.`,
+        ).toEqual([]);
+    });
+});
+
+// ── Spec 002, RF-8: the name fits on one line, reduced until it fits ──────
+//
+// The font engine is the injectable external here, the same rule as a clock:
+// `measure` is a parameter, and no function calls `new Date()` — a timestamp
+// would make every run produce different bytes, so the PNG diff carries no signal.
+
+/** A measure that is a function of the text and the size — the font engine
+ *  is the injectable external here, the same rule as a clock. */
+function fakeMeasure(text: string, sizePx: number): number {
+    return text.length * sizePx;
+}
+
+/** The type-scale steps the card walks, largest first. */
+const TYPE_SCALE_PX = [52, 40, 32, 24, 20, 16, 13, 12];
+
+describe('the og-cover name fit (T-S8a, RF-8)', () => {
+    it('draws the name on one line, at or above the floor', async () => {
+        requireGenerator();
+        const { fitFontSize } = await import('../scripts/og-cover.ts');
+        const { content, geometry, type } = await readings();
+
+        const fit = fitFontSize({
+            text: content.name,
+            measure: fakeMeasure,
+            maxWidthPx: geometry.contentWidthPx,
+            sizesPx: TYPE_SCALE_PX,
+            floorPx: type.floorSizePx,
+        });
+
+        expect(fit.lines).toBe(1);
+        expect(fit.sizePx).toBeGreaterThanOrEqual(type.floorSizePx);
+        // The size must be the largest that fits under the injected measure
+        const fittedWidth = fakeMeasure(content.name, fit.sizePx);
+        expect(fittedWidth).toBeLessThanOrEqual(geometry.contentWidthPx);
+        // And the next size up must NOT fit (otherwise we are not at the largest)
+        const nextSizeUp = TYPE_SCALE_PX.find((s) => s > fit.sizePx);
+        if (nextSizeUp !== undefined) {
+            const nextWidth = fakeMeasure(content.name, nextSizeUp);
+            expect(nextWidth).toBeGreaterThan(geometry.contentWidthPx);
+        }
+    });
+});
+
+describe('the og-cover name fit floor (T-S8b, RF-8)', () => {
+    it('reports fits: false when even the floor overflows', async () => {
+        requireGenerator();
+        const { fitFontSize } = await import('../scripts/og-cover.ts');
+        const { content, geometry, type } = await readings();
+
+        const fit = fitFontSize({
+            text: content.name,
+            measure: () => geometry.contentWidthPx + 1,
+            maxWidthPx: geometry.contentWidthPx,
+            sizesPx: TYPE_SCALE_PX,
+            floorPx: type.floorSizePx,
+        });
+
+        expect(fit.fits).toBe(false);
+    });
+
+    it('returns the largest step when everything fits', async () => {
+        requireGenerator();
+        const { fitFontSize } = await import('../scripts/og-cover.ts');
+        const { content, geometry, type } = await readings();
+
+        const fit = fitFontSize({
+            text: content.name,
+            measure: () => 1,
+            maxWidthPx: geometry.contentWidthPx,
+            sizesPx: TYPE_SCALE_PX,
+            floorPx: type.floorSizePx,
+        });
+
+        expect(fit.sizePx).toBe(TYPE_SCALE_PX[0]);
+    });
+});
+
+// ── Spec 002, RF-1, RF-2, Size: the artifact itself ──────────────────────────
+//
+// `pngInfo()` reads the file's own header rather than a constant repeated in
+// the test — which is the only reason RF-2 can fail on a 1200×600 card.
+
+const OG_COVER = path.join(ROOT, 'public', 'og-cover.png');
+
+/**
+ * Reads the PNG header of `file`: signature, first chunk, IHDR dimensions
+ * and byte size. Reads the file's own header, not a constant repeated here —
+ * which is the only reason RF-2 can fail on a 1200×600 card.
+ */
+function pngInfo(file: string): { width: number; height: number; bytes: number } {
+    const buf = fs.readFileSync(file);
+    const bytes = buf.length;
+
+    // PNG signature: 89 50 4E 47 0D 0A 1A 0A
+    const signature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+    for (let i = 0; i < signature.length; i++) {
+        if (buf[i] !== signature[i]) {
+            throw new Error(
+                `${file} is not a PNG: byte ${i} is ${buf[i]?.toString(16)}, expected ${signature[i].toString(16)}`,
+            );
+        }
+    }
+
+    // First chunk must be IHDR
+    const chunkType = buf.toString('ascii', 12, 16);
+    if (chunkType !== 'IHDR') {
+        throw new Error(
+            `${file} has no IHDR chunk first: found '${chunkType}' at bytes 12-15`,
+        );
+    }
+
+    const width = buf.readUInt32BE(16);
+    const height = buf.readUInt32BE(20);
+
+    return { width, height, bytes };
+}
+
+describe('the og-cover artifact (T-S1, RF-1)', () => {
+    it('ships at public/og-cover.png with a real PNG signature', () => {
+        expect(
+            fs.existsSync(OG_COVER),
+            `public/og-cover.png does not exist. og:image composes \${site}/og-cover.png\n` +
+                `(BaseLayout.astro:28) and Astro serves public/ verbatim, so that is the\n` +
+                `only pathname that can answer it.`,
+        ).toBe(true);
+
+        const info = pngInfo(OG_COVER);
+        expect(info.bytes).toBeGreaterThan(0);
+    });
+});
+
+describe('the og-cover dimensions (T-S2, RF-2)', () => {
+    it('is 1200×630, read from the IHDR', () => {
+        const info = pngInfo(OG_COVER);
+
+        expect(info.width).toBe(1200);
+        expect(info.height).toBe(630);
+    });
+});
+
+// ── Spec 002, RF-3: no runtime and no build dependency ───────────────────────
+//
+// Constitution 1 and 7 stated on the artifact, not in a comment. Equality by
+// value, not "did not grow": a removal is as much a dependency change as an
+// addition, and only equality settles both.
+
+describe('the package.json dependency sets (T-S3, RF-3)', () => {
+    it('dependencies and devDependencies equal today’s sets exactly, by value', () => {
+        const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf-8'));
+
+        expect(pkg.dependencies).toEqual({
+            '@astrojs/node': '^9.1.3',
+            astro: '^5.5.5',
+        });
+        expect(pkg.devDependencies).toEqual({
+            '@astrojs/vercel': '^8.2.8',
+            '@playwright/test': '^1.56.0',
+            '@types/node': '^20.4.2',
+            '@types/node-fetch': '^2.6.13',
+            husky: '^9.1.7',
+            'node-fetch': '^3.3.2',
+            playwright: '^1.56.0',
+            vitest: '^1.1.9',
+        });
+    });
+});
+
+describe('the og-cover byte size (T-SIZE)', () => {
+    it('is under 5 MB', () => {
+        const info = pngInfo(OG_COVER);
+
+        expect(
+            info.bytes,
+            `public/og-cover.png is ${info.bytes} bytes, past the 5 MB platform ceiling`,
+        ).toBeLessThan(5 * 1024 * 1024);
+    });
+});
+
+// ── Spec 002, RF-6: og:image and twitter:image bind the same file ──────────
+//
+// A source reader cannot follow the expression into a served `<head>`: no test
+// renders a page and `output: "server"` leaves `dist/` without HTML. This
+// settles what the tags bind; the served `<head>` is a manual step.
+
+const BASE_LAYOUT = path.join(ROOT, 'src', 'layouts', 'BaseLayout.astro');
+
+describe('the og-cover image tags (T-S6, RF-6)', () => {
+    it('binds og:image and twitter:image to the same content expression, composing og-cover.png from site, and that file exists with a PNG signature', () => {
+        // Comments off first: a note naming `og-cover.png` would satisfy a grep
+        // while the tag bound nothing, which is the six-guard shape.
+        const src = stripComments(fs.readFileSync(BASE_LAYOUT, 'utf-8'));
+
+        // ── 1. Both tags bind the same `content` expression ──
+        const ogImage = src.match(/<meta\s+property=['"]og:image['"]\s+content=\{([^}]+)\}/);
+        const twitterImage = src.match(/<meta\s+name=['"]twitter:image['"]\s+content=\{([^}]+)\}/);
+
+        expect(
+            ogImage,
+            `BaseLayout.astro carries no <meta property='og:image' content={...}> tag. ` +
+                `Without it, every share of this site resolves a 404.`,
+        ).not.toBeNull();
+        expect(
+            twitterImage,
+            `BaseLayout.astro carries no <meta name='twitter:image' content={...}> tag. ` +
+                `Without it, every share of this site resolves a 404.`,
+        ).not.toBeNull();
+
+        const ogContent = ogImage![1].trim();
+        const twitterContent = twitterImage![1].trim();
+
+        expect(
+            twitterContent,
+            `og:image binds content={${ogContent}} but twitter:image binds ` +
+                `content={${twitterContent}}. They must bind the same expression, ` +
+                `or the two platforms resolve different files.`,
+        ).toBe(ogContent);
+
+        // ── 2. The pathname that expression composes from `site` is `og-cover.png` ──
+        // Find the `const image = ...` definition and verify it composes `${site}/og-cover.png`.
+        const imageDef = src.match(/const\s+image\s*=\s*`([^`]+)`/);
+        expect(
+            imageDef,
+            `BaseLayout.astro carries no \`const image = ...\` definition. ` +
+                `Without it, the content expression has nothing to bind to.`,
+        ).not.toBeNull();
+
+        const imageTemplate = imageDef![1];
+        expect(
+            imageTemplate,
+            `The image definition is \`${imageTemplate}\`, which does not compose ` +
+                `\${site}/og-cover.png. The pathname must be og-cover.png, or the ` +
+                `card is never served.`,
+        ).toBe('${site}/og-cover.png');
+
+        // ── 3. This check stats that path and reads the PNG signature itself ──
+        // The pathname is `og-cover.png`, so the file is `public/og-cover.png`.
+        // This check defers to nothing: it stats the path and reads the signature.
+        const cardPath = path.join(ROOT, 'public', 'og-cover.png');
+        expect(
+            fs.existsSync(cardPath),
+            `public/og-cover.png does not exist. og:image composes \${site}/og-cover.png ` +
+                `(BaseLayout.astro) and Astro serves public/ verbatim, so that is the ` +
+                `only pathname that can answer it.`,
+        ).toBe(true);
+
+        const info = pngInfo(cardPath);
+        expect(info.bytes).toBeGreaterThan(0);
     });
 });

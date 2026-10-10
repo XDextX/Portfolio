@@ -108,7 +108,7 @@ GITHUB_TOPIC=tu_topic
 ## 🌍 SEO y Metadatos
 
 Ubicados en `src/layouts/BaseLayout.astro`. Nada se escribe a mano: el nombre y el
-título salen de `ABOUT`, y la imagen de `og-cover.png`.
+título salen de `ABOUT`, y la imagen `og-cover.png` se genera con `scripts/og-cover.ts`.
 
 ```astro
 <title>{title}</title>

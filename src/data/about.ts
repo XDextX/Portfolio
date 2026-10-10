@@ -1,4 +1,4 @@
-import { CONTACTS } from "./contacts";
+import { CONTACTS } from "./contacts.ts";
 import type { ContactItem } from "../types/contact";
 
 export type Lang = "es" | "en";
