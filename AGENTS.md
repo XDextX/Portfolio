@@ -18,7 +18,7 @@ Site content is deliberately Spanish — `i18n/locales/es.json`, `ABOUT.bio.es`,
 | Command | Status |
 |---|---|
 | `npm run build` | works (~4s) |
-| `npm test` | works — 110 tests, 11 files |
+| `npm test` | works — 124 tests, 11 files |
 | `npx playwright test` | works (1 test, ~7s, spawns its own dev server on :4321) |
 | `npm run lint` | **broken** — `eslint` is not a dependency and there is no config |
 | `npm run format` | **broken** — `prettier` is not a dependency and there is no config |
@@ -102,29 +102,8 @@ helper when a test needs it, not before.**
 ### A guard that cannot fail is worse than no guard
 
 Six guards here were green while the exact thing they exist to prevent was happening. All six had
-the same shape: the guard did not look where the violation actually was.
-
-- **A length threshold cannot tell a label from a note.** `comments.test.ts` rejected comments over
-  90 characters; four real notes of 47-72 characters sailed through and the threshold looked like it
-  was working.
-- **A per-line check misses a multi-line note.** The same test measured a comment's first line. Notes
-  were wrapped, so line one was short and lines two to four were never read — `SkillBar` shipped a
-  271-character note, ten times per page.
-- **A scanner can silently drop half a file.** The same test set `skipUntil` on any `<script>` and
-  cleared it on `</script>`. `AboutSection` has a self-closing
-  `<script type="application/ld+json" />`, so everything after it left the analysis for good.
-- **A brace inside a CSS comment swallows the rule after it.** `tokens.test.ts` scanned raw CSS with
-  `/\{([^{}]*)\}/g`. A note in `00-tokens.css` quotes ``a { color: … }``, and that `{` paired with
-  the `}` closing `:root`, so the scan read **193 characters of that file out of 6389** and never saw a
-  token. The other three tests in the same file already stripped comments, which is why only this one
-  was blind.
-- **A hardcoded list of files goes stale silently.** `viewtransitions.test.ts` iterated five component
-  names. A sixth component with a `DOMContentLoaded` binding passed all seventeen tests — seventeen
-  being the count then; the file has fewer now, and the number is not the point.
-- **An assertion can be satisfied by something other than the thing.** One test asserted
-  `toContain('AvatarCircle')`, which the import path `'./AvatarCircle.astro'` satisfies alone —
-  replacing the component entirely, usage and import, stayed green. Ask what else in the file
-  matches your substring.
+the same shape: the guard did not look where the violation actually was. Each one, with its
+mechanism: `docs/incidents.md`.
 
 So: **prove a guard still bites before reporting green.** Inject the violation, watch it fail, then
 revert. A green suite that has never failed is untested. When a guard is right, the fix is to widen
@@ -132,10 +111,8 @@ what it reads, never to relax what it accepts — all six times it was the forme
 is the recurring instance: a note explaining why a token was removed is not a use of it, and a
 frontmatter note quoting a removed `lang === 'es' ? …` is not a locale ternary.
 
-**Undo a probe by explicit path, never `git checkout -- .`** — it restores from the index and throws
-away uncommitted work without saying so. Hash the directories you did not mean to touch, before and
-after, and prove they survived. This cost a rewritten `tests/` and made fourteen healthy guards look
-dead in one sitting.
+**Undo a probe by explicit path, never `git checkout -- .`** — see the Git section below. This cost a
+rewritten `tests/` and made fourteen healthy guards look dead in one sitting.
 
 ## Environment variables
 
@@ -173,6 +150,16 @@ lets each route decide its own filter. `GITHUB_TOKEN` is the one with a single r
   field. One flag, read by whoever needs it.
 
 ## Code conventions
+
+**TypeScript by default.** A file that is not `.ts` carries its reason: no compiler, no
+runner, or no dependency that would justify one. `.mjs` and `.js` are for the case where
+node runs it as-is and there is nothing to verify — JSDoc then carries the types.
+
+That last clause is narrower than it looks, because **nothing here type-checks.** `tsc` is
+not in any script, `@astrojs/check` is not installed, and node's type stripping *erases*
+types rather than checking them — measured: a `Ghost` holding a string runs and prints it.
+So `.ts` buys editor support and a file that matches its neighbours, **not verification**;
+say so rather than implying the extension checks anything.
 
 **DRY — extract before duplicating.** When the same markup, logic or style appears twice:
 
@@ -399,8 +386,7 @@ physical addresses, tokens, API keys or passwords. This is constitution 9, with 
 - `LICENSE.md` holds third-party copyright addresses. Those are not the concern — do not let a grep for
   "emails in documents" mislead you into thinking the rule is broken.
 
-`README.md` used to spell the name four times and carry the real `mailto:`. It no longer does, and it
-also documented an `og:image` path the layout never used.
+`README.md` used to spell the name four times and carry the real `mailto:`; it no longer does.
 
 ## Spec-driven development
 
@@ -454,20 +440,8 @@ Read each proposal back as a senior reviewer looking for inconsistency, contradi
 and say plainly what that turned up. Not padding — the findings have to be real. This surfaced,
 repeatedly:
 
-- **A proposal that had never been measured.** Symmetrising the toggle labels was proposed as the fix
-  for a button that resized; measured, it only took the jump from 44px to 13px, because "menos" is
-  wider than "más" by 14px even though both are followed by the same noun. Equalising a label's
-  *shape* does not equalise its *width*.
-- **A regression announced from arithmetic.** A fixed 52px name was called a regression on a phone
-  because 623px of text over a 273px column "should" wrap to two lines. Measured, it wrapped to three
-  either way — no regression, and the reason given was false.
-- **A number asserted, then checked.** "Body prose runs past 110 characters" was written into this file
-  and defended in a plan. Measured, it was 98-101, and only from 1280px up.
-- **A contrast figure computed from a value never fetched**, reporting 2.94:1 against a real 6.08:1 —
-  which would have been a false bug report.
-- **A claim that is false on arrival.** A draft constitution rule read "no third-party request at
-  runtime" while `ABOUT.avatar` is a remote GitHub PNG. Checking each claim against the repo before
-  writing it is what caught that, and three others.
+Four proposals were wrong on arrival — unmeasured, announced from arithmetic, computed from a
+value never fetched, and false on the page. Each one: `docs/incidents.md`.
 
 **Prefer a number to an adjective, and say which one you have.** "Looks broken" is not a finding;
 "144px to 100px" is. When a claim cannot be defended with a measurement, present it as an opinion and
