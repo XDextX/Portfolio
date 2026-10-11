@@ -106,6 +106,29 @@ Spanish and goes through `t()`. `Memory.md` is the agent's call.
 - **JSDoc on public helpers and components**: one description line plus `@param`/`@returns`, and a
   typed `interface Props` on components.
 
+### Metadata
+
+- **Every route passes its own `title` and `description` to `BaseLayout`.** Inheriting the layout's
+  default is exactly what a well-intended change to that default would cause, with nothing noticing.
+- **The description is generated through `t()` and names only technologies `src/data/tech.ts`
+  lists** — the skills the page actually shows. **Interpolate the list, never retype it in the
+  sentence**: a retyped copy drifts from `seo.home.techs` while every assertion stays green.
+- **At most 160 characters, cut at a whole word.** Word integrity wins over the cap, so the two are
+  not simultaneously satisfiable and a first word alone over the cap ships whole. The length is a
+  consequence of the data, not a constant: crossing 160 has to go red here and not ship a meta tag
+  that quietly lost its last clause.
+- **The title never repeats the word the `- Portfolio` suffix already carries.**
+- **No `{{` left unresolved in a title or a description.** `t()` prints a placeholder it has no
+  value for and leaves it in the string, with nothing in the console.
+- **The project entity carries the description the route resolves**, never a second copy of it: the
+  repository's own text verbatim, or the translated fallback from the locale file when the repo
+  carries none.
+- **Type the project entity `SoftwareSourceCode`, `codeRepository` the repository and `url` this
+  page.** Declare neither `applicationCategory` nor `operatingSystem`, and omit
+  `programmingLanguage` **entirely** when the repository has none — a key present carrying
+  `undefined` passes an equality check and still ships the field.
+- *All settled by `tests/seo.test.ts`.*
+
 ### Interactive markup
 
 - **Never index into `childNodes` to swap a label** — it breaks on the first added space. Better: do
@@ -200,6 +223,27 @@ Spanish and goes through `t()`. `Memory.md` is the agent's call.
   the only way an author rule beats an inline declaration.
 - **Run `tests/tokens.test.ts` before claiming a styling change is done.** It fails on a typo and on
   an invented token, so it is not vacuous.
+
+### The social card
+
+- **The card is drawn with the sheet's own tokens at the sheet's own values.** A hex typed into the
+  generator is a second palette, and a renamed token then renders `undefined` in the picture
+  instead of failing the run.
+- **The generator imports `ABOUT` from `src/data/about.ts` and spells out none of its values** — a
+  literal name on the card is a second source for the identity (constitution 9).
+- **The card is a static file in `public/`, and nothing renders it**: no HTML, CSS or JS beside the
+  PNG, and no route matching `og-cover`. A renderer is a second copy that drifts from the site's
+  own CSS and fonts.
+- **`og:image` and `twitter:image` bind the same expression**, composing `${site}/og-cover.png`, and
+  that file exists — the two platforms must not resolve different images.
+- **The artifact is 1200×630 and under 5 MB**, read from the PNG's own header rather than from a
+  constant repeated in the guard.
+- **The accent on the card's ground clears 4.5:1**, and the function that computes it reproduces the
+  WCAG references: 21.0000 black on white, 1.0000 white on white, 4.5422 for `#767676` on white. A
+  `return 99` and a byte average that skips the sRGB transfer function both satisfy `>= 4.5`.
+- **Nothing in the generator depends on the moment it runs** — `measure` is a parameter and nothing
+  calls `new Date()`, or two runs produce different bytes and the picture carries no diff.
+- *All settled by `tests/seo.test.ts`.*
 
 ### CSS that silently does nothing
 
