@@ -74,3 +74,78 @@ describe('AboutSection sources its data from ABOUT', () => {
         expect(src).toMatch(/ABOUT\.socials\.map/);
     });
 });
+
+const LOCALES = ['es', 'en'] as const;
+
+/**
+ * RF-2 counts the points, RF-3 keeps them apart, RF-4 keeps them in the data.
+ * `proofPoints` is an array so a count means what it says, and each entry
+ * carries both locales so a locale switch cannot change how many there are.
+ */
+describe('ABOUT value proposition and proof points', () => {
+    it('carries exactly three proof points', () => {
+        expect(ABOUT.proofPoints).toHaveLength(3);
+    });
+
+    it('gives every proof point text in both locales', () => {
+        for (const [i, point] of ABOUT.proofPoints.entries()) {
+            expect(point.es.trim(), `proofPoints[${i}].es`).not.toBe('');
+            expect(point.en.trim(), `proofPoints[${i}].en`).not.toBe('');
+        }
+    });
+
+    it('keeps the three proof points distinct in each locale', () => {
+        for (const locale of LOCALES) {
+            const distinct = new Set(ABOUT.proofPoints.map((p) => p[locale]));
+            expect(distinct.size, locale).toBe(3);
+        }
+    });
+
+    it('carries the proposition in both locales', () => {
+        expect(ABOUT.valueProposition.es.trim()).not.toBe('');
+        expect(ABOUT.valueProposition.en.trim()).not.toBe('');
+    });
+});
+
+/**
+ * RF-4, second half: the sentence and the points live in ABOUT, and no
+ * component template spells them. A pasted copy changes nothing any data
+ * check can see, so only this walk over source sees it (constitution 8).
+ */
+describe('ValueProposition strings live in ABOUT, not in components', () => {
+    const COMPONENTS_DIR = path.resolve(process.cwd(), 'src', 'components');
+
+    function stripComments(src: string): string {
+        return src
+            .replace(/\/\*[\s\S]*?\*\//g, ' ')
+            .replace(/^\s*\/\/.*$/gm, ' ');
+    }
+
+    function componentFiles(): string[] {
+        if (!fs.existsSync(COMPONENTS_DIR)) return [];
+        return fs.readdirSync(COMPONENTS_DIR, { withFileTypes: true })
+            .filter((entry) => entry.isFile() && entry.name.endsWith('.astro'))
+            .map((entry) => path.join(COMPONENTS_DIR, entry.name));
+    }
+
+    it('finds component files to check', () => {
+        expect(componentFiles().length).toBeGreaterThan(0);
+    });
+
+    it('spells neither the proposition nor any proof point in any component', () => {
+        const texts = [
+            ABOUT.valueProposition.es,
+            ABOUT.valueProposition.en,
+            ...ABOUT.proofPoints.flatMap((point) => [point.es, point.en]),
+        ];
+        const offenders: string[] = [];
+        for (const file of componentFiles()) {
+            const src = stripComments(fs.readFileSync(file, 'utf-8'));
+            const where = path.relative(process.cwd(), file);
+            for (const text of texts) {
+                if (src.includes(text)) offenders.push(`${where} spells ${text.slice(0, 48)}`);
+            }
+        }
+        expect(offenders).toEqual([]);
+    });
+});

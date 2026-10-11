@@ -30,7 +30,28 @@ Actualmente profundizo en Server-Sent Events (SSE), Jasmine y Selenium.`,
         en: `I’m a software engineer with 6+ years of experience, focused on Full-Stack development...
 Experienced with .NET Core, Azure Functions, Angular, plus Java, TypeScript, C#, and SQL...
 Currently sharpening Server-Sent Events (SSE), Jasmine, and Selenium.`
-    }
+    },
+    // Owner's Spanish 2026-10-11; English is the planner's translation per the owner's
+    // "tradúcela tú". The record is spec 003's "Approved wording".
+    // Editable content lives here and nowhere else (constitution 5).
+    valueProposition: {
+        es: "Desarrollo soluciones web completas, desde la arquitectura hasta su puesta en producción.",
+        en: "I develop complete web solutions, from architecture to production deployment."
+    },
+    proofPoints: [
+        {
+            es: "Código mantenible: priorizo las buenas prácticas, las pruebas y la documentación de las decisiones técnicas.",
+            en: "Maintainable code: I prioritize good practices, testing, and documenting technical decisions."
+        },
+        {
+            es: "Experiencia comprobable: más de seis años desarrollando soluciones de software para necesidades reales.",
+            en: "Proven experience: over six years developing software solutions for real needs."
+        },
+        {
+            es: "Desarrollo de principio a fin: trabajo con backend, frontend, bases de datos y despliegue para entregar funcionalidades completas.",
+            en: "End-to-end development: I work with backend, frontend, databases, and deployment to deliver complete features."
+        }
+    ]
 } as const;
 
 export const JsonLdAbout = {

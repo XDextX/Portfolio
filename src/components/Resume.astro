@@ -5,6 +5,7 @@ import ProjectsSection from './ProjectsSection.astro';
 import HabilitiesSection from './HabilitiesSection.astro';
 import ContactSection from './ContactSection.astro';
 import AboutSection from './AboutSection.astro';
+import ValuePropositionSection from './ValuePropositionSection.astro';
 import { applyLocale } from '@utils/locale';
 import { sortRepos } from '@lib/github';
 import { t } from '@i18n/index';
@@ -42,6 +43,7 @@ const projectsTitle = t('projects.title');
 ---
 
 <AboutSection lang={locale} withJsonLd={true} />
+<ValuePropositionSection locale={locale} />
 <HabilitiesSection locale={locale} />
 <ExperienceSection locale={locale} />
 <ProjectsSection

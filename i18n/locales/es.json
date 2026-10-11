@@ -86,5 +86,8 @@
 		"title": "Página no encontrada",
 		"message": "La página que buscabas no existe.",
 		"cta": "Ir al inicio"
+	},
+	"valueProposition": {
+		"title": "Lo que construyo"
 	}
 }

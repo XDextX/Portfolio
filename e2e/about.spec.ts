@@ -4,6 +4,12 @@ import fetch from 'node-fetch';
 
 const DEV_URL = 'http://localhost:4321';
 
+// Captured 2026-10-11 by loading `/` from `npm run dev` and recording every
+// request host (listener attached before goto, two runs, same set). `localhost`
+// is the dev origin, filtered at runtime; the remote pair is the avatar
+// redirect `github.com` -> `avatars.githubusercontent.com`.
+const HOME_HOSTS = new Set(['avatars.githubusercontent.com', 'github.com']);
+
 function startDevServer() {
     const proc = spawn('npm', ['run', 'dev'], { shell: true, stdio: ['ignore', 'pipe', 'pipe'] });
 
@@ -66,6 +72,25 @@ test.describe.serial('About section e2e', () => {
 
     test.afterAll(() => {
         if (proc && !proc.killed) proc.kill();
+    });
+
+    test('home requests no host beyond the captured baseline', async ({ page }) => {
+        const hosts = new Set<string>();
+        page.on('request', (r) => hosts.add(new URL(r.url()).host));
+        await page.goto(DEV_URL);
+
+        expect(hosts.size, 'expected the home to issue at least one request').toBeGreaterThan(0);
+
+        const origin = new URL(DEV_URL).host;
+        const extra = [...hosts].filter((h) => h !== '' && h !== origin && !HOME_HOSTS.has(h));
+        expect(extra, `the home requests hosts it did not request before: ${extra.join(', ')}`).toEqual([]);
+    });
+
+    test('value proposition is the second section of the home', async ({ page }) => {
+        await page.goto(DEV_URL);
+
+        const ids = await page.$$eval('main > section', (els) => els.map((e) => e.id));
+        expect(ids[1]).toBe('ValueProposition');
     });
 
     test('CV download link responds 200 and mailto exists', async ({ page }) => {
