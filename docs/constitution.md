@@ -2,7 +2,7 @@
 
 Ten rules. Each names where it is decided: a test, a command, or a file to read.
 Breaking one is a bug — the fix is the rule or an amendment, never a workaround
-in the code. `AGENTS.md` elaborates these and wins on any conflict.
+in the code. `AGENTS.md` elaborates these and yields to them on any conflict.
 
 1. **Two runtime dependencies.** `astro` and `@astrojs/node`, nothing else: no UI
    framework, no CSS or icon library. *Check:* `package.json` `dependencies`.
