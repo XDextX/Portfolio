@@ -49,6 +49,14 @@
 			"group": "Skill view",
 			"bars": "Progress bars",
 			"list": "Compact list"
+		},
+		"areas": {
+			"frontend": "Frontend",
+			"backend": "Backend",
+			"database": "Database",
+			"cloud": "Cloud",
+			"devops": "DevOps",
+			"other": "Other"
 		}
 	},
 	"about": {

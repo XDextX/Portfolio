@@ -3,6 +3,13 @@ import SkillBar from './SkillBar.astro';
 import SkillChip from './SkillChip.astro';
 import SkillViewToggle from './SkillViewToggle.astro';
 import { type TechLevel } from '../data/levelLabels';
+import { t } from '@i18n/index';
+
+/**
+ * Skills grid with a bars view and a compact list view.
+ * @param items tech entries grouped by their data category.
+ * @param locale active locale for the row badges.
+ */
 
 export interface TechItem {
 	name: string;
@@ -30,6 +37,13 @@ function groupBy<T>(arr: T[], key: (item: T) => string): [string, T[]][] {
 }
 
 const byCategory = groupBy(items, (t) => t.category ?? 'Other');
+
+// The data value is the lookup only: `Frontend` reads `skills.areas.frontend`,
+// so no area name is spelled as visitor text in the bars panel.
+
+// The area card is the shared frame and nothing else. No hover: it groups rows,
+// it is not itself a control.
+const areaKey = (category: string) => `skills.areas.${category.toLowerCase()}`;
 ---
 
 <div class='tech-grid'>
@@ -42,8 +56,8 @@ const byCategory = groupBy(items, (t) => t.category ?? 'Other');
 		<div class='bars-grid'>
 			{
 				byCategory.map(([cat, techs]) => (
-					<div class='cat-group'>
-						<h4 class='cat-label'>{cat}</h4>
+					<div class='card-frame'>
+						<h4 class='cat-label'>{t(areaKey(cat))}</h4>
 						<ul class='bars-list'>
 							{techs.map((tech) => (
 								<SkillBar

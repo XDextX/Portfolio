@@ -49,6 +49,14 @@
 			"group": "Vista de habilidades",
 			"bars": "Barras de progreso",
 			"list": "Lista compacta"
+		},
+		"areas": {
+			"frontend": "Frontend",
+			"backend": "Backend",
+			"database": "Base de datos",
+			"cloud": "Nube",
+			"devops": "DevOps",
+			"other": "Otros"
 		}
 	},
 	"about": {

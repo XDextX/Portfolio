@@ -8,6 +8,12 @@ export interface Props {
 	locale?: 'es' | 'en';
 }
 
+/**
+ * One bars-view skill row: icon, name over track, level badge.
+ * @param name tech name shown above the track; logo its icon URL.
+ * @param level ordered level driving fill and label; locale its language.
+ */
+
 /*
  * The bar repeats what the label beside it says in words, so it is hidden from
  * assistive tech. It used to announce "85 percent" and then "Avanzado" again —
@@ -22,23 +28,72 @@ const label     = levelLabelMap[locale][level];
 ---
 
 <li class='bar-row'>
-	<img src={logo} alt='' width='22' height='22' loading='lazy' />
-	<span class='bar-name'>{name}</span>
-	<div class='bar-track' aria-hidden='true'>
-		<div class='bar-fill' style={`--pct:${fill}%;--clr:${color}`} />
+	<span class='bar-logo' style={`--logo: url("${logo}")`}>
+		<img src={logo} alt='' width='22' height='22' loading='lazy' />
+	</span>
+	<div class='bar-main'>
+		<span class='bar-name'>{name}</span>
+		<div class='bar-track' aria-hidden='true'>
+			<div class='bar-fill' style={`--pct:${fill}%;--clr:${color}`} />
+		</div>
 	</div>
 	<span class='level-tag' style={`color:${textColor}`}>{label}</span>
 </li>
 
 <style>
-	/* The logo and the level tag are fixed; the name may shrink and ellipsize,
-	   so a long tech name can never squeeze the track out of existence. The
-	   track keeps a 60px floor as a last-resort guard for narrow containers. */
+	/* Icon and level are fixed; the middle column is minmax(60px, 1fr), so a
+	   long name ellipsizes instead of squeezing the track below its floor. */
 	.bar-row {
 		display: grid;
-		grid-template-columns: 22px minmax(72px, 130px) minmax(60px, 1fr) auto;
+		grid-template-columns: 22px minmax(60px, 1fr) auto;
 		align-items: center;
 		gap: 0.6rem;
+	}
+
+	/* The icon is one colour per theme, shaped by the logo own alpha.
+	   The mask sits on a pseudo and not on the <img>: it does not
+	   clip the replaced element it is written on, so the brand pixels
+	   would keep painting on top of it. The 22px box is the slot, and
+	   it is held here rather than by the logo arriving. */
+	.bar-logo {
+		position: relative;
+		width: 22px;
+		height: 22px;
+	}
+
+	.bar-logo::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background-color: var(--icon-mono);
+		mask: var(--logo) center / contain no-repeat;
+		-webkit-mask: var(--logo) center / contain no-repeat;
+	}
+
+	/* Brand colour rewards the pointer and informs nothing: the row is
+	   not a control, so it has no focus state and this is never
+	   reachable by keyboard. The name beside the icon carries the tech. */
+	.bar-logo img {
+		display: block;
+		opacity: 0;
+	}
+
+	/* The hover paints nothing and lifts nothing — the owner dropped the row
+		border on 2026-10-11 — so the only thing it changes is the icon.
+		*/
+	.bar-row:hover .bar-logo::before {
+		opacity: 0;
+	}
+
+	.bar-row:hover .bar-logo img {
+		opacity: 1;
+	}
+
+	.bar-main {
+		display: flex;
+		flex-direction: column;
+		gap: var(--sp-2);
+		min-width: 0;
 	}
 
 	.bar-name {
@@ -47,6 +102,7 @@ const label     = levelLabelMap[locale][level];
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		min-width: 0;
 	}
 
 	.bar-track {
@@ -89,20 +145,26 @@ const label     = levelLabelMap[locale][level];
 		}
 	}
 
+	/* The level shrinks before anything else: capped by max-width, two lines
+	   at most with ellipsis, never hidden and never a fixed pixel width. */
 	.level-tag {
+		/* The label's own pill: the soft fill inside the sheet, one
+		   colour for that job in both themes. On the card face the
+		   dark intermediate label is 4.13:1; on this surface every
+		   level clears 4.5:1 in both themes. */
+		background: var(--tag-surface);
+		border-radius: var(--radius-pill);
+		padding: 0.15rem 0.5rem;
 		font-size: var(--fs-xs);
 		font-weight: 600;
-		white-space: nowrap;
-		min-width: 5rem;
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+		overflow: hidden;
+		overflow-wrap: break-word;
+		max-width: 7rem;
+		min-width: 0;
 		text-align: right;
-	}
-
-	@media (max-width: 520px) {
-		.bar-row {
-			grid-template-columns: 22px minmax(0, 1fr) minmax(60px, 1fr);
-		}
-		.level-tag {
-			display: none;
-		}
 	}
 </style>
