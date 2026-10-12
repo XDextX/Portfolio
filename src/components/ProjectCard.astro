@@ -29,7 +29,7 @@ function formatCount(n: number) {
 ---
 
 <article
-	class='project-card'
+	class='project-card card-frame'
 	transition:name={`p-${repo.id}`}
 	aria-labelledby={`p-${repo.id}-title`}
 >
@@ -120,19 +120,15 @@ function formatCount(n: number) {
 		display: flex;
 		flex-direction: column;
 		gap: 0.75rem;
-		padding: 1.25rem;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-lg);
-		background: var(--card-background);
 		transition:
 			border-color var(--dur) var(--ease),
 			box-shadow var(--dur) var(--ease);
 	}
 
 	/* Hover moves the border, not the box. Lifting a card by 2px on every
-	   pointer pass is decoration, and moving the element fights the shared
-	   transition on .card. A gold border is the same signal the chips use, and
-	   it keeps the title as the card's single accent. */
+	   pointer pass is decoration, and a transform is not among the two
+	   properties this card transitions. A gold border is the same signal the
+	   chips use, and it keeps the title as the card's single accent. */
 	.project-card:hover {
 		border-color: var(--accent-text);
 		box-shadow: var(--shadow-md);

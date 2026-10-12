@@ -35,6 +35,17 @@
     box-shadow: var(--shadow-sm);
 }
 
+/* Shared card frame: padding, hairline, radius and face. Three components
+   carried these four declarations in their own scoped <style>; identical today,
+   which is a latent risk and not a pass. Padding is a literal: no spacing token
+   is 1.25rem. */
+.card-frame {
+    padding: 1.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--card-background);
+}
+
 .btn-action {
     display: inline-flex;
     align-items: center;
