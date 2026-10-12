@@ -53,6 +53,12 @@
     --clr-intermediate-text: #7DA9F5;
     --clr-advanced-text: #6EE7A8;
 
+    /* Bar fills vs the track: 3.72 / 3.72 / 3.72 — the raw tones give
+       3.33 / 1.94 / 3.13 here, so the blue fails 3:1 in this theme. */
+    --clr-beginner: #F6AD2E;
+    --clr-intermediate: #9DBCF5;
+    --clr-advanced: #34D399;
+
     /* Neutral scale — navy steps, so a chip, a track and a card all belong to
        the same hue. Each surface name is var() of the step it means, so the
        ramp has one source and a name can never drift off it. */
@@ -68,6 +74,9 @@
     --color-border: var(--neutral-200);
     --tag-surface: var(--neutral-50);
     --card-background: var(--neutral-100);
+    /* Bars-view icon: the same alias as light.css, over this theme own
+       --text-secondary. No literal here, or one theme would drift. */
+    --icon-mono: var(--text-secondary);
 
     color-scheme: dark;
 }

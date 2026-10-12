@@ -41,6 +41,11 @@
        stays at 4.8:1 on top. */
     --tag-surface: var(--neutral-200);
 
+    /* Bars-view icon: one colour per theme, painted through the logo own
+       alpha. Aliased to --text-secondary rather than given a literal, so
+       it follows whatever that token resolves to in each theme. */
+    --icon-mono: var(--text-secondary);
+
     /* Accent legible on the sheet (#FBFCFD): 6.4:1 — passes AA.
        The brand gold stays reserved for surfaces. */
     --accent-text: #7A5D10;

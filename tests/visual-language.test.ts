@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
 import path from 'path';
+import { LEVEL_COLOR, LEVEL_TEXT_COLOR, type TechLevel } from '../src/data/levelLabels';
 
 /**
  * The visual language, enforced rather than described. A rule that only lives in
@@ -29,6 +30,93 @@ function stripComments(src: string): string {
     return src
         .replace(/\/\*[\s\S]*?\*\//g, ' ')
         .replace(/^\s*\/\/.*$/gm, ' ');
+}
+
+const SKILL_LEVELS: TechLevel[] = ['beginner', 'intermediate', 'advanced'];
+
+// WCAG luminance and contrast, hoisted beside the accent-surface check so
+// every guard below reuses them. Same math, one copy, still in this file.
+function luminance(hex: string): number {
+    const m = hex.replace('#', '').match(/.{2}/g);
+    if (!m || m.length < 3) throw new Error(`not a hex colour: ${hex}`);
+    const [r, g, b] = m.map((p) => parseInt(p, 16) / 255);
+    const lin = (c: number) =>
+        c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+}
+
+function contrast(a: string, b: string): number {
+    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+    return (hi + 0.05) / (lo + 0.05);
+}
+
+// Split var(--token, fallback?) into its parts. Null when not a var().
+function parseVarRef(value: string): { token: string; fallback: string } | null {
+    const m = value.trim().match(/^var\(\s*(--[A-Za-z0-9_-]+)\s*(?:,\s*(.+?))?\s*\)$/s);
+    if (!m) return null;
+    return { token: m[1], fallback: (m[2] ?? '').trim() };
+}
+
+// Normalise to #rrggbb, throwing on anything else: only an opaque hex is
+// measurable, so rgb() or an unresolvable construct fails the guard loudly.
+function toHex(value: string): string {
+    const hex = value.trim().toLowerCase();
+    const short = hex.match(/^#([0-9a-f]{3})$/);
+    if (short) return '#' + [...short[1]].map((c) => c + c).join('');
+    if (/^#[0-9a-f]{6}$/.test(hex)) return hex;
+    throw new Error(`not an opaque hex colour: ${value}`);
+}
+
+// Read a token's literal from a stylesheet, following one var() alias in
+// the same file. Throws when the token is missing or points nowhere.
+function themeValue(src: string, token: string): string {
+    const declared = src.match(new RegExp(`${token}\\s*:\\s*([^;]+);`, 'i'));
+    if (!declared) throw new Error(`${token} is not declared here`);
+    const value = declared[1].trim();
+    const alias = value.match(/^var\(\s*(--[A-Za-z0-9_-]+)\s*(?:,[^)]*)?\)$/i);
+    if (!alias) return value;
+    const target = src.match(new RegExp(`${alias[1]}\\s*:\\s*([^;]+);`, 'i'));
+    if (!target) throw new Error(`${token} aliases ${alias[1]}, which resolves nowhere`);
+    return target[1].trim();
+}
+
+// Resolve a component-bound colour through the theme file, then the shared
+// layer, then the var() fallback chain. Throws when nothing resolves.
+function resolveColour(expr: string, themeSrc: string, sharedSrc: string): string {
+    const ref = parseVarRef(expr);
+    if (!ref) return toHex(expr);
+    for (const src of [themeSrc, sharedSrc]) {
+        try {
+            return toHex(themeValue(src, ref.token));
+        } catch {
+            continue;
+        }
+    }
+    if (!ref.fallback) throw new Error(`${ref.token} resolves in neither theme nor shared layer`);
+    return resolveColour(ref.fallback, themeSrc, sharedSrc);
+}
+
+const detail = (err: unknown): string => (err instanceof Error ? err.message : String(err));
+
+// Background a CSS rule paints, or null. The value is resolved later, so a
+// renamed token is followed; a missing rule fails the guard, never passes it.
+function ruleBackground(src: string, selector: string): string | null {
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const rule = src.match(new RegExp(`${escaped}\\s*\\{([^}]*)\\}`, 'i'));
+    if (!rule) return null;
+    const bg = rule[1].match(/background(?:-color)?\s*:\s*([^;]+);/i);
+    return bg ? bg[1].trim() : null;
+}
+
+// Background painted inline on the level-tag element, or null. Covers a
+// badge wired through the style attribute rather than the stylesheet.
+function levelTagInlineBackground(src: string): string | null {
+    const tag = src.match(/<[^>]*class=['"]level-tag['"][^>]*>/i);
+    if (!tag) return null;
+    const inline = tag[0].match(/style=\{`([^`]*)`\}/) ?? tag[0].match(/style="([^"]*)"/);
+    if (!inline) return null;
+    const bg = inline[1].match(/background(?:-color)?\s*:\s*([^;`]+)/i);
+    return bg ? bg[1].trim() : null;
 }
 
 describe('visual language', () => {
@@ -204,19 +292,6 @@ describe('visual language', () => {
          */
         const AA_TEXT = 4.5;
 
-        const luminance = (hex: string): number => {
-            const m = hex.replace('#', '').match(/.{2}/g);
-            if (!m || m.length < 3) throw new Error(`not a hex colour: ${hex}`);
-            const [r, g, b] = m.map((p) => parseInt(p, 16) / 255);
-            const lin = (c: number) =>
-                c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-            return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
-        };
-        const contrast = (a: string, b: string) => {
-            const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-            return (hi + 0.05) / (lo + 0.05);
-        };
-
         const THEME_DIR = path.join(ROOT, 'public', 'styles', 'themes');
         const read = (file: string) =>
             stripComments(fs.readFileSync(path.join(THEME_DIR, file), 'utf-8'));
@@ -265,6 +340,172 @@ describe('visual language', () => {
             `These themes put white text on --accent-surface without enough contrast.\n` +
             `Three components hardcode color: #fff on it, so the fill has to hold under\n` +
             `white rather than merely look like the accent:\n  ` +
+            offenders.join('\n  '),
+        ).toEqual([]);
+    });
+
+    it('level fills clear the track in both themes', () => {
+        // RF-2: one fill colour per level, each at 3:1 or above against the
+        // track, in both themes. Fill bindings come from LEVEL_COLOR, the map
+        // the bar reads; T-4 owns the values, this guard only measures them.
+        const MIN_FILL = 3;
+        const offenders: string[] = [];
+        const skillBar = stripComments(
+            fs.readFileSync(path.join(ROOT, 'src', 'components', 'SkillBar.astro'), 'utf-8'),
+        );
+        const shared = stripComments(
+            fs.readFileSync(path.join(ROOT, 'public', 'styles', '00-tokens.css'), 'utf-8'),
+        );
+        const trackRef = ruleBackground(skillBar, '.bar-track');
+
+        for (const theme of ['light.css', 'dark.css']) {
+            const themeSrc = stripComments(
+                fs.readFileSync(path.join(ROOT, 'public', 'styles', 'themes', theme), 'utf-8'),
+            );
+            let track: string | null = null;
+            if (trackRef) {
+                try {
+                    track = resolveColour(trackRef, themeSrc, shared);
+                } catch (err) {
+                    offenders.push(`${theme}: the track surface fails to resolve (${detail(err)})`);
+                }
+            } else {
+                offenders.push(`${theme}: no track surface found behind the fills`);
+            }
+            if (!track) continue;
+            for (const level of SKILL_LEVELS) {
+                let fill: string;
+                try {
+                    fill = resolveColour(LEVEL_COLOR[level], themeSrc, shared);
+                } catch (err) {
+                    offenders.push(`${theme}: the ${level} fill fails to resolve (${detail(err)})`);
+                    continue;
+                }
+                const ratio = contrast(fill, track);
+                if (ratio < MIN_FILL) {
+                    offenders.push(
+                        `${theme}: the ${level} fill ${fill} vs the track ${track} is ` +
+                            `${ratio.toFixed(2)}:1 — below ${MIN_FILL}:1`,
+                    );
+                }
+            }
+        }
+
+        expect(
+            offenders,
+            `These fills sit below 3:1 against the track, so the bar's strength\n` +
+            `reads as inferred rather than visible. T-4 owns the values:\n  ` +
+            offenders.join('\n  '),
+        ).toEqual([]);
+    });
+
+    it('level labels clear their badge in both themes', () => {
+        // RF-3: every level word label on its own badge at 4.5:1 or above, in
+        // both themes. Label colours come from LEVEL_TEXT_COLOR; the badge is
+        // whatever surface .level-tag paints behind the label, and T-5 owns
+        // it — this guard only measures the pair.
+        const MIN_LABEL = 4.5;
+        const offenders: string[] = [];
+        const skillBar = stripComments(
+            fs.readFileSync(path.join(ROOT, 'src', 'components', 'SkillBar.astro'), 'utf-8'),
+        );
+        const shared = stripComments(
+            fs.readFileSync(path.join(ROOT, 'public', 'styles', '00-tokens.css'), 'utf-8'),
+        );
+        const badgeRef =
+            ruleBackground(skillBar, '.level-tag') ?? levelTagInlineBackground(skillBar);
+
+        for (const theme of ['light.css', 'dark.css']) {
+            const themeSrc = stripComments(
+                fs.readFileSync(path.join(ROOT, 'public', 'styles', 'themes', theme), 'utf-8'),
+            );
+            if (!badgeRef) {
+                offenders.push(`${theme}: no badge surface painted behind the level label`);
+                continue;
+            }
+            let badge: string;
+            try {
+                badge = resolveColour(badgeRef, themeSrc, shared);
+            } catch (err) {
+                offenders.push(`${theme}: the badge surface fails to resolve (${detail(err)})`);
+                continue;
+            }
+            for (const level of SKILL_LEVELS) {
+                let label: string;
+                try {
+                    label = resolveColour(LEVEL_TEXT_COLOR[level], themeSrc, shared);
+                } catch (err) {
+                    offenders.push(`${theme}: the ${level} label fails to resolve (${detail(err)})`);
+                    continue;
+                }
+                const ratio = contrast(label, badge);
+                if (ratio < MIN_LABEL) {
+                    offenders.push(
+                        `${theme}: the ${level} label ${label} vs the badge ${badge} is ` +
+                            `${ratio.toFixed(2)}:1 — below ${MIN_LABEL}:1`,
+                    );
+                }
+            }
+        }
+
+        expect(
+            offenders,
+            `These labels sit below 4.5:1 against their badge, so the level\n` +
+            `word is decoration rather than text. T-5 owns the badge:\n  ` +
+            offenders.join('\n  '),
+        ).toEqual([]);
+    });
+
+    it('the monochrome icon clears the card in both themes', () => {
+        // RF-5: every bars-view icon sits on the area card in one colour per
+        // theme, at 3:1 or above. The colour is read from the row's own rule, so
+        // a renamed token moves the guard with it, and one colour per theme
+        // covers all ten logos without naming one of them.
+        const MIN_ICON = 3;
+        const offenders: string[] = [];
+        const skillBar = stripComments(
+            fs.readFileSync(path.join(ROOT, 'src', 'components', 'SkillBar.astro'), 'utf-8'),
+        );
+        const shared = stripComments(
+            fs.readFileSync(path.join(ROOT, 'public', 'styles', '00-tokens.css'), 'utf-8'),
+        );
+        const iconRef = ruleBackground(skillBar, '.bar-logo::before');
+
+        for (const theme of ['light.css', 'dark.css']) {
+            const themeSrc = stripComments(
+                fs.readFileSync(path.join(ROOT, 'public', 'styles', 'themes', theme), 'utf-8'),
+            );
+            if (!iconRef) {
+                offenders.push(`${theme}: no monochrome colour painted behind the icon shape`);
+                continue;
+            }
+            let icon: string;
+            let card: string;
+            try {
+                icon = resolveColour(iconRef, themeSrc, shared);
+            } catch (err) {
+                offenders.push(`${theme}: the icon colour fails to resolve (${detail(err)})`);
+                continue;
+            }
+            try {
+                card = resolveColour('var(--card-background)', themeSrc, shared);
+            } catch (err) {
+                offenders.push(`${theme}: the card surface fails to resolve (${detail(err)})`);
+                continue;
+            }
+            const ratio = contrast(icon, card);
+            if (ratio < MIN_ICON) {
+                offenders.push(
+                    `${theme}: the monochrome icon ${icon} on the card ${card} is ` +
+                        `${ratio.toFixed(2)}:1 — below ${MIN_ICON}:1`,
+                );
+            }
+        }
+
+        expect(
+            offenders,
+            `These icons sit below 3:1 against the area card, so a row does not read\n` +
+            `before anything is hovered. --icon-mono is the value to change:\n  ` +
             offenders.join('\n  '),
         ).toEqual([]);
     });
