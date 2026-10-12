@@ -296,6 +296,10 @@ Spanish and goes through `t()`. `Memory.md` is the agent's call.
   hover with a background change alone: it is the weakest channel available and it *lowers* the
   contrast of whatever sits on it — the theme toggle measured 16.44 → 14.11 in light and 8.31 →
   6.08 in dark. *Both settled by `tests/visual-language.test.ts`,* which carries the measurement.
+- **A hover may recolour an icon, and that is the whole exception.** The skills row swaps its monochrome icon
+  for the brand logo on hover and paints **no** border, background, outline or lift: the row is not a
+  control, and a border made it read as selected. Owner decision on spec 005; *settled by
+  `tests/markup.test.ts`,* which rejects any `:hover` rule that paints or lifts.
 - **A surface's hue must not invert.** Filling something *inside* the sheet with `--bg` sinks the
   selected state instead of raising it; the soft fill inside the sheet is `--neutral-200`, one
   colour for that job everywhere.
