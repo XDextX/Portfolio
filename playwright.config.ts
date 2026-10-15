@@ -5,7 +5,9 @@ export default defineConfig({
     timeout: 30_000,
     expect: { timeout: 5_000 },
     fullyParallel: false,
-    reporter: [['list'], ['html']],
+    // open: 'never' — on a failure the HTML report otherwise serves on 9323 and waits,
+    // which hangs the pre-commit hook instead of cancelling the commit.
+    reporter: [['list'], ['html', { open: 'never' }]],
     use: {
         headless: true,
         viewport: { width: 1280, height: 720 },
@@ -13,6 +15,7 @@ export default defineConfig({
         ignoreHTTPSErrors: true,
     },
     projects: [
-        { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+        // The installed Chrome, so no browser is downloaded (constitution 7).
+        { name: 'chrome', use: { ...devices['Desktop Chrome'], channel: 'chrome' } },
     ],
 });
