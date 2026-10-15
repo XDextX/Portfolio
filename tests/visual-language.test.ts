@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import { LEVEL_COLOR, LEVEL_TEXT_COLOR, type TechLevel } from '../src/data/levelLabels';
+import { TECH } from '../src/data/tech';
 
 /**
  * The visual language, enforced rather than described. A rule that only lives in
@@ -97,6 +98,20 @@ function resolveColour(expr: string, themeSrc: string, sharedSrc: string): strin
 }
 
 const detail = (err: unknown): string => (err instanceof Error ? err.message : String(err));
+
+/**
+ * Every distinct paint an SVG declares, as attribute or inside a style.
+ * @param svg the file's text
+ * @returns lower-cased fills and strokes, `none` dropped, 3-digit hex widened
+ */
+function svgPaints(svg: string): string[] {
+    const named: Record<string, string> = { white: '#ffffff', black: '#000000' };
+    const paints = [...svg.matchAll(/\b(?:fill|stroke)\s*(?:=\s*["']|:\s*)([^"';}\s]+)/gi)]
+        .map((m) => m[1].toLowerCase())
+        .map((p) => named[p] ?? p.replace(/^#([0-9a-f])([0-9a-f])([0-9a-f])$/, '#$1$1$2$2$3$3'))
+        .filter((p) => p !== 'none' && p !== 'transparent');
+    return [...new Set(paints)];
+}
 
 // Background a CSS rule paints, or null. The value is resolved later, so a
 // renamed token is followed; a missing rule fails the guard, never passes it.
@@ -194,12 +209,13 @@ describe('visual language', () => {
             const src = stripComments(fs.readFileSync(file, 'utf-8'));
             const where = path.relative(ROOT, file);
 
-            for (const m of src.matchAll(
-                /([^{}]+)\{([^{}]*(?:^|[;{])\s*background[a-z-]*\s*:[^{}]*)\}/gim,
-            )) {
+            // Innermost rules only, so a hover nested in @media is read with its
+            // own selector rather than the @media prelude.
+            for (const m of src.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
                 const selector = m[1].trim().split('\n').pop()?.trim() ?? '';
                 if (!selector.includes(':hover')) continue;
                 const body = m[2];
+                if (!/(?:^|[;\s])background[a-z-]*\s*:/i.test(body)) continue;
                 const movesColour =
                     /(?:^|[;{\s])(?:color|border-color|border-[a-z]+-color)\s*:/i.test(body);
                 if (movesColour) continue;
@@ -469,7 +485,11 @@ describe('visual language', () => {
         const shared = stripComments(
             fs.readFileSync(path.join(ROOT, 'public', 'styles', '00-tokens.css'), 'utf-8'),
         );
-        const iconRef = ruleBackground(skillBar, '.bar-logo::before');
+        // A shape painted in currentColor takes its colour from the slot, so
+        // follow it there; anything else is measured as written.
+        const painted = ruleBackground(skillBar, '.bar-logo::before');
+        const slotColour = skillBar.match(/\.bar-logo\s*\{[^}]*?(?:^|[\s;{])color\s*:\s*([^;]+);/m)?.[1];
+        const iconRef = painted && /^currentcolor$/i.test(painted) ? slotColour?.trim() ?? null : painted;
 
         for (const theme of ['light.css', 'dark.css']) {
             const themeSrc = stripComments(
@@ -506,6 +526,64 @@ describe('visual language', () => {
             offenders,
             `These icons sit below 3:1 against the area card, so a row does not read\n` +
             `before anything is hovered. --icon-mono is the value to change:\n  ` +
+            offenders.join('\n  '),
+        ).toEqual([]);
+    });
+
+    it('every skill icon is a single-colour asset with its source on record', () => {
+        // Spec 005 RF-8. The monochrome mask paints an asset's alpha, so white
+        // lettering over a coloured field turns into a blob: TypeScript lost 17%
+        // of its drawing, PostgreSQL 19%. One paint, no gradient, nothing white.
+        const MAX_LUMINANCE = 0.85;
+        const offenders: string[] = [];
+        const noticePath = path.join(ROOT, 'public', 'tech', 'mono', 'NOTICE.md');
+        const notice = fs.existsSync(noticePath) ? fs.readFileSync(noticePath, 'utf-8') : '';
+        if (!notice) offenders.push('public/tech/mono/NOTICE.md is missing');
+
+        const cited = [...notice.matchAll(/\bLICENSE[\w.-]*\.txt\b/g)].map((m) => m[0]);
+        if (notice && cited.length === 0) offenders.push('NOTICE.md cites no licence file');
+        for (const file of new Set(cited)) {
+            if (!fs.existsSync(path.join(ROOT, 'public', 'tech', 'mono', file))) {
+                offenders.push(`NOTICE.md cites ${file}, which does not exist`);
+            }
+        }
+
+        for (const tech of TECH) {
+            const { icon, brand } = tech as { icon?: string; brand?: string };
+            if (!icon || !icon.startsWith('/')) {
+                offenders.push(`${tech.name}: no root-absolute icon`);
+                continue;
+            }
+            const file = path.join(ROOT, 'public', icon);
+            if (!fs.existsSync(file)) {
+                offenders.push(`${tech.name}: ${icon} does not exist`);
+                continue;
+            }
+            const svg = fs.readFileSync(file, 'utf-8');
+            if (/gradient/i.test(svg)) offenders.push(`${tech.name}: ${icon} declares a gradient`);
+
+            const paints = svgPaints(svg);
+            if (paints.length > 1) {
+                offenders.push(`${tech.name}: ${icon} paints ${paints.length} colours — ${paints.join(', ')}`);
+            }
+            for (const p of paints.filter((p) => /^#[0-9a-f]{6}$/.test(p))) {
+                if (luminance(p) > MAX_LUMINANCE) {
+                    offenders.push(`${tech.name}: ${icon} paints ${p}, which the mask cannot tell from a hole`);
+                }
+            }
+
+            if (brand !== undefined && !/^#[0-9a-fA-F]{6}$/.test(brand)) {
+                offenders.push(`${tech.name}: brand ${brand} is not a #RRGGBB colour`);
+            }
+            if (notice && !notice.includes(path.basename(icon))) {
+                offenders.push(`${tech.name}: NOTICE.md does not name ${path.basename(icon)}`);
+            }
+        }
+
+        expect(
+            offenders,
+            `Each skill icon must be one shape in one paint, lettering cut out, so the\n` +
+            `monochrome mask still shows it; and its source must be on record:\n  ` +
             offenders.join('\n  '),
         ).toEqual([]);
     });

@@ -14,6 +14,8 @@ import { t } from '@i18n/index';
 export interface TechItem {
 	name: string;
 	logo: string;
+	icon: string;
+	brand?: string;
 	href?: string;
 	level?: TechLevel;
 	category?: string;
@@ -62,7 +64,8 @@ const areaKey = (category: string) => `skills.areas.${category.toLowerCase()}`;
 							{techs.map((tech) => (
 								<SkillBar
 									name={tech.name}
-									logo={tech.logo}
+									icon={tech.icon}
+									brand={tech.brand}
 									level={(tech.level ?? 'beginner') as TechLevel}
 									locale={locale}
 								/>

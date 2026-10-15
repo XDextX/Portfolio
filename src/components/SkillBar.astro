@@ -3,15 +3,16 @@ import { LEVEL_FILL, LEVEL_COLOR, LEVEL_TEXT_COLOR, levelLabelMap, type TechLeve
 
 export interface Props {
 	name: string;
-	logo: string;
+	icon: string;
+	brand?: string;
 	level: TechLevel;
 	locale?: 'es' | 'en';
 }
 
 /**
  * One bars-view skill row: icon, name over track, level badge.
- * @param name tech name shown above the track; logo its icon URL.
- * @param level ordered level driving fill and label; locale its language.
+ * @param name tech name shown above the track; icon its single-colour asset URL.
+ * @param brand the hover colour, absent for a generic icon; level drives fill and label.
  */
 
 /*
@@ -20,7 +21,7 @@ export interface Props {
  * a precision the data lacks, stated twice. This shipped 271 characters a page.
  */
 
-const { name, logo, level, locale = 'es' } = Astro.props;
+const { name, icon, brand, level, locale = 'es' } = Astro.props;
 const fill      = LEVEL_FILL[level];
 const color     = LEVEL_COLOR[level];
 const textColor = LEVEL_TEXT_COLOR[level];
@@ -28,9 +29,7 @@ const label     = levelLabelMap[locale][level];
 ---
 
 <li class='bar-row'>
-	<span class='bar-logo' style={`--logo: url("${logo}")`}>
-		<img src={logo} alt='' width='22' height='22' loading='lazy' />
-	</span>
+	<span class='bar-logo' aria-hidden='true' style={`--logo: url("${icon}")${brand ? `; --brand: ${brand}` : ''}`}></span>
 	<div class='bar-main'>
 		<span class='bar-name'>{name}</span>
 		<div class='bar-track' aria-hidden='true'>
@@ -50,43 +49,34 @@ const label     = levelLabelMap[locale][level];
 		gap: 0.6rem;
 	}
 
-	/* The icon is one colour per theme, shaped by the logo own alpha.
-	   The mask sits on a pseudo and not on the <img>: it does not
-	   clip the replaced element it is written on, so the brand pixels
-	   would keep painting on top of it. The 22px box is the slot, and
-	   it is held here rather than by the logo arriving. */
+	/* The icon is the asset's alpha painted in the slot's colour, so one
+	   `color` change recolours it. The asset must be single-colour: white
+	   lettering over a field reads as a hole only if it is one (RF-8).
+	   The 22px box is the slot, held here rather than by the asset arriving. */
 	.bar-logo {
 		position: relative;
 		width: 22px;
 		height: 22px;
+		color: var(--icon-mono);
 	}
 
 	.bar-logo::before {
 		content: '';
 		position: absolute;
 		inset: 0;
-		background-color: var(--icon-mono);
+		background-color: currentColor;
 		mask: var(--logo) center / contain no-repeat;
 		-webkit-mask: var(--logo) center / contain no-repeat;
 	}
 
-	/* Brand colour rewards the pointer and informs nothing: the row is
-	   not a control, so it has no focus state and this is never
-	   reachable by keyboard. The name beside the icon carries the tech. */
-	.bar-logo img {
-		display: block;
-		opacity: 0;
-	}
-
-	/* The hover paints nothing and lifts nothing — the owner dropped the row
-		border on 2026-10-11 — so the only thing it changes is the icon.
-		*/
-	.bar-row:hover .bar-logo::before {
-		opacity: 0;
-	}
-
-	.bar-row:hover .bar-logo img {
-		opacity: 1;
+	/* The hover changes the icon's colour and nothing else; a row with no
+		brand keeps the theme's. It sets `color`, not a background, so it is
+		not a background-only hover. Gated on (hover: hover): touch applies
+		:hover on tap and keeps it, and a device with no hover stays mono. */
+	@media (hover: hover) {
+		.bar-row:hover .bar-logo {
+			color: var(--brand, var(--icon-mono));
+		}
 	}
 
 	.bar-main {

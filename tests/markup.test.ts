@@ -198,6 +198,30 @@ function cssRules(src: string): { selector: string; body: string }[] {
     }));
 }
 
+/**
+ * Every CSS rule with its enclosing at-rules, the context cssRules() drops.
+ * @param src a `<style>` block, comments already stripped
+ * @returns each rule head with its enclosing `@media` / `@supports` preludes
+ */
+function rulesInContext(src: string): { selector: string; media: string[] }[] {
+    const rules: { selector: string; media: string[] }[] = [];
+    const open: { head: string; at: boolean }[] = [];
+    let start = 0;
+    for (let i = 0; i < src.length; i++) {
+        if (src[i] !== '{' && src[i] !== '}') continue;
+        if (src[i] === '{') {
+            const head = src.slice(start, i).trim();
+            const at = head.startsWith('@');
+            if (!at) rules.push({ selector: head, media: open.filter((o) => o.at).map((o) => o.head) });
+            open.push({ head, at });
+        } else {
+            open.pop();
+        }
+        start = i + 1;
+    }
+    return rules;
+}
+
 /** The row's markup: icon, name over track, level badge. */
 function rowMarkup(): string {
     return code(SKILL_BAR).match(/<li class=['"]bar-row['"][\s\S]*?<\/li>/)?.[0] ?? '';
@@ -236,96 +260,74 @@ function outOfRowScope(selector: string): string {
 
 describe('the bars-view icon', () => {
     it('mounts monochrome and reaches brand colour only on the row hover', () => {
-        /*
-         * RF-5. The default is the monochrome mount, and the brand colour is
-         * reachable only from the row's own `:hover`: checking the first alone
-         * would pass on a component whose default is the brand logo.
-         */
+        // RF-5 as changed on 2026-10-15: one single-colour asset painted in
+        // currentColor; at rest that colour is the theme's, and only the row's
+        // hover reads --brand. Checking the first alone would pass on a row
+        // whose default is the brand colour.
         const offenders: string[] = [];
         const css = styleBlock(SKILL_BAR);
         const row = rowMarkup();
         const all = cssRules(css);
+        const src = code(SKILL_BAR);
 
         if (!row) offenders.push('the bars-view row markup is gone');
 
-        // The at-rest mount: one colour, shaped by the logo's own alpha. The
-        // mask lives on a pseudo because it does not clip the replaced element
-        // it sits on — the brand pixels keep painting on top of it.
+        // The shape: the asset's alpha as a mask, painted in the wrapper's colour.
         const atRest = all.filter(
             (r) => /\.bar-logo::before/.test(r.selector) && !r.selector.includes(':hover'),
         );
         if (atRest.length !== 1) {
-            offenders.push(
-                `expected one at-rest .bar-logo::before rule, found ${atRest.length}`,
-            );
+            offenders.push(`expected one at-rest .bar-logo::before rule, found ${atRest.length}`);
         } else {
             const { body } = atRest[0];
-            if (!/background-color\s*:/i.test(body)) {
-                offenders.push('the at-rest layer paints no colour of its own');
+            if (!/background-color\s*:\s*currentColor\s*;/i.test(body)) {
+                offenders.push('the shape is not painted in currentColor, so no colour change reaches it');
             }
-            if (!/var\(\s*--logo\s*\)/.test(body)) {
-                offenders.push('the at-rest layer does not read var(--logo)');
-            }
-            if (!/(-webkit-)?mask(-image)?\s*:/i.test(body)) {
-                offenders.push('the at-rest layer is not clipped, so it paints a plate');
+            if (!/var\(\s*--logo\s*\)/.test(body) || !/(-webkit-)?mask(-image)?\s*:/i.test(body)) {
+                offenders.push('the shape is not a mask over var(--logo)');
             }
             if (/mask[^:]*:\s*none/i.test(body)) {
-                offenders.push('the at-rest layer drops its mask, so brand pixels paint');
+                offenders.push('the at-rest layer drops its mask, so it paints a plate');
             }
         }
 
-        // The CSS only says what reads `--logo`. The row is what supplies it, from
-        // its own prop: without the mount the mask resolves to nothing and the
-        // at-rest layer paints a flat plate, with nothing in the console.
-        const mount = row.match(/style=\{`([^`]*--logo[^`]*)`\}/)?.[1] ?? '';
-        if (!mount) {
-            offenders.push('no markup in the row mounts --logo, so the mask reads nothing');
-        } else if (!/--logo\s*:\s*url\(\s*["']?\$\{\s*logo\s*\}["']?\s*\)/.test(mount)) {
-            offenders.push(`--logo is not the row own logo — ${mount.trim()}`);
+        // The brand colour: read only by the row's hover, as the slot's colour.
+        const brandRules = all.filter((r) => /var\(\s*--brand\b/.test(r.body));
+        if (brandRules.length === 0) {
+            offenders.push('nothing reads --brand, so the hover has no brand colour to show');
         }
-        if (!/const\s*\{[^}]*\blogo\b[^}]*\}\s*=\s*Astro\.props/.test(code(SKILL_BAR))) {
-            offenders.push('the row takes no `logo` prop, so --logo cannot be per-row data');
-        }
-
-        // The brand presentation: exists, and only from the row's :hover.
-        const brand = all.filter(
-            (r) =>
-                /(?:^|[\s;])opacity\s*:\s*1\s*;/i.test(r.body) ||
-                /mask[^:]*:\s*none/i.test(r.body),
-        );
-        if (brand.length === 0) {
-            offenders.push('nothing reveals the brand logo, so the hover has no second state');
-        }
-        for (const { selector } of brand) {
+        for (const { selector, body } of brandRules) {
             for (const one of selectorList(selector)) {
                 const why = outOfRowScope(one);
                 if (why) offenders.push(`${why} — ${one}`);
+                else if (!/\s\.bar-logo$/.test(one)) {
+                    offenders.push(`--brand is read on ${one}, not on the row's own .bar-logo`);
+                }
+            }
+            if (!/(?:^|[\s;])color\s*:\s*var\(\s*--brand\b/i.test(body)) {
+                offenders.push(`--brand is not applied as the slot's color — ${selector}`);
             }
         }
 
-        const hiddenAtRest = all.some(
-            (r) =>
-                !r.selector.includes(':hover') &&
-                /img/.test(r.selector) &&
-                /(?:^|[\s;])(?:opacity\s*:\s*0\s*;|visibility\s*:\s*hidden)/i.test(r.body),
-        );
-        if (!hiddenAtRest) offenders.push('the default mount leaves the brand logo painted');
-
-        // The row is not a control: nothing focusable reaches the brand colour,
-        // and the icon's decorative name says which tech it is anyway.
-        if (/:focus/.test(css)) {
-            offenders.push('the icon has a focus state; the row is not a control');
+        // Both custom properties come from the row's own props, never a literal.
+        if (!/--logo\s*:\s*url\(\s*["']?\$\{\s*icon\s*\}["']?\s*\)/.test(row)) {
+            offenders.push('--logo is not mounted from the row own `icon` prop');
         }
-        if (/tabindex/i.test(row)) {
-            offenders.push('the row is focusable; the brand colour is a decoration');
+        if (!/--brand\s*:\s*\$\{\s*brand\s*\}/.test(row)) {
+            offenders.push('--brand is not mounted from the row own `brand` prop');
         }
-        if (/<script\b/i.test(code(SKILL_BAR))) {
-            offenders.push('a script here would be a second path to the brand state');
+        for (const prop of ['icon', 'brand']) {
+            if (!new RegExp(`const\\s*\\{[^}]*\\b${prop}\\b[^}]*\\}\\s*=\\s*Astro\\.props`).test(src)) {
+                offenders.push(`the row takes no \`${prop}\` prop, so it cannot be per-row data`);
+            }
         }
 
-        // Owner, 2026-10-11: the hover paints nothing and lifts nothing. The row
-        // had grown a transparent border to turn gold; it was dropped, and the
-        // icon's colour is the only thing this section's hover changes.
+        // The row is not a control: nothing focusable reaches the brand colour.
+        if (/:focus/.test(css)) offenders.push('the icon has a focus state; the row is not a control');
+        if (/tabindex/i.test(row)) offenders.push('the row is focusable; the brand colour is a decoration');
+        if (/<script\b/i.test(src)) offenders.push('a script here would be a second path to the brand state');
+
+        // Owner, 2026-10-11: the hover paints nothing and lifts nothing.
         for (const { selector, body } of all.filter((r) => r.selector.includes(':hover'))) {
             if (/(?:^|[\s;{])(?:border|background|outline)[a-z-]*\s*:/i.test(body)) {
                 offenders.push(`the hover paints or re-shapes the row — ${selector}`);
@@ -350,34 +352,49 @@ describe('the bars-view icon', () => {
 
         expect(
             offenders,
-            `The bars-view icon is not the mount RF-5 describes: monochrome by\n` +
-            `default in one colour per theme, the logo's own colours only while the\n` +
-            `pointer is over its row, and a hover that paints and lifts nothing.\n  ` +
+            `The bars-view icon is not the mount RF-5 describes: one single-colour\n` +
+            `shape in the theme's colour by default, the row's own brand colour only\n` +
+            `while the pointer is over it, and a hover that paints and lifts nothing.\n  ` +
             offenders.join('\n  '),
         ).toEqual([]);
     });
 
-    it('reserves the 22px slot and treats the icon as decorative', () => {
-        /*
-         * RF-7. The slot is held by the wrapper's box rather than by the logo
-         * arriving, and the icon carries no meaning of its own, so a URL that
-         * 404s leaves the name, the bar and the badge where they were.
-         */
+    it('reaches brand colour only on a pointer that can hover', () => {
+        // Spec 005 NFR: a device with no hover never shows the brand colour.
+        // Mobile browsers apply :hover on tap and keep it until the next tap, so
+        // an unguarded rule turns the icon brand on touch. `any-hover` is not
+        // enough: a touch screen with a mouse attached reports it.
+        const hovers = rulesInContext(styleBlock(SKILL_BAR)).filter((r) => r.selector.includes(':hover'));
+        const gated = (media: string[]) =>
+            media.some((m) => /^@media\b/i.test(m) && /\(\s*hover\s*:\s*hover\s*\)/i.test(m) && !/\bnot\b/i.test(m));
+        const bare = hovers.filter((r) => !gated(r.media)).map((r) => r.selector);
+
+        expect(hovers.length, 'the row has no :hover rule, so this guard reads nothing').toBeGreaterThan(0);
+        expect(
+            bare,
+            `These :hover rules apply on touch too, where a tap leaves the brand\n` +
+            `colour on; wrap them in @media (hover: hover):\n  ` +
+            bare.join('\n  '),
+        ).toEqual([]);
+    });
+
+    it('reserves the 22px slot and keeps the icon out of the accessibility tree', () => {
+        // RF-7, its "decorative-alt" read with the owner on 2026-10-15 as "the
+        // icon exposes no accessible name": no <img>, an aria-hidden slot. The
+        // slot is held by its own box, so a URL that 404s moves nothing.
         const offenders: string[] = [];
         const css = styleBlock(SKILL_BAR);
         const row = rowMarkup();
         if (!row) offenders.push('the bars-view row markup is gone');
 
-        const img = row.match(/<img\b[^>]*>/)?.[0] ?? '';
-        if (!img) {
-            offenders.push('the row renders no icon element');
-        } else {
-            if (!/\balt=['"]['"]/.test(img)) {
-                offenders.push(`the icon is not decorative-empty — ${img}`);
-            }
-            if (!/\bwidth=['"]22['"]/.test(img) || !/\bheight=['"]22['"]/.test(img)) {
-                offenders.push(`the icon does not declare its 22px size — ${img}`);
-            }
+        const img = row.match(/<img\b[^>]*>/)?.[0];
+        if (img) offenders.push(`the row renders an <img>; the icon is a mask on its slot — ${img}`);
+
+        const slotEl = row.match(/<span\b[^>]*\bclass=['"]bar-logo['"][^>]*>/)?.[0] ?? '';
+        if (!slotEl) {
+            offenders.push('the row has no .bar-logo slot element');
+        } else if (!/\baria-hidden=['"]true['"]/.test(slotEl)) {
+            offenders.push(`the icon slot is not aria-hidden — ${slotEl}`);
         }
 
         const slot = cssRules(css).filter((r) => /^\.bar-logo(\s|$)/.test(r.selector));
@@ -393,7 +410,7 @@ describe('the bars-view icon', () => {
         expect(
             offenders,
             `A logo that never loads must leave the row exactly as it was: the\n` +
-            `reserved 22px slot, and an icon that carries no meaning to read.\n  ` +
+            `reserved 22px slot, and an icon that exposes nothing to read.\n  ` +
             offenders.join('\n  '),
         ).toEqual([]);
     });
