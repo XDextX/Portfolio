@@ -50,6 +50,9 @@
        The brand gold stays reserved for surfaces. */
     --accent-text: #7A5D10;
 
+    /* Focus ring: the brand navy, 8.46:1 or more on every light ground (spec 016). */
+    --focus-ring: var(--color-brand);
+
     /* Gold primary button with white text: 6.18:1 — passes AA. */
     --accent-surface: var(--accent-text);
 

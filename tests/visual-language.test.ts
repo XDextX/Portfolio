@@ -4,6 +4,7 @@ import path from 'path';
 import { LEVEL_COLOR, LEVEL_TEXT_COLOR, LEVEL_SCALE, type TechLevel } from '../src/data/levelLabels';
 import * as levelData from '../src/data/levelLabels';
 import { TECH } from '../src/data/tech';
+import { stripComments, luminance, contrast, toHex, resolveColour, cssRules, styleSources } from './helpers/colour';
 
 /**
  * The visual language, enforced rather than described. A rule that only lives in
@@ -27,76 +28,7 @@ const ALL_FILES = [
     ...walk(path.join(ROOT, 'public', 'styles'), ['.css']),
 ];
 
-/** Source with comments blanked out, so a note is not read as a rule. */
-function stripComments(src: string): string {
-    return src
-        .replace(/\/\*[\s\S]*?\*\//g, ' ')
-        .replace(/^\s*\/\/.*$/gm, ' ');
-}
-
 const SKILL_LEVELS: readonly TechLevel[] = LEVEL_SCALE;
-
-// WCAG luminance and contrast, hoisted beside the accent-surface check so
-// every guard below reuses them. Same math, one copy, still in this file.
-function luminance(hex: string): number {
-    const m = hex.replace('#', '').match(/.{2}/g);
-    if (!m || m.length < 3) throw new Error(`not a hex colour: ${hex}`);
-    const [r, g, b] = m.map((p) => parseInt(p, 16) / 255);
-    const lin = (c: number) =>
-        c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-    return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
-}
-
-function contrast(a: string, b: string): number {
-    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-    return (hi + 0.05) / (lo + 0.05);
-}
-
-// Split var(--token, fallback?) into its parts. Null when not a var().
-function parseVarRef(value: string): { token: string; fallback: string } | null {
-    const m = value.trim().match(/^var\(\s*(--[A-Za-z0-9_-]+)\s*(?:,\s*(.+?))?\s*\)$/s);
-    if (!m) return null;
-    return { token: m[1], fallback: (m[2] ?? '').trim() };
-}
-
-// Normalise to #rrggbb, throwing on anything else: only an opaque hex is
-// measurable, so rgb() or an unresolvable construct fails the guard loudly.
-function toHex(value: string): string {
-    const hex = value.trim().toLowerCase();
-    const short = hex.match(/^#([0-9a-f]{3})$/);
-    if (short) return '#' + [...short[1]].map((c) => c + c).join('');
-    if (/^#[0-9a-f]{6}$/.test(hex)) return hex;
-    throw new Error(`not an opaque hex colour: ${value}`);
-}
-
-// Read a token's literal from a stylesheet, following one var() alias in
-// the same file. Throws when the token is missing or points nowhere.
-function themeValue(src: string, token: string): string {
-    const declared = src.match(new RegExp(`${token}\\s*:\\s*([^;]+);`, 'i'));
-    if (!declared) throw new Error(`${token} is not declared here`);
-    const value = declared[1].trim();
-    const alias = value.match(/^var\(\s*(--[A-Za-z0-9_-]+)\s*(?:,[^)]*)?\)$/i);
-    if (!alias) return value;
-    const target = src.match(new RegExp(`${alias[1]}\\s*:\\s*([^;]+);`, 'i'));
-    if (!target) throw new Error(`${token} aliases ${alias[1]}, which resolves nowhere`);
-    return target[1].trim();
-}
-
-// Resolve a component-bound colour through the theme file, then the shared
-// layer, then the var() fallback chain. Throws when nothing resolves.
-function resolveColour(expr: string, themeSrc: string, sharedSrc: string): string {
-    const ref = parseVarRef(expr);
-    if (!ref) return toHex(expr);
-    for (const src of [themeSrc, sharedSrc]) {
-        try {
-            return toHex(themeValue(src, ref.token));
-        } catch {
-            continue;
-        }
-    }
-    if (!ref.fallback) throw new Error(`${ref.token} resolves in neither theme nor shared layer`);
-    return resolveColour(ref.fallback, themeSrc, sharedSrc);
-}
 
 const detail = (err: unknown): string => (err instanceof Error ? err.message : String(err));
 
@@ -673,5 +605,131 @@ describe('visual language', () => {
             'LEVEL_FILL' in levelData,
             'levelLabels still exports LEVEL_FILL, a percentage for what segmentsFor states',
         ).toBe(false);
+    });
+});
+
+describe('colour resolver (spec 016)', () => {
+    // Two layers stand in for a theme file and the shared token layer.
+    const theme = ':root { --ring: var(--brand); --loop-a: var(--loop-b); --loop-b: var(--loop-a); }';
+    const shared = ':root { --brand: var(--brand-primary); --brand-primary: #243972; }';
+
+    it('follows an alias chain across layers to its hex', () => {
+        expect(resolveColour('var(--ring)', theme, shared)).toBe('#243972');
+    });
+
+    it('throws on a chain that ends nowhere, or loops', () => {
+        expect(() => resolveColour('var(--missing)', theme, shared)).toThrow();
+        expect(() => resolveColour('var(--loop-a)', theme, shared)).toThrow();
+    });
+});
+
+describe('focus ring (spec 016)', () => {
+    const FOCUS = 'var(--focus-ring)';
+    const KEYWORD = /^(?:\d[\w.]*|thin|medium|thick|none|hidden|solid|dashed|dotted|double|groove|ridge|inset|outset)$/i;
+    const decls = (body: string) =>
+        [...body.matchAll(/(outline(?:-color|-style|-width)?)\s*:\s*([^;]+)/gi)].map((m) => ({
+            prop: m[1].toLowerCase(),
+            value: m[2].trim(),
+        }));
+    const isRemoval = (d: { prop: string; value: string }) =>
+        (d.prop === 'outline' && /^(?:none|0)$/i.test(d.value)) ||
+        (d.prop === 'outline-style' && /^none$/i.test(d.value)) ||
+        (d.prop === 'outline-width' && /^0$/.test(d.value));
+    // The colour an outline rule draws in: its outline-color, else the shorthand's non-keyword part.
+    const drawnColour = (ds: { prop: string; value: string }[]) => {
+        const explicit = ds.find((d) => d.prop === 'outline-color');
+        if (explicit) return explicit.value;
+        const short = ds.find((d) => d.prop === 'outline');
+        const parts = short ? short.value.split(/\s+(?![^(]*\))/).filter((t) => !KEYWORD.test(t)) : [];
+        return parts.join(' ') || '(none: currentColor)';
+    };
+    const rel = (file: string) => path.relative(ROOT, file);
+    const sources = styleSources(ROOT);
+
+    it('every outline is drawn in the focus colour (RF-1, RF-4)', () => {
+        const offenders: string[] = [];
+        for (const { file, css } of sources) {
+            for (const rule of cssRules(css)) {
+                const ds = decls(rule.body);
+                if (!ds.length || ds.every(isRemoval)) continue;
+                const colour = drawnColour(ds);
+                if (colour !== FOCUS) offenders.push(`RF-1: ${rel(file)} ${rule.selectors.join(', ')} draws in ${colour}`);
+            }
+        }
+        expect(offenders, `Every outline must be drawn in ${FOCUS}, with no fallback:\n  ${offenders.join('\n  ')}`).toEqual([]);
+    });
+
+    it('a rule that removes the outline is paired with a focus ring (RF-7)', () => {
+        const offenders: string[] = [];
+        for (const { file, css } of sources) {
+            const rules = cssRules(css);
+            for (const rule of rules.filter((r) => decls(r.body).some(isRemoval))) {
+                for (const sel of rule.selectors) {
+                    if (sel.includes(':focus-visible')) {
+                        offenders.push(`RF-7: ${rel(file)} ${sel} removes the focus ring itself`);
+                        continue;
+                    }
+                    const paired = rules.some(
+                        (r) => r.media === rule.media && r.selectors.includes(`${sel}:focus-visible`) &&
+                            drawnColour(decls(r.body)) === FOCUS,
+                    );
+                    if (!paired) offenders.push(`RF-7: ${rel(file)} ${sel} removes the outline with no ${FOCUS} ring`);
+                }
+            }
+        }
+        expect(offenders, `An outline removal needs a :focus-visible ring for the same selector:\n  ${offenders.join('\n  ')}`).toEqual([]);
+    });
+
+    it('the avatar ring border keeps its override (spec 016 NFR)', () => {
+        const avatar = sources.find((s) => s.file.endsWith('AvatarCircle.astro'));
+        const rule = avatar && cssRules(avatar.css).find((r) => r.selectors.includes('.avatar.has-border'));
+        expect(rule?.body ?? '', 'the opt-in ring border must still read --avatar-ring').toMatch(/border\s*:[^;]*var\(--avatar-ring/);
+    });
+});
+
+describe('focus colour per theme (spec 016)', () => {
+    const STYLES = path.join(ROOT, 'public', 'styles');
+    const read = (...p: string[]) => stripComments(fs.readFileSync(path.join(STYLES, ...p), 'utf-8'));
+    const light = read('themes', 'light.css');
+    const dark = read('themes', 'dark.css');
+    const shared = read('00-tokens.css');
+    // Cascade order: dark overrides light's :root, both over the shared layer.
+    const LAYERS = { light: [light, shared], dark: [dark, light, shared] } as const;
+    const GROUNDS = ['--bg', '--main-bg', '--card-background', '--neutral-50', '--neutral-200'];
+    const DECL = /(?<![\w-])--focus-ring\s*:\s*([^;]+);/;
+
+    it('each theme file declares the focus colour as an alias, and nothing else does (RF-2)', () => {
+        const offenders: string[] = [];
+        for (const [name, src] of [['light.css', light], ['dark.css', dark]] as const) {
+            const m = src.match(DECL);
+            if (!m) offenders.push(`RF-2: ${name} does not declare --focus-ring`);
+            else if (!/^var\(--[\w-]+\)$/.test(m[1].trim())) offenders.push(`RF-2: ${name} sets --focus-ring to ${m[1].trim()}, not a var() alias`);
+        }
+        for (const { file, css } of styleSources(ROOT)) {
+            if (path.basename(path.dirname(file)) === 'themes' && /^(light|dark)\.css$/.test(path.basename(file))) continue;
+            if (DECL.test(css)) offenders.push(`RF-2: ${path.relative(ROOT, file)} declares --focus-ring`);
+        }
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+
+    it('the focus colour clears 3:1 on every ground, navy in light and text white in dark (RF-3, RF-5, RF-6)', () => {
+        const offenders: string[] = [];
+        for (const [theme, layers] of Object.entries(LAYERS)) {
+            let ring: string;
+            try {
+                ring = resolveColour('var(--focus-ring)', ...layers);
+            } catch (err) {
+                offenders.push(`RF-3: ${theme}: ${detail(err)}`);
+                continue;
+            }
+            for (const ground of GROUNDS) {
+                const ratio = contrast(ring, resolveColour(`var(${ground})`, ...layers));
+                if (ratio < 3) offenders.push(`RF-3: ${theme}: ${ring} on ${ground} is ${ratio.toFixed(2)}:1`);
+            }
+            const expected = theme === 'light' ? ['RF-5', 'var(--color-brand)'] : ['RF-6', 'var(--text-color)'];
+            const want = resolveColour(expected[1], ...layers);
+            if (ring !== want) offenders.push(`${expected[0]}: ${theme} ring is ${ring}, expected ${expected[1]} (${want})`);
+        }
+        expect(offenders, offenders.join('\n')).toEqual([]);
     });
 });

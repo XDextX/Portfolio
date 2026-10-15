@@ -35,6 +35,10 @@
     /* On navy the brand gold already gives 6.66:1 — use as is. */
     --accent-text: var(--brand-accent);
 
+    /* Focus ring: the text white. The brand navy ring sat on this navy sheet at
+       1.00:1; white clears 6.66:1 on the softest ground (spec 016). */
+    --focus-ring: var(--text-color);
+
     /* Primary button fill, and it must NOT be the brand gold. Unset here it
        inherited #E3C770 from 00-tokens.css: white on light gold, 1.66:1 against
        4.5:1, with four places hardcoding `color: #fff` on it. Same hue as
