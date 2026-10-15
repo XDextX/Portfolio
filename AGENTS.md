@@ -317,8 +317,9 @@ call.
   claims otherwise: the declaration and the rendering quietly disagree. Use 700.
   *Settled by `tests/visual-language.test.ts`.*
 - **Radius follows size class, not taste** — one radius everywhere is what makes a layout read as a
-  template. `--radius-pill` is only for genuinely lozenge-shaped things, the bar track and its fill,
-  never a square button: at 32×32 it rounds the corners nearly off. A child inside a padded parent
+  template. `--radius-pill` is only for genuinely lozenge-shaped things — the level badge and the
+  language `Chip` — never a square button (at 32×32 it rounds the corners nearly off) and never the
+  skill bar, which is a framed, square health bar (spec 006). A child inside a padded parent
   takes the parent's radius *minus the parent's padding*, written as that relationship.
 - **The type scale is 1.25 off a 16px base.** Adding a step means adding a token, never nudging an
   existing one: flatter steps make every level look like the one above it.
