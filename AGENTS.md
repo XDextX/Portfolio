@@ -65,8 +65,9 @@ call.
 
 ### Commands
 
-- **Run tests with `npm test`.** Never run bare `npx vitest --run`: without the `tests` argument it
-  also picks up the Playwright spec and fails on a missing runtime.
+- **Run tests with `npm test`, rendered checks with `npm run test:e2e`** — both are the policy
+  (constitution 7). Never run bare `npx vitest --run`: without the `tests` argument it also picks up
+  the Playwright spec, which vitest cannot run.
 - **Do not run `lint` or `format`, and do not add them.** Neither eslint nor prettier is a
   dependency, and adding a tool to make a check pass is constitution 7. If they are ever wired up,
   add them to `.husky/pre-commit` in the same change.
@@ -77,8 +78,8 @@ call.
 
 - **NEVER push. NEVER commit unless asked.** Finishing a task does not imply committing, and if you
   are unsure whether to commit, ask.
-- **The pre-commit hook runs `npm test` and cancels the commit on failure**, so a rejected commit is
-  the suite failing, not a git bug. Fix the test first; `--no-verify` is an escape hatch only when
+- **The pre-commit hook runs `npm test`, then `npm run test:e2e`, and cancels the commit on
+  failure**, so a rejected commit is the suite failing, not a git bug. Fix the test first; `--no-verify` is an escape hatch only when
   that is intentional.
 - `AGENTS.md` and `docs/constitution.md` get their own `docs:` commit, never folded into a
   component commit.
