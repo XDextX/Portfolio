@@ -8,8 +8,8 @@ one is what makes it obeyable.
 restated here. `docs/incidents.md` holds the history behind them — read it when a rule looks
 arbitrary, not to learn whether it applies.
 
-**Language.** Code, comments, JSDoc and every repo document are English. Visitor-facing text is
-Spanish and goes through `t()`. `Memory.md` is the agent's call.
+**Language.** Every repo document is English, specs and JSDoc included; `Memory.md` is the agent's
+call.
 
 ## Workflow
 
@@ -37,20 +37,11 @@ Spanish and goes through `t()`. `Memory.md` is the agent's call.
   **Check it in the browser.**
 - **After editing a `<style>`, confirm the rule is in `document.styleSheets`** before trusting any
   measurement. A stale sheet makes you debug code that is already right.
-- **`resize_page` does not move `innerWidth`** — use `emulate({ viewport: "WxH" })`.
 - **Measure after animations settle.** A `width` or a `transform` read mid-transition returns a
   value that was never rendered.
+- **Validating a spec covers its non-functional requirements and edge cases, not only its RFs.** The
+  spec 005 no-hover NFR failed while all seven RFs passed.
 - **The working tree is CRLF.** Normalise before matching an anchor, or the probe finds nothing.
-
-### Commands
-
-- **`npm test` is the whole test policy.** Never run bare `npx vitest --run`: without the `tests`
-  argument it also picks up the Playwright spec and fails on a missing runtime.
-- **Do not run `lint` or `format`, and do not add them.** Neither eslint nor prettier is a
-  dependency, and adding a tool to make a check pass is constitution 7. If they are ever wired up,
-  add them to `.husky/pre-commit` in the same change.
-- **Do not run `npx astro check`** — it prompts to install `@astrojs/check` and `typescript`, which
-  is a dependency bought for a check.
 
 ### Visual work, one component at a time
 
@@ -59,8 +50,6 @@ Spanish and goes through `t()`. `Memory.md` is the agent's call.
 3. On approval, commit that component, then move on.
 
 - One component per commit. A token or layout change belongs to the work that motivated it.
-- `AGENTS.md` and `docs/constitution.md` get their own `docs:` commit, never folded into a
-  component commit.
 - A caller's prop change counts as part of the component when it is what makes the change visible.
   Redesigning the caller is separate work.
 - A block that mixes scopes gets split, even mid-block.
@@ -74,6 +63,43 @@ Spanish and goes through `t()`. `Memory.md` is the agent's call.
   "144px to 100px" is. A claim that cannot be defended with a measurement is an opinion: present it
   as one and ask.
 
+### Commands
+
+- **Run tests with `npm test`.** Never run bare `npx vitest --run`: without the `tests` argument it
+  also picks up the Playwright spec and fails on a missing runtime.
+- **Do not run `lint` or `format`, and do not add them.** Neither eslint nor prettier is a
+  dependency, and adding a tool to make a check pass is constitution 7. If they are ever wired up,
+  add them to `.husky/pre-commit` in the same change.
+- **Do not run `npx astro check`** — it prompts to install `@astrojs/check` and `typescript`, which
+  is a dependency bought for a check.
+
+### Git
+
+- **NEVER push. NEVER commit unless asked.** Finishing a task does not imply committing, and if you
+  are unsure whether to commit, ask.
+- **The pre-commit hook runs `npm test` and cancels the commit on failure**, so a rejected commit is
+  the suite failing, not a git bug. Fix the test first; `--no-verify` is an escape hatch only when
+  that is intentional.
+- `AGENTS.md` and `docs/constitution.md` get their own `docs:` commit, never folded into a
+  component commit.
+- **`git checkout -- .` destroys uncommitted work silently** — it restores from the index, and this
+  repo's normal state is uncommitted work. Revert explicit paths only, and hash what you did not
+  mean to touch. `git checkout -- <untracked>` does nothing at all: delete those by hand.
+- **`bloque/` is scratch and never tracked.** One plan per pending block, deleted when that block
+  closes, and the whole directory once the last one does; the commit message is where a finished
+  block's summary belongs.
+
+### Memory
+
+- **Read `Memory.md` before proposing anything**, and update it after each task. Update this file
+  only when a rule actually changed.
+- **Keep `Memory.md` under 50 lines.** Summarise what is stale and delete it.
+- **Three homes, one rule each**: the non-negotiable rules in `docs/constitution.md`, the working
+  rules here, state and context in `Memory.md`. Never duplicate a rule across two — change it in
+  the one place it belongs, because the copy that drifts is the one people read.
+- If something comes up often enough, propose a new rule: here, or in the constitution when it is
+  genuinely non-negotiable.
+
 ## Rules
 
 ### Structure
@@ -81,14 +107,14 @@ Spanish and goes through `t()`. `Memory.md` is the agent's call.
 - **Never leave a page component in `src/pages/`** — Astro registers it as a route even when it is
   only a component, which duplicated `/` with conflicting canonical and hreflang tags.
   *Settled by `tests/notfound.test.ts`.*
-- **One source per datum.** A public profile may be linked, never spelled out again
-  (constitution 9). Prefer an explicit `sameAs: true` over re-deriving "is this publishable?" from
-  another field: one flag, read by whoever needs it. *Settled by `tests/visual-language.test.ts`*
-  (the name) and `tests/about.test.ts` (socials iterate `ABOUT`, not a hardcoded list).
-- **JSON-LD with `set:html`, never `is:inline` plus interpolation** — `is:inline` disables
-  expression evaluation, so the JSON ships as literal text. *Settled by `tests/markup.test.ts`.*
-- **Never mix microdata (`itemscope`) and JSON-LD** for the same entity on one page: search engines
-  read that as two conflicting entities. *Settled by `tests/markup.test.ts`.*
+- **One source per datum.** Prefer an explicit `sameAs: true` over re-deriving "is this
+  publishable?" from another field: one flag, read by whoever needs it. *Settled by
+  `tests/visual-language.test.ts`* (the name) and `tests/about.test.ts` (socials iterate `ABOUT`,
+  not a hardcoded list).
+- **Root-absolute public asset paths, always** — a relative `src="icons/x.svg"` resolves against the
+  current route, so it works on `/` and 404s on `/proyectos/<name>`. *Settled by
+  `tests/contact.test.ts`* (leading slash, file exists) and `tests/about.test.ts` (`resumeUrl`
+  points at a real file).
 
 ### Code
 
@@ -105,51 +131,65 @@ Spanish and goes through `t()`. `Memory.md` is the agent's call.
   difference that renders the same today is still a difference that will not.
 - **JSDoc on public helpers and components**: one description line plus `@param`/`@returns`, and a
   typed `interface Props` on components.
+- **Read configuration with `import.meta.env`, never `process.env`.**
+- **`DEFAULT_LOCALE` is dead config** — nothing reads it; the default is the constant in
+  `src/utils/locale.ts`. Do not wire it up.
 
-### Metadata
+### Comments
 
-- **Every route passes its own `title` and `description` to `BaseLayout`.** Inheriting the layout's
-  default is exactly what a well-intended change to that default would cause, with nothing noticing.
-- **The description is generated through `t()` and names only technologies `src/data/tech.ts`
-  lists** — the skills the page actually shows. **Interpolate the list, never retype it in the
-  sentence**: a retyped copy drifts from `seo.home.techs` while every assertion stays green.
-- **At most 160 characters, cut at a whole word.** Word integrity wins over the cap, so the two are
-  not simultaneously satisfiable and a first word alone over the cap ships whole. The length is a
-  consequence of the data, not a constant: crossing 160 has to go red here and not ship a meta tag
-  that quietly lost its last clause.
-- **The title never repeats the word the `- Portfolio` suffix already carries.**
-- **No `{{` left unresolved in a title or a description.** `t()` prints a placeholder it has no
-  value for and leaves it in the string, with nothing in the console.
-- **The project entity carries the description the route resolves**, never a second copy of it: the
-  repository's own text verbatim, or the translated fallback from the locale file when the repo
-  carries none.
-- **Type the project entity `SoftwareSourceCode`, `codeRepository` the repository and `url` this
-  page.** Declare neither `applicationCategory` nor `operatingSystem`, and omit
-  `programmingLanguage` **entirely** when the repository has none — a key present carrying
-  `undefined` passes an equality check and still ships the field.
-- *All settled by `tests/seo.test.ts`.*
+- **Nothing between the frontmatter fences and the markup is a comment** — Astro emits it verbatim,
+  so a `//` note there ships to every visitor. Implementation notes go in the frontmatter, where
+  they never leave the build.
+- `{/* … */}` is stripped and would survive, but prefer the frontmatter: nobody converts a
+  frontmatter note into an `<!-- -->` by accident, and someone "simplifying" a brace comment would
+  start shipping it.
+- **`//` inside `<script>` and `<style>` is stripped at build.** Only markup leaks.
+- **A new HTML label goes into the allowlist in `tests/comments.test.ts` deliberately.** Short labels
+  (`<!-- Header -->`) are the existing style; a length limit cannot tell a label from a note.
+- **No comment block runs past five lines** — a block nobody reads to the end is worse than none,
+  because it looks like the subject is documented. *Settled by `tests/comments.test.ts`.*
+- **What earns a comment:** why a non-obvious value is that value, what broke and how it was found,
+  and a warning whose failure is silent. **A comment earns its keep by being wrong loudly** — if
+  deleting it would change what the next person does, keep it compressed; if not, delete it rather
+  than shortening it.
+- **Keep the number, cut the retelling.** A measurement is what makes a comment worth reading, but
+  if `AGENTS.md` already carries it the comment points there instead of repeating it: two copies
+  drift, and the one that drifts is the one nobody re-reads.
+- **A stale number is worse than no comment**, because it reads as current — a change that
+  invalidates a measurement touches the comment in the same commit.
+- A note in a stylesheet must not name a token as if it used one.
+
+### Tests
+
+- **Prove a guard still bites before reporting green** by injecting the violation, then revert by
+  explicit path. When a guard is right, the fix is to widen what it reads, never to relax what it
+  accepts.
+- **Strip comments before scanning source** — a note quoting removed code is not a use of it.
+- **A guard's own assertion must not be satisfiable by something else** — an import path alone can
+  match the whole name it is meant to be checking the usage of.
+- **Keep `tests/helpers/` to what a test actually imports.** Add a mock helper when a test needs it,
+  not before.
 
 ### Interactive markup
 
+- **Visitor-facing text never bypasses `t()`.** `aria-label='Vista'` and a `lang === 'es' ? … : …`
+  survive a locale switch and ship Spanish to English readers. *Settled by
+  `tests/visual-language.test.ts`;* a key that resolves in neither locale is `tests/i18n.test.ts`.
 - **Never index into `childNodes` to swap a label** — it breaks on the first added space. Better: do
   not swap text at all, the show-more button carries both labels and CSS reveals one.
-  *Settled by `tests/markup.test.ts`.*
-- **When you must rewrite a label, give it its own element and target that by class.** Do not invent
-  a `data-*` hook for it; nothing ends up reading the hook.
+  *Settled by `tests/markup.test.ts`.* When you must rewrite a label, give it its own element and
+  target that by class.
 - **A label swap must not resize the control, nor depend on a hardcoded width** — two translated
   strings differ in length in every language, so a fixed `min-width` in `px` or `ch` is wrong
   somewhere. Stack both states in one `grid-template-areas` cell with `visibility: hidden` on the
   inactive one, so the cell is `max-content` across both; `display: none` would drop it from
   `max-content`.
-- **Do not emit an attribute nobody reads** — grep before adding one, delete it when the reader goes.
+- **Do not emit an attribute nobody reads** — a `data-*` hook invented for a label swap is the usual
+  one. Grep before adding one, delete it when the reader goes.
 - **Do not pass a prop a component does not declare.**
-- Prefer the implicit `<label><select/></label>` over a `for`/`id` pair: no id, so no collision.
 - **Render a non-interactive element when there is nothing to interact with** — `<a href="#">` is
   focusable and it jumps the page to the top.
-- **Every piece of visitor-facing text goes through `t()`.** `aria-label='Vista'` and a
-  `lang === 'es' ? … : …` survive a locale switch and ship Spanish to English readers.
-  *Settled by `tests/visual-language.test.ts`;* a key that resolves in neither locale is
-  `tests/i18n.test.ts`.
+- Prefer the implicit `<label><select/></label>` over a `for`/`id` pair: no id, so no collision.
 - `title` is a weak accessible name. Pair it with `aria-label`.
 - **Two controls side by side must state the constraint, not assume it** — both carry an explicit
   `block-size` with `box-sizing: border-box`, written as a literal in each file. Two controls are not
@@ -173,56 +213,32 @@ Spanish and goes through `t()`. `Memory.md` is the agent's call.
 - These four are *settled by `tests/viewtransitions.test.ts`*, over a component list derived from the
   filesystem. If you must skip one, do it explicitly in that test, never silently.
 
-### Comments
+### Metadata and structured data
 
-- **Nothing between the frontmatter fences and the markup is a comment** — Astro emits it verbatim,
-  so a `//` note there ships to every visitor. Implementation notes go in the frontmatter, where
-  they never leave the build.
-- `{/* … */}` is stripped and would survive, but prefer the frontmatter: nobody converts a
-  frontmatter note into an `<!-- -->` by accident, and someone "simplifying" a brace comment would
-  start shipping it.
-- **A new HTML label goes into the allowlist in `tests/comments.test.ts` deliberately.** Short labels
-  (`<!-- Header -->`) are the existing style; a length limit cannot tell a label from a note.
-- **`//` inside `<script>` and `<style>` is stripped at build.** Only markup leaks.
-- A note in a stylesheet must not name a token as if it used one.
-- **No comment block runs past five lines** — a block nobody reads to the end is worse than none,
-  because it looks like the subject is documented. *Settled by `tests/comments.test.ts`.*
-- **Keep the number, cut the retelling.** A measurement is what makes a comment worth reading, but
-  if `AGENTS.md` already carries it the comment points there instead of repeating it: two copies
-  drift, and the one that drifts is the one nobody re-reads.
-- **A stale number is worse than no comment**, because it reads as current — a change that
-  invalidates a measurement touches the comment in the same commit.
-- **What earns a comment:** why a non-obvious value is that value, what broke and how it was found,
-  and a warning whose failure is silent. **A comment earns its keep by being wrong loudly** — if
-  deleting it would change what the next person does, keep it compressed; if not, delete it rather
-  than shortening it.
-
-### Public asset paths
-
-- **Root-absolute, always** — a relative `src="icons/x.svg"` resolves against the current route, so
-  it works on `/` and 404s on `/proyectos/<name>`. *Settled by `tests/contact.test.ts`* (leading
-  slash, file exists) and `tests/about.test.ts` (`resumeUrl` points at a real file).
-
-### Design tokens
-
-- **Never write `var(--x)` for a token that is not defined** in `00-tokens.css` or `themes/*.css`. A
-  custom property that is read but never defined fails silently: the whole declaration is invalid
-  at computed-value time, the browser drops it, and nothing appears in the console.
-- **A hardcoded colour as the only fallback is a bug, not a safety net** — it never follows the
-  theme. If a fallback is genuinely needed, say why in a comment.
-- **A token defined in one theme and read in both is worse than a missing one**: nothing errors and
-  the fallback is another theme's palette. Define a token in both theme files or neither.
-- **A token named "behind" or "surface" is a claim about where it may be used** — `--bg` is the
-  ground the sheet sits on, and filling something *inside* the sheet with it inverts depth. Respect
-  the meaning, not just the value.
-- **Do not define one value under two names.** The duplicate is what lets one theme drift.
-- Alias a theme-aware value instead of pairing `--x` with `--x-dark`: `--avatar-ring:
-  var(--color-border)` resolves in both themes because both redefine `--color-border`, and no
-  component needs a per-theme override.
-- Prefer `!important` on a custom property in a media query when the base value is inline — it is
-  the only way an author rule beats an inline declaration.
-- **Run `tests/tokens.test.ts` before claiming a styling change is done.** It fails on a typo and on
-  an invented token, so it is not vacuous.
+- **Every route passes its own `title` and `description` to `BaseLayout`.** Inheriting the layout's
+  default is exactly what a well-intended change to that default would cause, with nothing noticing.
+- **The description is generated through `t()` and names only technologies `src/data/tech.ts`
+  lists** — the skills the page actually shows. **Interpolate the list, never retype it in the
+  sentence**: a retyped copy drifts from `seo.home.techs` while every assertion stays green.
+- **At most 160 characters, cut at a whole word.** Word integrity wins over the cap, so the two are
+  not simultaneously satisfiable and a first word alone over the cap ships whole. The length is a
+  consequence of the data, not a constant: crossing 160 has to go red here and not ship a meta tag
+  that quietly lost its last clause.
+- **The title never repeats the word the `- Portfolio` suffix already carries.**
+- **No `{{` left unresolved in a title or a description.** `t()` prints a placeholder it has no
+  value for and leaves it in the string, with nothing in the console.
+- **The project entity carries the description the route resolves**, never a second copy of it: the
+  repository's own text verbatim, or the translated fallback from the locale file when the repo
+  carries none.
+- **Type the project entity `SoftwareSourceCode`, `codeRepository` the repository and `url` this
+  page.** Declare neither `applicationCategory` nor `operatingSystem`, and omit
+  `programmingLanguage` **entirely** when the repository has none — a key present carrying
+  `undefined` passes an equality check and still ships the field.
+- *The rules above are settled by `tests/seo.test.ts`; the two below by `tests/markup.test.ts`.*
+- **JSON-LD with `set:html`, never `is:inline` plus interpolation** — `is:inline` disables
+  expression evaluation, so the JSON ships as literal text.
+- **Never mix microdata (`itemscope`) and JSON-LD** for the same entity on one page: search engines
+  read that as two conflicting entities.
 
 ### The social card
 
@@ -230,7 +246,7 @@ Spanish and goes through `t()`. `Memory.md` is the agent's call.
   generator is a second palette, and a renamed token then renders `undefined` in the picture
   instead of failing the run.
 - **The generator imports `ABOUT` from `src/data/about.ts` and spells out none of its values** — a
-  literal name on the card is a second source for the identity (constitution 9).
+  literal name on the card is a second source for the identity.
 - **The card is a static file in `public/`, and nothing renders it**: no HTML, CSS or JS beside the
   PNG, and no route matching `og-cover`. A renderer is a second copy that drifts from the site's
   own CSS and fonts.
@@ -244,6 +260,28 @@ Spanish and goes through `t()`. `Memory.md` is the agent's call.
 - **Nothing in the generator depends on the moment it runs** — `measure` is a parameter and nothing
   calls `new Date()`, or two runs produce different bytes and the picture carries no diff.
 - *All settled by `tests/seo.test.ts`.*
+
+### Design tokens
+
+- **Never write `var(--x)` for a token that is not defined** in `00-tokens.css` or `themes/*.css`. A
+  custom property that is read but never defined fails silently: the whole declaration is invalid
+  at computed-value time, the browser drops it, and nothing appears in the console.
+- **A hardcoded colour as the only fallback is a bug, not a safety net** — it never follows the
+  theme. If a fallback is genuinely needed, say why in a comment.
+- **A token defined in one theme and read in both is worse than a missing one**: nothing errors and
+  the fallback is another theme's palette. Define a token in both theme files or neither.
+- **A token named "behind" or "surface" is a claim about where it may be used.** `--bg` is the
+  ground the sheet sits on: filling something *inside* the sheet with it inverts depth and sinks a
+  selected state instead of raising it. The soft fill inside the sheet is `--neutral-200`, one
+  colour for that job everywhere.
+- **Do not define one value under two names.** The duplicate is what lets one theme drift.
+- Alias a theme-aware value instead of pairing `--x` with `--x-dark`: `--avatar-ring:
+  var(--color-border)` resolves in both themes because both redefine `--color-border`, and no
+  component needs a per-theme override.
+- Prefer `!important` on a custom property in a media query when the base value is inline — it is
+  the only way an author rule beats an inline declaration.
+- **Run `tests/tokens.test.ts` before claiming a styling change is done.** It fails on a typo and on
+  an invented token, so it is not vacuous.
 
 ### CSS that silently does nothing
 
@@ -270,10 +308,9 @@ Spanish and goes through `t()`. `Memory.md` is the agent's call.
 - **`--accent-surface` stays dark in both themes** — components hardcode `color: #fff` on the
   primary button, so a light gold fill puts white on cream at 1.66:1. Revisit it only when the
   hardcoded `#fff` goes. *Settled by `tests/visual-language.test.ts`.*
-- **Two self-hosted families and no font CDN link** (constitution 2): IBM Plex Sans, variable
-  100–700, for everything; IBM Plex Mono, 400/600, for code and small data only. A bare system stack
-  is not an acceptable simplification: every visitor sees whatever their OS ships and the site has
-  no voice of its own.
+- **IBM Plex Sans, variable 100–700, for everything; IBM Plex Mono, 400/600, for code and small data
+  only.** A bare system stack is not an acceptable simplification: every visitor sees whatever their
+  OS ships and the site has no voice of its own.
 - **`05-fonts.css` links before the other stylesheets** — `@font-face` must be known before anything
   computes a line box, or the first paint uses the fallback and the text reflows a frame later.
 - **The variable font's range is a hard limit.** `font-weight: 800` clamps to 700 while the CSS
@@ -292,95 +329,47 @@ Spanish and goes through `t()`. `Memory.md` is the agent's call.
 - **Let the content choose the silhouette**: expose the shape as a prop, and do not frame a shape
   with a second outline that says nothing — a ring in `--color-border` is the same token every card
   border uses.
+- **Two things in a row are not peers.** A disclosure goes under what it discloses, left-aligned;
+  opposite ends read as two unrelated items in opposite corners, and the control that governs the
+  grid sits as far from it as the layout allows.
+
+### Hover
+
 - **Hover means the border turns gold, and nothing lifts.** Never `translateY(-2px)`. Never signal
   hover with a background change alone: it is the weakest channel available and it *lowers* the
   contrast of whatever sits on it — the theme toggle measured 16.44 → 14.11 in light and 8.31 →
   6.08 in dark. *Both settled by `tests/visual-language.test.ts`,* which carries the measurement.
-- **A hover may recolour an icon, and that is the whole exception.** The skills row swaps its monochrome icon
-  for the brand logo on hover and paints **no** border, background, outline or lift: the row is not a
-  control, and a border made it read as selected. Owner decision on spec 005; *settled by
-  `tests/markup.test.ts`,* which rejects any `:hover` rule that paints or lifts.
-- **A surface's hue must not invert.** Filling something *inside* the sheet with `--bg` sinks the
-  selected state instead of raising it; the soft fill inside the sheet is `--neutral-200`, one
-  colour for that job everywhere.
-- **Two things in a row are not peers.** A disclosure goes under what it discloses, left-aligned;
-  opposite ends read as two unrelated items in opposite corners, and the control that governs the
-  grid sits as far from it as the layout allows.
+- **A hover may recolour an icon, and that is the whole exception.** The skills row swaps its
+  monochrome icon for the brand logo on hover and paints **no** border, background, outline or
+  lift: the row is not a control, and a border made it read as selected. Owner decision on spec 005.
+- **That recolour sits inside `@media (hover: hover)`** — touch applies `:hover` on tap and keeps it,
+  so an ungated rule leaves the brand colour on. `any-hover` is not enough: a touch screen with a
+  mouse attached reports it. *Both settled by `tests/markup.test.ts`.*
 
 ### Sensitive data
 
 - **Never write into this file, `Memory.md`, `README.md`, `docs/`, a commit message or any other
   repo document**: paths containing the real user name, emails, full names, physical addresses,
-  tokens, API keys or passwords. This is constitution 9, with the mechanics.
+  tokens, API keys or passwords. These are constitution 9's mechanics.
 - Use placeholders — `C:\Users\<user>\...`, `<email>`, `<token>` — and prefer variables
-  (`$env:USERPROFILE`) over literal paths in examples.
+  (`$env:USERPROFILE`) over literal paths in examples. Describe a bug's shape
+  (`--executablePath=C:\...\Programs\Opera`) without filling in the rest from your machine.
 - **Flagging the existence of a secret is fine; its value is not.** `there is a PAT in .env, do not
-  commit it` is the right sentence.
-- Describe a bug's shape (`--executablePath=C:\...\Programs\Opera`) without filling in the rest
-  from your machine.
-- **`.env` is gitignored and holds a live PAT.** Never commit it, never echo it.
+  commit it` is the right sentence. **`.env` holds a live PAT: never commit it, never echo it.**
 - A grep for "emails in documents" hits `LICENSE.md`. Those are third-party copyright addresses:
   do not read that as the rule being broken.
 
-### Tests
+### Agent tooling
 
-- **A mechanical rule ships with a guard** (constitution 3), and **the rule names the test that
-  settles it.** Prose is not a check.
-- **Prove a guard still bites before reporting green**: inject the violation, watch it fail, then
-  revert by explicit path. A suite that has never been red is untested. When a guard is right, the
-  fix is to widen what it reads, never to relax what it accepts.
-- **Strip comments before scanning source** — a note quoting removed code is not a use of it.
-- **Assert data and rendered output, not source substrings** (constitution 8); a new grep needs a
-  reason it cannot be a data check.
-- **A guard's own assertion must not be satisfiable by something else** — an import path alone can
-  match the whole name it is meant to be checking the usage of.
-- **Keep `tests/helpers/` to what a test actually imports.** Add a mock helper when a test needs it,
-  not before.
-
-### Environment
-
-- **Read configuration with `import.meta.env`, never `process.env`.**
-- **`GITHUB_TOKEN` is server-side only** and has one reader, `src/pages/lib/github.ts` (constitution
-  6). Never let it reach a client bundle.
-- **`DEFAULT_LOCALE` is dead config** — nothing reads it; the default is the constant in
-  `src/utils/locale.ts`. Do not wire it up.
-
-### Git
-
-- **NEVER push. NEVER commit unless asked.** Finishing a task does not imply committing, and if you
-  are unsure whether to commit, ask.
-- **A rejected commit is the suite failing, not a git bug.** Fix the test first; `--no-verify` is an
-  escape hatch only when that is intentional.
-- **The pre-commit hook runs `npm test` and cancels the commit on failure.** It does not call
-  `lint` or `format`, because neither exists.
-- **Agent skills are never tracked** — `.agents/`, `skills-lock.json`, `opencode.json`,
-  `opencode.jsonc` and `.opencode/` are per-machine tooling that changes without the code changing.
-  Do not `git add -f` them to tidy a diff.
-- **`bloque/` is scratch and never tracked.** One plan per pending block, deleted when that block
-  closes, and the whole directory once the last one does; the commit message is where a finished
-  block's summary belongs.
-- **`git checkout -- .` destroys uncommitted work silently** — it restores from the index, and this
-  repo's normal state is uncommitted work. Revert explicit paths only, and hash what you did not
-  mean to touch. `git checkout -- <untracked>` does nothing at all: delete those by hand.
-
-### Memory
-
-- **Read `Memory.md` before proposing anything**, and update it after each task. Update this file
-  only when a rule actually changed.
-- **Keep `Memory.md` under 50 lines.** Summarise what is stale and delete it.
-- **Three homes, one rule each**: the non-negotiable rules in `docs/constitution.md`, the working
-  rules here, state and context in `Memory.md`. Never duplicate a rule across two — change it in
-  the one place it belongs, because the copy that drifts is the one people read.
-- If something comes up often enough, propose a new rule: here, or in the constitution when it is
-  genuinely non-negotiable.
-
-### MCP: chrome-devtools
-
-- **Never nest `mcpServers` inside `mcp`** — that is the VS Code / Claude Desktop format; `mcp` is a
-  direct map of servers, each with `type` and `command` as an **array**.
+- **Agent tooling is never tracked** — `.agents/`, `.claude/`, `.opencode/`, `skills-lock.json`,
+  `opencode.json` and `opencode.jsonc` are per-machine and change without the code changing. Do not
+  `git add -f` them to tidy a diff.
+- **Never nest `mcpServers` inside `mcp`** in `opencode.json` — that is the VS Code / Claude Desktop
+  format; `mcp` is a direct map of servers, each with `type` and `command` as an **array**.
 - **Never hardcode a browser path.** OpenCode does not expand `{env:VAR}` inside `mcp.*.command`, and
   an absolute path breaks on any other machine. Install Chrome instead of fighting the path.
-- Page ids in `list_pages` are 1-based.
+- **chrome-devtools: `resize_page` does not move `innerWidth`** — use `emulate({ viewport: "WxH" })`.
+  Page ids in `list_pages` are 1-based.
 - **Code Mode's runtime chokes on long template literals in `evaluate_script`** — store the helper
   on `window` in a short call, then read it back.
 - **Wait for a real gap between tool calls before reading a settled value** — a `wait_for` on text
