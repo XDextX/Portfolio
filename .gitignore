@@ -34,6 +34,10 @@ opencode.jsonc
 .agents/
 skills-lock.json
 
+# .claude/: junctions into .agents/ made by .agents/link.ps1, per machine like
+# .opencode/. Versioning it would ship links that point at an untracked folder.
+.claude/
+
 # Memory.md: estado de trabajo del agente, personal y efimero. No se versiona.
 Memory.md
 
