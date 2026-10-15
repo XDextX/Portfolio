@@ -6,6 +6,15 @@
 
 ## Decision log
 
+**RF-2 is replaced by spec 006's RF-3 (2026-10-15).** Spec 006 turned the bar
+into a framed health bar of one segment per level, so the pair RF-2 measured —
+a level's fill against the track — became a lit segment against an unlit one.
+The colours did not change and neither did the 3:1 threshold; the guard in
+`tests/visual-language.test.ts` now reads the unlit colour from `.bar-seg`.
+Spec 006 also lays rows and area cards as many per line as fit (its RF-9 and
+RF-10); this spec's RF-1 row geometry is unchanged and is what those minimums
+are derived from. Every other requirement here stands as written.
+
 **The monochrome mount made four icons unreadable, so every icon becomes a
 single-colour asset (owner, 2026-10-15).** The mask paints the logo's alpha in
 one colour, and a logo whose lettering is white over a coloured field has no
