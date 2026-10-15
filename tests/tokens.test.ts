@@ -278,3 +278,50 @@ describe('theme token coverage', () => {
         ).toEqual([]);
     });
 });
+
+describe('stylesheets the browser parses whole', () => {
+    it('no declaration is swallowed by stray text, and no comment is left half-open', () => {
+        // A comment that lost its `/*` leaves prose inside a rule; the parser
+        // folds it into the next declaration and drops both, silently. dark.css
+        // lost --accent-surface this way in e465841 and every source-reading
+        // guard stayed green: white on light gold, 1.66:1, on three buttons.
+        const offenders: string[] = [];
+        const OPEN = '/' + '*';
+        const CLOSE = '*' + '/';
+        const astro = SOURCE_FILES.filter((f) => f.endsWith('.astro'));
+        const sheets = [
+            ...CSS_FILES.map((file) => ({ file, css: fs.readFileSync(file, 'utf-8') })),
+            ...astro.flatMap((file) =>
+                [...fs.readFileSync(file, 'utf-8').matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((m) => ({
+                    file,
+                    css: m[1],
+                })),
+            ),
+        ];
+
+        for (const { file, css } of sheets) {
+            const where = path.relative(ROOT, file);
+            const bare = stripComments(css);
+            if (bare.includes(OPEN)) offenders.push(`${where}: a comment opens and never closes`);
+            for (const c of css.matchAll(/\/\*[\s\S]*?\*\//g)) {
+                if (c[0].slice(2).includes(OPEN)) {
+                    offenders.push(`${where}: a comment opens inside another, so the rules between are gone`);
+                }
+            }
+            if (bare.includes(CLOSE)) offenders.push(`${where}: a comment closes that never opened`);
+            for (const block of bare.matchAll(/\{([^{}]*)\}/g)) {
+                for (const part of block[1].split(';')) {
+                    const decl = part.trim();
+                    if (decl && !/^(--[\w-]+|-?[a-z][a-z-]*)\s*:/i.test(decl)) {
+                        offenders.push(`${where}: not a declaration — ${decl.replace(/\s+/g, ' ').slice(0, 70)}`);
+                    }
+                }
+            }
+        }
+
+        expect(
+            offenders,
+            `The browser drops these, with nothing in the console:\n  ` + offenders.join('\n  '),
+        ).toEqual([]);
+    });
+});

@@ -40,7 +40,7 @@
        4.5:1, with four places hardcoding `color: #fff` on it. Same hue as
        --accent-text, different lightness — white sits on this one, not that. */
 
-       The same value as light.css, for the same reason: this token is a fill
+    /* The same value as light.css, for the same reason: this token is a fill
        under hardcoded white, not a theme-relative choice. */
     --accent-surface: #7A5D10;
 
