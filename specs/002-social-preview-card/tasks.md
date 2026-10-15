@@ -1,6 +1,6 @@
 # Tasks 002 — Social preview card
 
-**Spec:** `specs/002-social-preview-card/spec.md` (**aprobada**, 8 RF). **Plan:**
+**Spec:** `specs/002-social-preview-card/spec.md` (**approved**, 8 RF). **Plan:**
 `plan.md` (§1–§7, decisions D1–D8). **Runner:** `npm test` = `vitest --run tests`
 (`package.json`). One file: `npx vitest --run tests/seo.test.ts`. Never bare
 `npx vitest --run` — without the `tests` filter it picks up `e2e/about.spec.ts` (`AGENTS.md`).

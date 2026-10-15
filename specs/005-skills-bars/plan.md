@@ -1,7 +1,7 @@
 # Plan 005 — Skills bars redesign
 
 Spec: `specs/005-skills-bars/spec.md` (7 RF, each with a check, no open
-questions), **approved** — the status line reads `aprobada`. RF-5 was replaced
+questions), **approved** — the status line reads `approved`. RF-5 was replaced
 by the owner on 2026-10-11 after the implementer showed the approved wording
 unsatisfiable; the spec's own Decision log carries the interval and the two
 measured luminances. This plan covers the replacement: monochrome by default,

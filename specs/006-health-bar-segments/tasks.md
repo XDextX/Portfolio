@@ -111,4 +111,4 @@
   real output.
 
   Depends on T-9 and the owner's approval of it. The verdict here decides
-  `implementada`.
+  `implemented`.

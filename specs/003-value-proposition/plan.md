@@ -1,13 +1,13 @@
 # Plan 003 — Value proposition section
 
-**Spec:** `specs/003-value-proposition/spec.md` (**aprobada**). The spec decides *what* and
+**Spec:** `specs/003-value-proposition/spec.md` (**approved**). The spec decides *what* and
 *why*; this file decides *how* and cites the spec rather than restating it.
-**Status:** aprobada
-**Aprobada:** 2026-10-10 · approved as written, with three corrections already applied before
+**Status:** approved
+**Approved:** 2026-10-10 · approved as written, with three corrections already applied before
 approval and verified by reading the code, not the previous draft: RF-5 carried by the e2e
 host-set check alone (D-7), the section title confirmed by the owner (D-8), and the
 `.section + .section` claim replaced by the measured `border-top` table — it **adds** a hairline
-and moves none. No requirement is changed here, added here or reduced here · 682 líneas,
+and moves none. No requirement is changed here, added here or reduced here · 682 lines,
 6 RF cubiertos · **cambio 2026-10-11:** la sección pasa a segunda tras el hero (D-14)
 y el wording se reemplaza — `es` del dueño, `en` traducción del planificador (D-15).
 RF-1, el orden en `Resume.astro`, la hairline (§5), D-3, D-4 y las sondas de RF-1 se

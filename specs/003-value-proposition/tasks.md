@@ -1,7 +1,7 @@
 # Tasks 003 — Value proposition section
 
-**Spec:** `specs/003-value-proposition/spec.md` (**aprobada**, 6 RF, cambio 2026-10-11).
-**Plan:** `specs/003-value-proposition/plan.md` (**aprobada**, D-1–D-15).
+**Spec:** `specs/003-value-proposition/spec.md` (**approved**, 6 RF, cambio 2026-10-11).
+**Plan:** `specs/003-value-proposition/plan.md` (**approved**, D-1–D-15).
 
 **Runners, read from `package.json`:** `npm test` = `vitest --run tests` (`:11`). One file:
 `npx vitest --run tests/about.test.ts`. Never bare `npx vitest --run` — without the `tests`

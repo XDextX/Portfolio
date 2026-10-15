@@ -1,14 +1,14 @@
 # Spec 006 — Skill bars as segmented health bars
 
-**Status:** implementada
+**Status:** implemented
 
-**Aprobada:** 2026-10-15 · owner interview (option A, 120ms stagger, square 2px frame, badge kept) and a QA pass whose 12 findings were all closed; four detail decisions accepted by the owner — 120ms per segment, 2px gap, segments start unlit, the fill percentage replaced by the level scale · 192 líneas, 8 RF
+**Approved:** 2026-10-15 · owner interview (option A, 120ms stagger, square 2px frame, badge kept) and a QA pass whose 12 findings were all closed; four detail decisions accepted by the owner — 120ms per segment, 2px gap, segments start unlit, the fill percentage replaced by the level scale · 192 lines, 8 RF
 
-**Aprobada:** 2026-10-15 · re-approval after one factual correction in the radius NFR: the view toggle uses the medium radius, so the pill stays with the level badge and the language chip, and the token comment is named stale · 195 líneas, 8 RF
+**Approved:** 2026-10-15 · re-approval after one factual correction in the radius NFR: the view toggle uses the medium radius, so the pill stays with the level badge and the language chip, and the token comment is named stale · 195 lines, 8 RF
 
-**Aprobada:** 2026-10-15 · change of requirement RF-9: two skill rows per line where a card fits two rows of the derived minimum (213.2px), one on a phone; the open question closed by the owner — a single-skill area keeps half width · 234 líneas, 9 RF
+**Approved:** 2026-10-15 · change of requirement RF-9: two skill rows per line where a card fits two rows of the derived minimum (213.2px), one on a phone; the open question closed by the owner — a single-skill area keeps half width · 234 lines, 9 RF
 
-**Aprobada:** 2026-10-15 · change of requirement RF-10: as many area cards per line as fit, the card minimum derived from one minimum row plus the card's padding and border; RF-9 reworded to "as many as fit"; cost accepted by the owner — one skill per line at every measured width · 266 líneas, 10 RF
+**Approved:** 2026-10-15 · change of requirement RF-10: as many area cards per line as fit, the card minimum derived from one minimum row plus the card's padding and border; RF-9 reworded to "as many as fit"; cost accepted by the owner — one skill per line at every measured width · 266 lines, 10 RF
 
 ## Decision log
 

@@ -1,7 +1,7 @@
 # Plan 004 — Per-page titles, descriptions and project JSON-LD
 
-**Spec:** `specs/004-per-page-seo/spec.md` (aprobada). Approved, and read together with it.
-**Status:** aprobada
+**Spec:** `specs/004-per-page-seo/spec.md` (approved). Approved, and read together with it.
+**Status:** approved
 
 **Q-1 to Q-4 were answered; Q-4 on 2026-10-09.** Their answers are in **D-6** (the wording,
 **provisional**), **D-4** (the technologies) and **D-9** (the `- Portfolio` suffix, reversed).

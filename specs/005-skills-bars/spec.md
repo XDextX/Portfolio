@@ -1,8 +1,8 @@
 # Spec 005 — Skills bars redesign
 
-**Status:** implementada
+**Status:** implemented
 
-**Aprobada:** 2026-10-15 · change of requirement: icons become single-colour assets (option B) with the brand colour in the data — RF-5's hover clause rewritten, RF-8 added with its guard, Devicon `plain` for the nine brands and Tabler `broadcast` for SSE, three open questions answered by the owner · 337 líneas, 8 RF
+**Approved:** 2026-10-15 · change of requirement: icons become single-colour assets (option B) with the brand colour in the data — RF-5's hover clause rewritten, RF-8 added with its guard, Devicon `plain` for the nine brands and Tabler `broadcast` for SSE, three open questions answered by the owner · 337 lines, 8 RF
 
 ## Decision log
 

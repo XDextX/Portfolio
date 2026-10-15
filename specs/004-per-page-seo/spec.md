@@ -1,6 +1,6 @@
 # Spec 004 — Per-page titles, descriptions and project JSON-LD
 
-**Status:** implementada
+**Status:** implemented
 
 ## Context and goal
 

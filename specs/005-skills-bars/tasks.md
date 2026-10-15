@@ -178,4 +178,4 @@
   the compact view unchanged; then every NFR and Edge case answered one by
   one with its evidence, and `npm test` plus `npm run build` with real output.
 
-  Depends on T-12. Last task; the verdict here decides `implementada`.
+  Depends on T-12. Last task; the verdict here decides `implemented`.

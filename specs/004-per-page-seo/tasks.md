@@ -1,6 +1,6 @@
 # Tasks 004 — Per-page titles, descriptions and project JSON-LD
 
-**Spec:** `specs/004-per-page-seo/spec.md` (aprobada). **Plan:** `specs/004-per-page-seo/plan.md` (aprobada).
+**Spec:** `specs/004-per-page-seo/spec.md` (approved). **Plan:** `specs/004-per-page-seo/plan.md` (approved).
 **Runner:** `npm test` = `vitest --run tests` (`package.json:11`). One file: `npx vitest --run tests/seo.test.ts`.
 Never bare `npx vitest --run` — without the `tests` filter it picks up `e2e/about.spec.ts` (AGENTS.md).
 

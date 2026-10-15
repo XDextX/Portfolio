@@ -1,6 +1,6 @@
 # Plan 002 — Social preview card
 
-Spec: `specs/002-social-preview-card/spec.md` (**aprobada**, 8 RF). This plan is the
+Spec: `specs/002-social-preview-card/spec.md` (**approved**, 8 RF). This plan is the
 *how*; it names files, signatures and the checks that settle each RF. It changes no
 requirement. Where the spec is silent and a choice had to be made, the choice is in
 section 6 with its discarded alternative.
