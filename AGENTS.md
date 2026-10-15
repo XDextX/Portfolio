@@ -280,6 +280,10 @@ call.
   component needs a per-theme override.
 - Prefer `!important` on a custom property in a media query when the base value is inline — it is
   the only way an author rule beats an inline declaration.
+- **Every outline is drawn in `--focus-ring`**, which each theme file defines as an alias — the
+  brand navy ring sat on the dark sheet at 1.00:1 (spec 016). A rule that removes an outline is
+  paired with a `:focus-visible` ring for the same selector. *Settled by
+  `tests/visual-language.test.ts`.*
 - **Run `tests/tokens.test.ts` before claiming a styling change is done.** It fails on a typo and on
   an invented token, so it is not vacuous.
 
