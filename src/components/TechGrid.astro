@@ -122,7 +122,7 @@ const areaKey = (category: string) => `skills.areas.${category.toLowerCase()}`;
 		localStorage.setItem(STORAGE_KEY, view);
 
 		if (view === 'bars') {
-			root.querySelectorAll('.bar-fill').forEach((el) => {
+			root.querySelectorAll('.bar-track').forEach((el) => {
 				el.classList.remove('animated');
 				void (el as HTMLElement).offsetWidth;
 				el.classList.add('animated');
@@ -167,9 +167,15 @@ const areaKey = (category: string) => `skills.areas.${category.toLowerCase()}`;
 		gap: var(--sp-3) var(--sp-6);
 	}
 
+	/* As many area cards per line as each still holds one minimum row: the
+	   .bars-list minimum below plus .card-frame's padding and border (spec 006
+	   RF-10). 3 per line at 1280px and 1024px, 2 at 800px, 1 at 390px. */
 	.bars-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr));
+		grid-template-columns: repeat(
+			auto-fit,
+			minmax(min(calc(22px + 0.6rem + 60px + 0.6rem + 7rem + 1.25rem + 1.25rem + 1px + 1px), 100%), 1fr)
+		);
 		gap: var(--sp-3) var(--sp-6);
 	}
 
@@ -193,13 +199,19 @@ const areaKey = (category: string) => `skills.areas.${category.toLowerCase()}`;
 		display: none;
 	}
 
+	/* Two rows share a line when both keep the row's own minimum: SkillBar's
+	   icon, gap, track floor, gap and badge maximum, summed (spec 006 RF-9).
+	   auto-fill keeps a lone row at half width, so every bar has one length. */
 	.bars-list {
 		list-style: none;
 		margin: 0;
 		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: var(--sp-2);
+		display: grid;
+		grid-template-columns: repeat(
+			auto-fill,
+			minmax(min(calc(22px + 0.6rem + 60px + 0.6rem + 7rem), 100%), 1fr)
+		);
+		gap: var(--sp-2) var(--sp-4);
 	}
 
 	.chip-list {

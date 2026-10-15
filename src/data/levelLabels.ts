@@ -1,4 +1,25 @@
-export type TechLevel = 'beginner' | 'intermediate' | 'advanced';
+/** The levels in order, lowest first: the one place that order is stated (spec 006). */
+export const LEVEL_SCALE = ['beginner', 'intermediate', 'advanced'] as const;
+
+export type TechLevel = (typeof LEVEL_SCALE)[number];
+
+/**
+ * A level's position in the scale, counting from one.
+ * @param level the level to place
+ * @returns 1 for the lowest level, the scale's length for the highest
+ */
+export function levelStep(level: TechLevel): number {
+	return LEVEL_SCALE.indexOf(level) + 1;
+}
+
+/**
+ * Which segments of a health bar a level lights: one per level, the leftmost lit.
+ * @param level the row's level
+ * @returns one flag per level in the scale, true for the first levelStep(level)
+ */
+export function segmentsFor(level: TechLevel): boolean[] {
+	return LEVEL_SCALE.map((_, i) => i < levelStep(level));
+}
 export type Locale = 'es' | 'en';
 
 export const levelLabelMap: Record<Locale, Record<TechLevel, string>> = {
@@ -19,17 +40,6 @@ export const levelVariantMap: Record<TechLevel, 'warning' | 'info' | 'success'> 
 	intermediate: 'info',
 	advanced: 'success',
 } as const;
-
-/**
- * How much of the track a level fills: one third, two thirds, all of it. A level
- * is one of three ordered values, not a measurement, so the fill is quantised.
- * It was 25 / 55 / 85, which claimed a measurable 55% that is not in the data.
- */
-export const LEVEL_FILL: Record<TechLevel, number> = {
-	advanced: 100,
-	intermediate: 67,
-	beginner: 33,
-};
 
 /**
  * Bar and dot colour: a graphic element, so not held to text contrast. This

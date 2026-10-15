@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
 import path from 'path';
-import { LEVEL_COLOR, LEVEL_TEXT_COLOR, type TechLevel } from '../src/data/levelLabels';
+import { LEVEL_COLOR, LEVEL_TEXT_COLOR, LEVEL_SCALE, type TechLevel } from '../src/data/levelLabels';
+import * as levelData from '../src/data/levelLabels';
 import { TECH } from '../src/data/tech';
 
 /**
@@ -33,7 +34,7 @@ function stripComments(src: string): string {
         .replace(/^\s*\/\/.*$/gm, ' ');
 }
 
-const SKILL_LEVELS: TechLevel[] = ['beginner', 'intermediate', 'advanced'];
+const SKILL_LEVELS: readonly TechLevel[] = LEVEL_SCALE;
 
 // WCAG luminance and contrast, hoisted beside the accent-surface check so
 // every guard below reuses them. Same math, one copy, still in this file.
@@ -361,9 +362,9 @@ describe('visual language', () => {
     });
 
     it('level fills clear the track in both themes', () => {
-        // RF-2: one fill colour per level, each at 3:1 or above against the
-        // track, in both themes. Fill bindings come from LEVEL_COLOR, the map
-        // the bar reads; T-4 owns the values, this guard only measures them.
+        // Spec 006 RF-3 (was 005 RF-2): each level's lit segment at 3:1 or above
+        // against an unlit segment, in both themes. Lit colours come from
+        // LEVEL_COLOR, the map the bar reads; the unlit one from the segment rule.
         const MIN_FILL = 3;
         const offenders: string[] = [];
         const skillBar = stripComments(
@@ -372,7 +373,7 @@ describe('visual language', () => {
         const shared = stripComments(
             fs.readFileSync(path.join(ROOT, 'public', 'styles', '00-tokens.css'), 'utf-8'),
         );
-        const trackRef = ruleBackground(skillBar, '.bar-track');
+        const trackRef = ruleBackground(skillBar, '.bar-seg');
 
         for (const theme of ['light.css', 'dark.css']) {
             const themeSrc = stripComments(
@@ -386,7 +387,7 @@ describe('visual language', () => {
                     offenders.push(`${theme}: the track surface fails to resolve (${detail(err)})`);
                 }
             } else {
-                offenders.push(`${theme}: no track surface found behind the fills`);
+                offenders.push(`${theme}: no unlit segment colour found on .bar-seg`);
             }
             if (!track) continue;
             for (const level of SKILL_LEVELS) {
@@ -586,5 +587,91 @@ describe('visual language', () => {
             `monochrome mask still shows it; and its source must be on record:\n  ` +
             offenders.join('\n  '),
         ).toEqual([]);
+    });
+
+    it('each level lights its leftmost segments, one segment per level', () => {
+        // Spec 006 RF-1/RF-2, as data: the scale is stated once, and what a
+        // level lights is derived from its position in it, not from a
+        // percentage. Read through the namespace so a missing export is named.
+        const { LEVEL_SCALE, levelStep, segmentsFor } = levelData as Record<string, unknown>;
+        const offenders: string[] = [];
+        if (!Array.isArray(LEVEL_SCALE)) offenders.push('the data exports no LEVEL_SCALE');
+        if (typeof levelStep !== 'function') offenders.push('the data exports no levelStep');
+        if (typeof segmentsFor !== 'function') offenders.push('the data exports no segmentsFor');
+
+        if (offenders.length === 0) {
+            const scale = LEVEL_SCALE as string[];
+            const step = levelStep as (level: string) => number;
+            const segments = segmentsFor as (level: string) => boolean[];
+            const labelled = Object.keys(levelData.levelLabelMap.en).sort();
+            if (JSON.stringify([...scale].sort()) !== JSON.stringify(labelled)) {
+                offenders.push(`the scale [${scale}] is not the set of labelled levels [${labelled}]`);
+            }
+            scale.forEach((level, i) => {
+                if (step(level) !== i + 1) offenders.push(`${level}: step ${step(level)}, expected ${i + 1}`);
+                const lit = segments(level);
+                if (lit.length !== scale.length) {
+                    offenders.push(`${level}: ${lit.length} segments for a ${scale.length}-level scale`);
+                }
+                const expected = scale.map((_, j) => j <= i);
+                if (JSON.stringify(lit) !== JSON.stringify(expected)) {
+                    offenders.push(`${level}: lights [${lit}], expected the leftmost ${i + 1} — [${expected}]`);
+                }
+            });
+        }
+
+        expect(
+            offenders,
+            `A bar is one segment per level, and a level lights the leftmost segments\n` +
+            `up to its own position in the scale — never a percentage:\n  ` +
+            offenders.join('\n  '),
+        ).toEqual([]);
+    });
+
+    it('the health bar frame clears the card in both themes', () => {
+        // Spec 006 RF-4: the frame is drawn in the colour the component binds
+        // on .bar-track's 2px border, at 3:1 or above against the area card.
+        const MIN_FRAME = 3;
+        const offenders: string[] = [];
+        const skillBar = stripComments(
+            fs.readFileSync(path.join(ROOT, 'src', 'components', 'SkillBar.astro'), 'utf-8'),
+        );
+        const shared = stripComments(
+            fs.readFileSync(path.join(ROOT, 'public', 'styles', '00-tokens.css'), 'utf-8'),
+        );
+        const track = skillBar.match(/\.bar-track\s*\{([^}]*)\}/)?.[1] ?? '';
+        const frameRef = track.match(/border\s*:\s*2px\s+solid\s+([^;]+);/i)?.[1]?.trim();
+        if (!frameRef) offenders.push('.bar-track draws no 2px solid frame');
+
+        for (const theme of frameRef ? ['light.css', 'dark.css'] : []) {
+            const themeSrc = stripComments(
+                fs.readFileSync(path.join(ROOT, 'public', 'styles', 'themes', theme), 'utf-8'),
+            );
+            try {
+                const frame = resolveColour(frameRef as string, themeSrc, shared);
+                const card = resolveColour('var(--card-background)', themeSrc, shared);
+                const ratio = contrast(frame, card);
+                if (ratio < MIN_FRAME) {
+                    offenders.push(`${theme}: frame ${frame} on card ${card} is ${ratio.toFixed(2)}:1`);
+                }
+            } catch (err) {
+                offenders.push(`${theme}: the frame or the card fails to resolve (${detail(err)})`);
+            }
+        }
+
+        expect(
+            offenders,
+            `The health bar's frame must outline the bar against the card at 3:1:\n  ` +
+            offenders.join('\n  '),
+        ).toEqual([]);
+    });
+
+    it('no fill percentage survives beside the level scale', () => {
+        // Spec 006 RF-2: what a level lights comes from its step in the scale;
+        // a per-level percentage beside it would be a second source for that.
+        expect(
+            'LEVEL_FILL' in levelData,
+            'levelLabels still exports LEVEL_FILL, a percentage for what segmentsFor states',
+        ).toBe(false);
     });
 });

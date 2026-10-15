@@ -1,5 +1,5 @@
 ---
-import { LEVEL_FILL, LEVEL_COLOR, LEVEL_TEXT_COLOR, levelLabelMap, type TechLevel } from '../data/levelLabels';
+import { LEVEL_SCALE, LEVEL_COLOR, LEVEL_TEXT_COLOR, levelLabelMap, segmentsFor, type TechLevel } from '../data/levelLabels';
 
 export interface Props {
 	name: string;
@@ -22,7 +22,6 @@ export interface Props {
  */
 
 const { name, icon, brand, level, locale = 'es' } = Astro.props;
-const fill      = LEVEL_FILL[level];
 const color     = LEVEL_COLOR[level];
 const textColor = LEVEL_TEXT_COLOR[level];
 const label     = levelLabelMap[locale][level];
@@ -32,8 +31,10 @@ const label     = levelLabelMap[locale][level];
 	<span class='bar-logo' aria-hidden='true' style={`--logo: url("${icon}")${brand ? `; --brand: ${brand}` : ''}`}></span>
 	<div class='bar-main'>
 		<span class='bar-name'>{name}</span>
-		<div class='bar-track' aria-hidden='true'>
-			<div class='bar-fill' style={`--pct:${fill}%;--clr:${color}`} />
+		<div class='bar-track' aria-hidden='true' style={`--clr:${color};--segments:${LEVEL_SCALE.length}`}>
+			{segmentsFor(level).map((lit, i) => (
+				<span class:list={['bar-seg', { lit }]} style={`--i:${i}`}></span>
+			))}
 		</div>
 	</div>
 	<span class='level-tag' style={`color:${textColor}`}>{label}</span>
@@ -95,42 +96,46 @@ const label     = levelLabelMap[locale][level];
 		min-width: 0;
 	}
 
+	/* A health bar (spec 006): one block per level, lit from the left. The
+	   frame's padding and the gap are one value, and the segment radius is
+	   derived from it, so the blocks come out square inside a 2px corner. */
 	.bar-track {
+		--bar-pad: 2px;
+		display: grid;
+		grid-template-columns: repeat(var(--segments), 1fr);
+		gap: var(--bar-pad);
+		padding: var(--bar-pad);
+		border: 2px solid var(--icon-mono);
+		border-radius: var(--radius-xs);
+	}
+
+	.bar-seg {
 		height: 8px;
 		background: var(--neutral-200);
-		border-radius: var(--radius-pill);
-		overflow: hidden;
+		border-radius: calc(var(--radius-xs) - var(--bar-pad));
 	}
 
-	/* The width is the truth and it lives in CSS. It used to be `width: 0`,
-	   with `.animated` (added by TechGrid's script) carrying the real value —
-	   so with JavaScript off the component rendered ten empty tracks and said
-	   nothing at all. The animation is now the enhancement rather than the
-	   value: no script, no motion, and the bar is still at its level. */
-	.bar-fill {
-		height: 100%;
-		width: var(--pct);
+	/* The lit colour is content, not the animation's end state: with scripts
+	   off .animated never arrives and the blocks are still at their level. */
+	.bar-seg.lit {
 		background: var(--clr);
-		border-radius: var(--radius-pill);
 	}
 
-	.bar-fill.animated {
-		animation: bar-grow 0.7s var(--ease) both;
+	.bar-track.animated .bar-seg.lit {
+		animation: seg-light 120ms var(--ease) calc(var(--i) * 120ms) both;
 	}
 
-	@keyframes bar-grow {
+	@keyframes seg-light {
 		from {
-			width: 0;
+			background: var(--neutral-200);
 		}
 		to {
-			width: var(--pct);
+			background: var(--clr);
 		}
 	}
 
-	/* A 0.7s width animation is exactly the kind of motion reduced-motion is
-	   asking not to see. The bar is still correct, it just arrives. */
 	@media (prefers-reduced-motion: reduce) {
-		.bar-fill.animated {
+		.bar-track.animated .bar-seg.lit {
 			animation: none;
 		}
 	}
