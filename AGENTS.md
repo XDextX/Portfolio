@@ -309,9 +309,11 @@ call.
 - **The dark theme is one hue** — sheet, cards one step up, neutral scale in navy steps. Two
   surfaces in different hues read as two systems fighting rather than steps of one. A navy page is
   deliberate and stays; near-black with one acid accent is not the default to reach for.
-- **`--accent-surface` stays dark in both themes** — components hardcode `color: #fff` on the
-  primary button, so a light gold fill puts white on cream at 1.66:1. Revisit it only when the
-  hardcoded `#fff` goes. *Settled by `tests/visual-language.test.ts`.*
+- **The ink on the accent surface is `--accent-surface-text`, declared in each theme file** —
+  never a hardcoded `#fff`: six of them put white on the light-gold dark fill at 1.66:1. The fill
+  is a theme choice (dark gold in light, the brand gold in dark); the ink clears 4.5:1 on it at
+  rest and hovered (spec 007). *Settled by `tests/visual-language.test.ts` and
+  `e2e/primary-button.spec.ts`.*
 - **IBM Plex Sans, variable 100–700, for everything; IBM Plex Mono, 400/600, for code and small data
   only.** A bare system stack is not an acceptable simplification: every visitor sees whatever their
   OS ships and the site has no voice of its own.
