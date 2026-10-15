@@ -93,6 +93,10 @@
 
   Show in both themes, wait for approval. T-7 may run alongside this one.
 
+  **Superseded in part on 2026-10-15** by T-11 and T-12: the brand `<img>` and
+  its opacity swap go; the pseudo-element mask, the 22px wrapper and the hover
+  gate stay.
+
 - [x] **T-7 — Verify the level-less default without touching data**
   Covers: RF-6
   Files: `tests/i18n.test.ts` (or the guard file the plan names)
@@ -118,4 +122,60 @@
   `resize_page`. Then `npm test` plus `npm run build` are green with real
   output shown.
 
-  Depends on T-1–T-7. Last task; nothing after it.
+  Depends on T-1–T-7. Last task of the 2026-10-11 round.
+
+## Change of 2026-10-15 — single-colour icons (RF-5 hover, RF-8)
+
+- [x] **T-9 — Add the RF-8 guard, red first**
+  Covers: RF-8
+  Files: `tests/visual-language.test.ts`
+  Done when: `npm test` shows the new guard red on today's data (no entry
+  has an `icon`), and red again on each injected violation the plan lists
+  for RF-8 once T-10 is in; it reuses `luminance` rather than a copy.
+
+  Guard before data, so the data is written to pass it and not the reverse.
+
+- [x] **T-10 — Record each tech's icon and brand colour, with the notice**
+  Covers: RF-8
+  Files: `src/data/tech.ts`, the local type in `src/components/TechGrid.astro`,
+  `public/tech/mono/NOTICE.md`
+  Done when: the T-9 guard passes unmodified; every entry has an `icon` under
+  `/tech/mono/`, every brand carries its `#RRGGBB` and SSE none; `NOTICE.md`
+  names all ten files with source, version and licence file; `npm test` green.
+
+  Data only: nothing renders differently yet, because no component reads
+  `icon` or `brand`. Depends on T-9.
+
+- [x] **T-11 — Rewrite the RF-5 and RF-7 guards for the `<img>`-less row, red first**
+  Covers: RF-5, RF-7
+  Files: `tests/markup.test.ts`, `tests/visual-language.test.ts`
+  Done when: the guards assert the mount in the plan's 2026-10-15 section and
+  are red against today's `SkillBar.astro` (it still renders the `<img>` and
+  never reads `--brand`); the contrast guard follows `currentColor` to the
+  wrapper's `color`; the hover gate and "paints nothing" checks are kept, not
+  loosened; the background-only-hover guard is untouched.
+
+  Reads component source only, so it does not need T-10's data; it goes after
+  T-10 so only one set of guards is red at a time.
+
+- [x] **T-12 — Draw the row from the single-colour asset, brand colour on hover**
+  Covers: RF-5, RF-7, RF-8
+  Files: `src/components/SkillBar.astro`, `src/components/TechGrid.astro`
+  Done when: the T-11 guards pass unmodified, `npm test` and `npm run build`
+  green, every RF-5/RF-7/RF-8 probe the plan lists shown red then reverted by
+  explicit path; `--logo` and `--brand` confirmed in `document.styleSheets`
+  and on the element in the dev server; the row shown in both themes.
+
+  Visual-work rule: show this component in both themes and **wait for
+  approval** before T-13. Depends on T-11.
+
+- [x] **T-13 — Re-validate the whole spec, NFRs and Edge cases included**
+  Covers: RF-1, RF-2, RF-3, RF-4, RF-5, RF-6, RF-7, RF-8
+  Files: none (verification only)
+  Done when: records at 1280px and 390px × light and dark, and both locales
+  at 390px: the RF-1–RF-7 measurements of T-8 repeated; the four former blobs
+  showing interior holes in the drawn mask; hover on a brand row and on SSE;
+  the compact view unchanged; then every NFR and Edge case answered one by
+  one with its evidence, and `npm test` plus `npm run build` with real output.
+
+  Depends on T-12. Last task; the verdict here decides `implementada`.

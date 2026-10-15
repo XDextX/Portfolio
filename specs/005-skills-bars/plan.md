@@ -8,6 +8,13 @@ measured luminances. This plan covers the replacement: monochrome by default,
 brand colour on the row's hover. T-1 through T-5 and T-7 do not touch RF-5
 and none of their checks change.
 
+**Change of 2026-10-15 (spec re-approved, 8 RF).** The mask made four icons
+unreadable, so RF-5's hover now paints the *same* single-colour asset in one
+brand colour from the data, and RF-8 requires every icon to be such an asset.
+The sections below mark what this changes; T-9 to T-13 implement it. Where the
+2026-10-11 text and the change disagree, the change wins: the brand `<img>` and
+its opacity swap are retired.
+
 Runner: `npm test` (`vitest --run tests`, read from `package.json`).
 Build: `npm run build`. Rendered verification against a running dev
 server (`astro dev`), at viewport widths 1280px and 390px, in light and
@@ -31,7 +38,15 @@ in dark — a green suite never settles what the eye sees.
   → Task T-7 (data check plus record; no data change).
 - RF-7 (broken icon keeps the 22px slot, the name, the bar and the level;
   nothing is painted behind it) → Task T-6 (markup guard) and the T-8
-  injected-URL record.
+  injected-URL record; the guard is rewritten for the `<img>`-less row in T-11.
+- RF-5, hover clause as changed 2026-10-15 (same asset, one brand colour read
+  from the row's data entry) → T-11 (guards rewritten, red first) and T-12
+  (row and grid).
+- RF-8 (every icon a single-colour asset; brand colour as one 6-digit hex;
+  the notice names every icon's source) → T-9 (guard, red first) and T-10
+  (data, assets already in `public/tech/mono/`, notice).
+- The NFRs and Edge cases, which the 2026-10-15 validation showed a record of
+  RFs alone does not cover → T-13 walks them one by one.
 
 Out of RF-5, deliberately: the contrast of the brand colours on hover. The
 spec's Edge cases record it as an accepted cost (nine of ten dark rows fall
@@ -42,7 +57,9 @@ Not covered on purpose (spec Out of scope): the compact/chips view, the
 view toggle (persistence, default, animation), level values and fills as
 data, the area set. Phase 2 owns the compact view. Note the compact view
 renders the same logos through `SkillChip.astro` and is untouched by T-6:
-only the bars-view row changes.
+only the bars-view row changes. After the change it still reads each entry's
+`logo` (the colour files in `public/tech/`); only the bars view reads the new
+`icon`, so nothing the visitor sees in the compact view moves.
 
 ## 2. Files
 
@@ -90,6 +107,28 @@ only the bars-view row changes.
 - Compact-view components and the toggle — untouched. Responsibility:
   none; phase 2.
 
+Added by the 2026-10-15 change:
+
+- `src/data/tech.ts` — each entry gains `icon` (root-absolute path to its
+  single-colour asset) and an optional `brand` (one `#RRGGBB`), beside the
+  `logo` the compact view keeps reading. Responsibility: the one place a
+  tech's icon and brand colour are stated; SSE carries no `brand`.
+- `public/tech/mono/` — the nine Devicon `plain` assets, Tabler `broadcast`,
+  the two MIT licence files (already downloaded and inspected), and a new
+  `NOTICE.md`. Responsibility: the icons the bars view draws, and the one
+  file that says where each came from and under which licence.
+- `tests/visual-language.test.ts` — gains the RF-8 guard beside the existing
+  `luminance`/`contrast` helpers, which it reuses; and its RF-5 contrast guard
+  follows `currentColor` to the wrapper's `color` (below), widening what it
+  reads rather than what it accepts.
+- `tests/markup.test.ts` — the RF-5 structural guard and the RF-7 guard are
+  rewritten for a row with no `<img>`.
+- `src/components/SkillBar.astro` — takes `icon` and `brand` instead of
+  `logo`; drops the `<img>`. Responsibility: monochrome at rest, the row's own
+  brand colour on hover, nothing else.
+- `src/components/TechGrid.astro` — passes `icon` and `brand` to the bars
+  view. The compact view's call is untouched.
+
 ## 3. Pure logic
 
 Contrast helpers live in the tests, beside the existing accent-surface
@@ -108,6 +147,10 @@ math, and take every input as a parameter — no clock, no network, no DOM:
   into the locale key suffix (e.g. `Frontend` → `skills.areas.frontend`).
   Pure string transform, tested through `i18n.test.ts` resolution rather
   than its source text.
+- `svgPaints(svg: string): string[]` (RF-8, in the test) — every distinct
+  value of `fill`/`stroke`, as attribute or inside `style`, lower-cased,
+  `none` dropped; a file with no paint at all draws in the default black and
+  returns `[]`. Pure: takes the file text, reads no disk.
 
 ## 4. Algorithm
 
@@ -231,6 +274,65 @@ The guard asserts the decorative-empty-alt pattern and the reserved slot, and
 the browser record shows the injected broken URL leaving name, bar and level
 untouched.
 
+### Mount after the 2026-10-15 change (supersedes the RF-5 mount above)
+
+```
+<span class='bar-logo' aria-hidden='true'
+      style={`--logo: url("${icon}")` + (brand ? `; --brand: ${brand}` : '')} />
+
+.bar-logo { position: relative; width: 22px; height: 22px; color: var(--icon-mono); }
+.bar-logo::before {
+	content: ''; position: absolute; inset: 0;
+	background-color: currentColor;                 /* the wrapper's colour */
+	mask: var(--logo) center / contain no-repeat;
+	-webkit-mask: var(--logo) center / contain no-repeat;
+}
+@media (hover: hover) {
+	.bar-row:hover .bar-logo { color: var(--brand, var(--icon-mono)); }
+}
+```
+
+- One asset, one element, no `<img>`: the shape comes from the asset's alpha
+  and the colour from `color`, so hover changes one property on one element.
+- No `brand` (SSE): `--brand` is never set, the fallback is the at-rest token,
+  and the hover changes nothing — the spec's edge case. The fallback is a
+  token, not a hex, so it follows the theme.
+- The hover sets `color`, not a background. That is what keeps the existing
+  guard "no hover rule sets a background and nothing else" green without
+  touching it; a hover writing `background-color` on the pseudo would be red
+  there, and correctly so by the letter of the house rule.
+- `--logo` and `--brand` are set inline, which `tests/tokens.test.ts` already
+  counts as defined (it collects `--x:` from component source).
+- A broken `icon` URL: the mask resolves to nothing and paints nothing, the
+  wrapper keeps its 22px box (measured 2026-10-11 for the same mask).
+
+RF-8 guard procedure, over `TECH` imported from `src/data/tech.ts` (a data
+check; entries come from the data, never from a list in the test):
+
+1. `icon` is root-absolute and the file exists under `public/`.
+2. The file contains no `gradient` (linear or radial).
+3. `svgPaints(file)` has at most one entry; any entry that is a hex has
+   `luminance` ≤ 0.85. `currentColor` counts as the one paint.
+4. `brand`, when present, matches `^#[0-9a-fA-F]{6}$`.
+5. `public/tech/mono/NOTICE.md` names the file of every `icon`, and every
+   licence file it cites exists.
+
+RF-5 guards after the change:
+
+- Contrast (visual-language): read the pseudo's `background-color`; if it is
+  `currentColor`, read the `color` of the at-rest `.bar-logo` rule instead,
+  then resolve and measure against `--card-background` as before. A pseudo
+  that binds a literal or a second token is still measured as written.
+- Structural (markup): at rest, the pseudo paints `currentColor` through a
+  mask bound to `var(--logo)`, and nothing at rest reads `--brand`; the only
+  rule that reads `--brand` is a `.bar-row:hover` rule inside
+  `@media (hover: hover)` that sets `color` on the row's own `.bar-logo`;
+  `--logo` and `--brand` are mounted inline from the row's own `icon` and
+  `brand` props. Kept as they are: no `:focus`, no `tabindex`, no `<script>`,
+  no hover that paints a border/background/outline or lifts, the hover gate.
+- RF-7 (markup): the row renders no `<img>`; the slot element is
+  `aria-hidden`, declares 22px by 22px, and paints no surface of its own.
+
 ## 5. Interface
 
 Bars view, both themes, both locales, 1280px and 390px viewports:
@@ -262,6 +364,16 @@ Bars view, both themes, both locales, 1280px and 390px viewports:
   list, exactly as the group does now.
 - Visual-work rule applies per task: one component shown in both themes,
   approval before the next, one component per commit.
+
+After the 2026-10-15 change:
+
+- At rest, every icon is its single-colour shape in `--icon-mono`, and the
+  four rows that were blobs show their lettering: TypeScript's "TS", .NET's
+  letters, PostgreSQL's elephant, SSE's broadcast mark.
+- Row hovered on a pointer that hovers: the same shape, in that tech's brand
+  colour; SSE's does not change. Touch: never the brand colour.
+- Broken icon: the 22px box stays empty; nothing else moves.
+- Compact view: the colour logos, exactly as today.
 
 ## 6. Decisions
 
@@ -338,6 +450,35 @@ Bars view, both themes, both locales, 1280px and 390px viewports:
   component reads in both locales, and an existing beginner row proves the
   label and the row shape. Discarded alternative: a temporary data entry.
 
+Decisions of the 2026-10-15 change:
+
+- Colour through `currentColor` and a hover on `color`, not a hover on the
+  pseudo's `background-color`: the latter is a background-only hover, which
+  the house rule and its guard forbid. Discarded alternatives: allowlisting
+  this rule in that guard (relaxing a guard that is right); inline SVG with
+  `fill: currentColor`, which needs the file contents read at build time for
+  each row and buys nothing the mask does not.
+- The `<img>` goes. With one asset per tech there is nothing for a second
+  layer to reveal, and an element kept only to be hidden is the kind of
+  attribute-nobody-reads the house rules forbid. Discarded alternative:
+  keeping the `<img>` at `opacity: 0` for RF-7's "decorative-alt" wording.
+  **Owner to confirm:** RF-7's check names "the decorative-alt pattern"; with
+  no `<img>`, the guard reads it as "the icon exposes no accessible name"
+  (`aria-hidden` slot, no `<img>`). If that reading is not accepted, the spec
+  check is reworded through a change, not narrowed here in silence.
+- `icon` and `brand` beside `logo`, not replacing it: the compact view is out
+  of scope and still draws `logo`. Phase 2 decides whether `logo` survives.
+  Discarded alternative: pointing `logo` at the new assets, which changes the
+  compact view the spec says this phase does not touch.
+- Brand colours: the Simple Icons data for the seven brands it lists (a
+  colour is a fact, not a work), `#E76F00` for Java and `#0078D4` for Azure
+  from their current files — the values the spec's accepted cost measured.
+  Discarded alternative: the fills Devicon ships, which are not the brands'
+  published colours (TypeScript `#007acc` against `#3178C6`).
+- One `NOTICE.md` beside the assets, naming each file and its source, citing
+  the two licence files. Discarded alternative: a source field in `tech.ts`,
+  which mixes licensing into content data.
+
 ## 7. Test strategy
 
 On the project runner, `npm test` (`vitest --run tests`); no new
@@ -370,6 +511,18 @@ dependency, no browser in the suite (`npm test` never opens one):
   (RF-7). The hover record is taken with the pointer actually over the row,
   after the state settles; `resize_page` does not move `innerWidth`, so the
   viewport is set with `emulate({ viewport: "1280x900" })`.
+- Probes for the 2026-10-15 change, each reverted by explicit path: RF-8 —
+  point the TypeScript entry's `icon` back at `/tech/typescript.svg` (two
+  paints, one white), add a `<linearGradient>` to a copy of an asset, set a
+  `brand` to `#12345`, drop one file from `NOTICE.md`; RF-5 — bind `--brand`
+  in an at-rest rule, move the hover out of `@media (hover: hover)`, set the
+  hover through `background-color` on the pseudo; RF-7 — put an `<img>` with
+  a non-empty `alt` back in the row.
+- Rendered record for the change: the four former blobs at 390px in both
+  themes, measured as interior holes in the drawn mask (the method of the
+  spec's Decision log), the hover on a brand row and on SSE, and the compact
+  view unchanged against today. The NFRs and Edge cases are walked one by one,
+  not inferred from the RFs.
 - Regression: full `npm test` plus `tests/tokens.test.ts` attention on
   every styling change (undefined `var()`, single-theme tokens, duplicate
   literals), and `npm run build` green for Done when.

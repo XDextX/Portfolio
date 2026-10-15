@@ -1,8 +1,38 @@
 # Spec 005 — Skills bars redesign
 
-**Status:** aprobada
+**Status:** implementada
+
+**Aprobada:** 2026-10-15 · change of requirement: icons become single-colour assets (option B) with the brand colour in the data — RF-5's hover clause rewritten, RF-8 added with its guard, Devicon `plain` for the nine brands and Tabler `broadcast` for SSE, three open questions answered by the owner · 337 líneas, 8 RF
 
 ## Decision log
+
+**The monochrome mount made four icons unreadable, so every icon becomes a
+single-colour asset (owner, 2026-10-15).** The mask paints the logo's alpha in
+one colour, and a logo whose lettering is white over a coloured field has no
+hole where the lettering is: the mask fills it. Measured at 88px over the
+shipped files — share of the drawn area that is near-white, i.e. lost to the
+mask: TypeScript **17%** (a 99%-coverage square), PostgreSQL **19%**, the SSE
+row's NGINX hexagon **22%**, .NET **6%** (a 79%-coverage disc). The other six
+read: five measure **0%**, and Astro's **83%** is the white mark itself, not
+lettering over a field. **Replacement (option B):** each tech carries one
+single-colour icon, lettering cut out as holes, and one brand colour in its
+data entry; the hover paints that same shape in that colour. Rejected: a
+monochrome file plus the original colour logo per tech (option A), because it
+is two sources for one logo that drift apart.
+
+**Accepted cost (owner, 2026-10-15):** the hover shows one brand colour, so the
+gradient logos (Angular, Astro, Azure) lose their gradients and every
+multi-colour logo is reduced to its single published brand colour.
+
+**Sources (owner, 2026-10-15): one standard for every brand, a generic icon
+for SSE, Angular not from a CC-BY source.** Of the three sources the owner
+named, none covers the nine brands in one style: Tabler has no .NET, Java or
+PostgreSQL; svgl ships colour logos; SVG Repo licenses icon by icon. Devicon's
+`plain` set covers all nine, MIT, each one fill and no gradient, lettering cut
+out — TypeScript **82%** coverage with **14%** interior holes, PostgreSQL
+**47%** with **17%**, against the shipped TypeScript's 99% and 0%. SSE takes
+Tabler's `broadcast` (MIT): a generic mark has no brand colour, so its hover
+changes nothing. Both MIT notices ship in the repo.
 
 **RF-5 as approved on 2026-10-11 was unsatisfiable, and was replaced the same
 day.** The approved wording asked for one flat opaque backdrop clearing 3:1
@@ -86,7 +116,7 @@ apart, and some tech icons dissolve into the background. A skill row should
 read at a glance as one unit — icon on the left, text over the bar, level on
 the right — inside an area card with its own border, in both themes. The icon
 reads in one colour of its own by default, so a row is legible before anything
-is hovered; the brand logo is what the pointer is rewarded with.
+is hovered; the brand colour is what the pointer is rewarded with.
 
 ## Definitions
 
@@ -98,11 +128,15 @@ is hovered; the brand logo is what the pointer is rewarded with.
   which areas exist; this spec names none.
 - **Level:** one of three ordered values (`beginner`, `intermediate`,
   `advanced`) with its word label in the active locale.
-- **Monochrome icon:** the tech icon as the row presents it by default — one
+- **Icon asset:** the one file a tech's icon is drawn from. Single-colour: one
+  shape, one fill, no gradient, and any lettering cut out as holes rather than
+  painted in a second colour (RF-8).
+- **Monochrome icon:** the icon asset as the row presents it by default — one
   single colour, the same one for every icon, chosen per theme. It is
   decorative: the tech name beside it carries the meaning.
-- **Brand colour:** the colours the logo itself ships. They are presented only
-  while the pointer is over the row (RF-5).
+- **Brand colour:** the one colour the tech's data entry records, taken from
+  the colour the brand publishes. It is presented only while the pointer is
+  over the row (RF-5), painted on the same icon asset.
 - **Level badge:** the level label's own pill surface, opaque and defined per
   theme (owner decision 2026-10-11).
 
@@ -162,9 +196,10 @@ locale.
   keys in both locales; browser record in both themes.
 - **RF-5: WHILE either theme is active, THE SYSTEM presents every bars-view tech
   icon as a monochrome icon at 3:1 or above against the area card. IF the
-  pointer is over that skill's row, THEN THE SYSTEM presents that row's icon in
-  its brand colours instead.**
-  One requirement, because the second clause is only meaningful as a deviation
+  pointer is over that skill's row, THEN THE SYSTEM presents the same icon asset
+  in that tech's brand colour instead.**
+  (Hover clause changed 2026-10-15 from "its brand colours": one colour, read
+  from the data, on the same shape — Decision log.) One requirement, because the second clause is only meaningful as a deviation
   from the first: neither half says anything on its own. The icon sits directly
   on the card — there is no surface painted behind it, and none is needed once
   the icon carries one colour. The default is monochrome on every device (owner
@@ -177,7 +212,8 @@ locale.
   and no icon is enumerated. (2) A structural guard over the rendered row,
   asserting that the default mount is the monochrome presentation and that the
   brand-colour presentation is bound to the row's hover state and never to the
-  default. Plus the browser record of both states at 1280px and 390px in both
+  default, and that its colour comes from the row's own data entry, never a
+  literal in the component. Plus the browser record of both states at 1280px and 390px in both
   themes. The hover half is structural on purpose: no contrast number applies to
   it (Edge cases).
 - **RF-6: THE SYSTEM renders a tech entry with no level as the existing
@@ -200,6 +236,21 @@ locale.
   — **Check:** guard in `tests/markup.test.ts` asserting the reserved slot and
   the decorative-alt pattern; browser record with an injected broken icon URL at
   390px and desktop.
+- **RF-8: THE SYSTEM draws every bars-view tech icon from a single-colour icon
+  asset.**
+  (Added 2026-10-15, Decision log.) One paint, no gradient, no second colour:
+  lettering is a hole in the shape, so the monochrome icon of RF-5 still shows
+  it. Each brand's data entry carries its brand colour as one value; a generic
+  icon carries none.
+  — **Check:** a guard over the tech data (entries read from the data, never a
+  literal list): each entry's icon asset exists, declares no gradient, and
+  paints at most one distinct colour across its fills and strokes, none of
+  relative luminance above 0.85; each brand colour present parses as a 6-digit
+  hex; and the third-party notice names the source of every icon asset.
+  Shown red first by pointing one entry back at the current TypeScript logo
+  (two fills, white lettering). Plus the browser record of the monochrome view
+  at 390px in both themes, where the four rows the Decision log measured show
+  their lettering.
 
 ## Non-functional requirements
 
@@ -237,19 +288,24 @@ locale.
   differ in length in every language).
 - A tech entry with no level renders the RF-6 default (RF-6).
 - A broken icon URL renders the RF-7 state (RF-7).
-- A logo that ships two official variants, one per background, presents on hover
-  the variant its brand publishes for the active background. Both are brand
-  colours; neither is a second palette.
-- **Accepted cost (owner, 2026-10-11):** the brand colour on hover carries no
-  contrast requirement, and on several rows it is less visible than the
-  monochrome it replaces. On the dark card `#2B4372` (luminance 0.0574) nine of
-  the ten rows fall below 3:1 in their brand colours — from .NET's `#5c2d91`
-  circle at **1.04:1** and Azure's `#114a8b` at **1.11:1** up to Docker at
-  **2.80:1**; only MongoDB clears it, at **6.14:1**. On the light card
-  `#FFFFFF`, MongoDB's `#01EC64` measures **1.59:1** and .NET's white glyphs
-  **1.00:1**. Where a logo ships several tones, the worst one is the one
-  counted. Accepted rather than answered with a second surface behind the logo:
-  that surface is the machinery the replaced RF existed to remove.
+- A logo that ships two official variants, one per background, or a gradient,
+  presents on hover the one brand colour its data entry records (Decision log,
+  2026-10-15). The Astro variant pair stops mattering: there is one shape.
+- A tech with no logo of its own (SSE) shows a generic single-colour icon and
+  no brand colour: its hover changes nothing, which RF-5's "instead" allows
+  because there is nothing to present instead.
+- The generic icon is drawn as a stroke and the nine brand icons as fills: one
+  paint each, but two drawing styles in the same card.
+- **Accepted cost (owner, 2026-10-11; numbers re-measured 2026-10-15 for the
+  single brand colours):** the brand colour on hover carries no contrast
+  requirement, and on several rows it is less visible than the monochrome it
+  replaces. On the dark card `#2B4372` six of the nine brand rows fall below
+  3:1 — from .NET `#512BD4` at **1.23:1** and Angular `#0F0F11` at **1.96:1** up
+  to Astro `#BC52EE` at **2.60:1**, with Azure `#0078D4` at **2.16:1**; MongoDB
+  `#47A248` (**3.04:1**), Docker `#2496ED` (**3.10:1**) and Java `#E76F00`
+  (**3.11:1**) clear it. On the light card `#FFFFFF` all nine clear 3:1, the
+  lowest Java and Docker at **3.15:1**. Accepted rather than answered with a second surface behind
+  the icon: that surface is the machinery the replaced RF existed to remove.
 
 ## Out of scope
 
@@ -257,7 +313,11 @@ locale.
   visitor sees there.
 - Toggle behaviour (persistence, default view, animation): it stays as is.
 - Level values, fills and the set of areas: no data change, only presentation
-  (RF-6 documents the existing default).
+  (RF-6 documents the existing default). The one data change is RF-8's: each
+  tech's icon asset and brand colour.
+- The compact view's icons: it keeps showing the current colour logos until
+  phase 2, so those files stay in the repo for it and nothing in this spec
+  reads them.
 
 ## Done when
 
@@ -265,10 +325,13 @@ locale.
 - Each new or widened guard has been shown to fail on an injected violation
   and then to pass reverted.
 - The bars view has been seen in a browser in light and in dark, at viewport
-  widths 1280px and 390px, with the RF-1 through RF-7 records filed.
+  widths 1280px and 390px, with the RF-1 through RF-8 records filed.
 
 ## Open questions
 
-None. Owner decisions of 2026-10-11 (Q1–Q4) are recorded in RF-1, RF-2, RF-3
-and RF-5; the replacement of RF-5 and its accepted cost, the 2026-10-11 border
-decision and the correction of the mount are in the Decision log.
+Owner decisions of 2026-10-11 (Q1–Q4) are recorded in RF-1, RF-2, RF-3 and
+RF-5; the replacement of RF-5 and its accepted cost, the 2026-10-11 border
+decision and the correction of the mount are in the Decision log. The three
+questions the 2026-10-15 change opened — Java and Azure, the SSE icon, the
+Angular licence — were answered by the owner the same day and are recorded in
+the Decision log under Sources.
