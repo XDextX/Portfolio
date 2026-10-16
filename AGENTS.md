@@ -337,6 +337,10 @@ call.
 - **Let the content choose the silhouette**: expose the shape as a prop, and do not frame a shape
   with a second outline that says nothing — a ring in `--color-border` is the same token every card
   border uses.
+- **UI icons live in `public/icons/ui/`, apart from brand logos,** with their `NOTICE.md` and the
+  Tabler licence, and are painted as a CSS mask in `currentColor` so they follow the text and the
+  theme — an `<img>` cannot inherit it, and a Tabler stroke drew black on navy (2.15:1). One glyph,
+  one meaning across the page (spec 008). *Settled by `tests/visual-language.test.ts`* (ui icons).
 - **Two things in a row are not peers.** A disclosure goes under what it discloses, left-aligned;
   opposite ends read as two unrelated items in opposite corners, and the control that governs the
   grid sits as far from it as the layout allows.
