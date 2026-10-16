@@ -36,8 +36,6 @@ try {
 
 const sortedRepos = sortRepos(repos);
 
-const projectsTitle = t('projects.title');
-
 // ContactSection gets no locale prop: its strings come from t(), which reads the
 // module-level locale that applyLocale() already set for this request.
 ---
@@ -48,7 +46,6 @@ const projectsTitle = t('projects.title');
 <ExperienceSection locale={locale} />
 <ProjectsSection
 	repos={sortedRepos}
-	title={projectsTitle}
 	locale={locale}
 	preview={4}
 	error={fetchError}

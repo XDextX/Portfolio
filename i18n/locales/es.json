@@ -29,7 +29,7 @@
 		}
 	},
 	"projects": {
-		"title": "Proyectos",
+		"title": "*Proyectos*",
 		"topicLabel": "Topic",
 		"description": {
 			"default": "Listado de proyectos destacados de GitHub.",
@@ -44,7 +44,7 @@
 		"viewAll": "Ver todos"
 	},
 	"skills": {
-		"title": "Habilidades",
+		"title": "*Habilidades*",
 		"views": {
 			"group": "Vista de habilidades",
 			"bars": "Barras de progreso",
@@ -65,10 +65,10 @@
 		"location": "Ubicación"
 	},
 	"experience": {
-		"title": "Experiencia laboral"
+		"title": "*Experiencia* laboral"
 	},
 	"contact": {
-		"title": "Contacto",
+		"title": "*Contacto*",
 		"tagline": "Abierto a nuevas oportunidades. No dudes en escribirme.",
 		"actions": {
 			"copyAria": "Copiar {{label}}",
@@ -96,6 +96,6 @@
 		"cta": "Ir al inicio"
 	},
 	"valueProposition": {
-		"title": "Lo que construyo"
+		"title": "Lo que *construyo*"
 	}
 }

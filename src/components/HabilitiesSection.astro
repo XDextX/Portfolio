@@ -1,18 +1,18 @@
 ---
 import { TECH } from '../data/tech';
 import TechGrid from './TechGrid.astro';
-import { t } from '@i18n/index';
+import SectionTitle from './SectionTitle.astro';
+import { SECTION_TITLES } from '../data/sectionTitles';
 
 export interface Props {
 	locale?: 'es' | 'en';
 }
 
 const { locale = 'es' } = Astro.props;
-const titleId = 'skills-title';
-const title = t('skills.title');
+const titleId = SECTION_TITLES.skills.id;
 ---
 
 <section class='section' id='skills' aria-labelledby={titleId}>
-	<h2 id={titleId}>{title}</h2>
+	<SectionTitle section='skills' />
 	<TechGrid items={TECH} locale={locale} />
 </section>

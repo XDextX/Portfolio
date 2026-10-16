@@ -2,9 +2,10 @@
 import ContactCard from './ContactCard.astro';
 import { CONTACTS } from '../data/contacts';
 import { t } from '@i18n/index';
+import SectionTitle from './SectionTitle.astro';
+import { SECTION_TITLES } from '../data/sectionTitles';
 
-const titleId = 'contact-title';
-const title = t('contact.title');
+const titleId = SECTION_TITLES.contact.id;
 const tagline = t('contact.tagline');
 
 // No itemscope here on purpose. The canonical structured data for this person
@@ -20,7 +21,7 @@ const tagline = t('contact.tagline');
 	class='section'
 >
 	<div class='contact-header'>
-		<h2 id={titleId}>{title}</h2>
+		<SectionTitle section='contact' />
 		<p class='tagline'>{tagline}</p>
 	</div>
 

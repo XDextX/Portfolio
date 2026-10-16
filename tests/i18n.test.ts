@@ -287,3 +287,40 @@ describe('skills default level (RF-6)', () => {
         expect(skillBarSrc()).toMatch(/levelLabelMap\s*\[\s*locale\s*\]\s*\[\s*level\s*\]/);
     });
 });
+
+describe('section title gold word (spec 008 RF-7)', () => {
+    // The i18n module is imported inside the test, so a missing export fails here, not the file.
+    const LOCALES: Record<string, Record<string, unknown>> = {
+        es: JSON.parse(fs.readFileSync(path.join(ROOT, 'i18n', 'locales', 'es.json'), 'utf-8')),
+        en: JSON.parse(fs.readFileSync(path.join(ROOT, 'i18n', 'locales', 'en.json'), 'utf-8')),
+    };
+    const raw = (locale: string, key: string) =>
+        key.split('.').reduce<unknown>((o, k) => (o as Record<string, unknown> | undefined)?.[k], LOCALES[locale]);
+
+    it('every section title marks one whole word of its own text, in both locales', async () => {
+        const { titleWords, plainText, t, setLocale } = await import('../i18n/i18n');
+        await import('../i18n/index');
+        const { SECTION_TITLES } = await import('../src/data/sectionTitles');
+        const offenders: string[] = [];
+        for (const [locale] of Object.entries(LOCALES)) {
+            setLocale(locale);
+            for (const { key } of Object.values(SECTION_TITLES)) {
+                const value = raw(locale, key);
+                if (typeof value !== 'string') {
+                    offenders.push(`RF-7: ${locale} ${key} is missing`);
+                    continue;
+                }
+                try {
+                    const gold = titleWords(value).filter((w) => w.gold);
+                    const plain = plainText(value);
+                    const hits = plain.match(new RegExp(`(?<!\\p{L})${gold[0].text}(?!\\p{L})`, 'gu')) ?? [];
+                    if (hits.length !== 1) offenders.push(`RF-7: ${locale} ${key}: "${gold[0].text}" occurs ${hits.length} times in "${plain}"`);
+                    if (t(key) !== plain) offenders.push(`RF-7: ${locale} ${key}: t() returns "${t(key)}", not "${plain}"`);
+                } catch (err) {
+                    offenders.push(`RF-7: ${locale} ${key}: ${err instanceof Error ? err.message : String(err)}`);
+                }
+            }
+        }
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+});

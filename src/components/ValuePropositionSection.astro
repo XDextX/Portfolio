@@ -1,14 +1,14 @@
 ---
 import { ABOUT } from '../data/about';
-import { t } from '@i18n/index';
+import SectionTitle from './SectionTitle.astro';
+import { SECTION_TITLES } from '../data/sectionTitles';
 
 export interface Props {
 	locale?: 'es' | 'en';
 }
 
 const { locale = 'es' } = Astro.props;
-const titleId = 'value-prop-title';
-const title = t('valueProposition.title');
+const titleId = SECTION_TITLES.valueProposition.id;
 // Indexed by locale, not chosen by a ternary: t() is for chrome, ABOUT is for
 // this sentence, and visual-language.test.ts:131 reads the ternary shape as prose
 // living in the component.
@@ -17,7 +17,7 @@ const points = ABOUT.proofPoints.map((p) => p[locale]);
 ---
 
 <section class='section' id='ValueProposition' aria-labelledby={titleId}>
-	<h2 id={titleId}>{title}</h2>
+	<SectionTitle section='valueProposition' />
 
 	<p class='value-proposition'>{proposition}</p>
 

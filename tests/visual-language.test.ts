@@ -731,3 +731,54 @@ describe('primary button ink (spec 007)', () => {
         expect(offenders, offenders.join('\n')).toEqual([]);
     });
 });
+
+describe('section title gold (spec 008 RF-5)', () => {
+    const STYLES = path.join(ROOT, 'public', 'styles');
+    const read = (...p: string[]) => stripComments(fs.readFileSync(path.join(STYLES, ...p), 'utf-8'));
+    const light = read('themes', 'light.css');
+    const dark = read('themes', 'dark.css');
+    const shared = read('00-tokens.css');
+    const LAYERS = { light: [light, shared], dark: [dark, light, shared] } as const;
+
+    it('the contrast function reproduces the WCAG references', () => {
+        expect(contrast('#000000', '#ffffff').toFixed(4)).toBe('21.0000');
+        expect(contrast('#ffffff', '#ffffff').toFixed(4)).toBe('1.0000');
+        expect(contrast('#767676', '#ffffff').toFixed(4)).toBe('4.5422');
+    });
+
+    it('the title gold clears 4.5:1 on the sheet in each theme', () => {
+        const offenders: string[] = [];
+        for (const [theme, layers] of Object.entries(LAYERS)) {
+            try {
+                const ratio = contrast(resolveColour('var(--accent-text)', ...layers), resolveColour('var(--main-bg)', ...layers));
+                if (ratio < 4.5) offenders.push(`RF-5: ${theme}: the gold is ${ratio.toFixed(2)}:1 on the sheet`);
+            } catch (err) {
+                offenders.push(`RF-5: ${theme}: ${detail(err)}`);
+            }
+        }
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+});
+
+describe('UI icons (spec 008)', () => {
+    it('each section glyph is a distinct, self-hosted, currentColor-only file on record', async () => {
+        const { SECTION_TITLES } = await import('../src/data/sectionTitles');
+        const UI = path.join(ROOT, 'public', 'icons', 'ui');
+        const icons = Object.values(SECTION_TITLES).map((e) => e.icon);
+        const offenders: string[] = [];
+        if (new Set(icons).size !== icons.length) offenders.push(`one glyph, one meaning: ${icons.join(', ')} repeats one`);
+        const notice = fs.existsSync(path.join(UI, 'NOTICE.md')) ? fs.readFileSync(path.join(UI, 'NOTICE.md'), 'utf-8') : '';
+        if (!fs.existsSync(path.join(UI, 'LICENSE-tabler.txt'))) offenders.push('public/icons/ui/LICENSE-tabler.txt is missing');
+        for (const icon of icons) {
+            const file = path.join(UI, `${icon}.svg`);
+            if (!fs.existsSync(file)) {
+                offenders.push(`public/icons/ui/${icon}.svg is missing`);
+                continue;
+            }
+            const paints = svgPaints(fs.readFileSync(file, 'utf-8')).filter((p) => p !== 'currentcolor');
+            if (paints.length) offenders.push(`${icon}.svg paints ${paints.join(', ')}, not only currentColor`);
+            if (!notice.includes(`\`${icon}.svg\``)) offenders.push(`NOTICE.md does not name ${icon}.svg`);
+        }
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+});

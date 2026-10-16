@@ -1,0 +1,68 @@
+---
+/**
+ * One home section title: gold icon, the locale's gold word, gold dash (spec 008).
+ * Icon and dash are hidden from AT; the spans sit on one markup line, since template
+ * whitespace beside them would change the heading's name.
+ */
+import { tWords } from '@i18n/index';
+import { SECTION_TITLES } from '../data/sectionTitles';
+
+export interface Props {
+	/** Which section's title to render. */
+	section: keyof typeof SECTION_TITLES;
+}
+
+const { section } = Astro.props;
+const e: { key: string; id: string; icon: string; href?: string; transitionName?: string } = SECTION_TITLES[section];
+const words = tWords(e.key);
+const head = words[0];
+const tail = words.length > 1 ? words[words.length - 1] : null;
+const middle = words.slice(1, -1).map((w) => w.text).join(' ');
+const iconStyle = `--icon:url(/icons/ui/${e.icon}.svg)`;
+---
+
+{e.transitionName ? (
+	<h2 id={e.id} class='section-title' transition:name={e.transitionName}>{e.href ? <a href={e.href}><span class='glue'><span class='section-title__icon' aria-hidden='true' style={iconStyle}></span>{head.gold ? <span class='section-title__word'>{head.text}</span> : head.text}{!tail && <span class='section-title__dash' aria-hidden='true'></span>}</span>{tail && ' '}{middle && `${middle} `}{tail && <span class='glue'>{tail.gold ? <span class='section-title__word'>{tail.text}</span> : tail.text}<span class='section-title__dash' aria-hidden='true'></span></span>}</a> : null}</h2>
+) : (
+	<h2 id={e.id} class='section-title'><span class='glue'><span class='section-title__icon' aria-hidden='true' style={iconStyle}></span>{head.gold ? <span class='section-title__word'>{head.text}</span> : head.text}{!tail && <span class='section-title__dash' aria-hidden='true'></span>}</span>{tail && ' '}{middle && `${middle} `}{tail && <span class='glue'>{tail.gold ? <span class='section-title__word'>{tail.text}</span> : tail.text}<span class='section-title__dash' aria-hidden='true'></span></span>}</h2>
+)}
+
+<style>
+	/* Size is the scale's section-title step (24px); UA margins are kept (plan D-6). */
+	.section-title {
+		font-size: var(--fs-xl);
+		font-weight: 700;
+	}
+
+	.glue {
+		white-space: nowrap;
+	}
+
+	.section-title__icon,
+	.section-title__dash {
+		display: inline-block;
+		vertical-align: middle;
+		background-color: currentColor;
+	}
+
+	/* Painted through the glyph's own alpha, so it follows the theme (AGENTS, UI icons). */
+	.section-title__icon {
+		inline-size: 1.5rem;
+		block-size: 1.5rem;
+		margin-inline-end: var(--sp-2);
+		-webkit-mask: var(--icon) center / contain no-repeat;
+		mask: var(--icon) center / contain no-repeat;
+	}
+
+	.section-title__dash {
+		inline-size: 1.5rem;
+		block-size: 2px;
+		margin-inline-start: var(--sp-3);
+	}
+
+	.section-title__icon,
+	.section-title__dash,
+	.section-title__word {
+		color: var(--accent-text);
+	}
+</style>

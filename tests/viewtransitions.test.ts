@@ -102,3 +102,18 @@ describe('view transitions: no global IDs for JS hooks', () => {
         }
     });
 });
+
+describe('the projects title travels to /proyectos (spec 008)', () => {
+    it('both titles carry the one transition name SECTION_TITLES states', async () => {
+        const { SECTION_TITLES } = await import('../src/data/sectionTitles');
+        const offenders: string[] = [];
+        if (!SECTION_TITLES.projects.transitionName) offenders.push('SECTION_TITLES.projects has no transitionName');
+        const title = fs.existsSync(path.join(process.cwd(), 'src', 'components', 'SectionTitle.astro'))
+            ? read('src', 'components', 'SectionTitle.astro')
+            : '';
+        if (!/<h2[^>]*transition:name=\{e\.transitionName\}/s.test(title)) offenders.push('SectionTitle.astro: the <h2> does not carry transition:name={e.transitionName}');
+        const page = read('src', 'pages', 'proyectos', 'index.astro');
+        if (!/<h1[^>]*transition:name=\{SECTION_TITLES\.projects\.transitionName\}/s.test(page)) offenders.push('proyectos/index.astro: the <h1> does not read SECTION_TITLES.projects.transitionName');
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+});

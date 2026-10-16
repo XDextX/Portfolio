@@ -29,7 +29,7 @@
 		}
 	},
 	"projects": {
-		"title": "Projects",
+		"title": "*Projects*",
 		"topicLabel": "Topic",
 		"description": {
 			"default": "Selected GitHub projects.",
@@ -44,7 +44,7 @@
 		"viewAll": "View all"
 	},
 	"skills": {
-		"title": "Skills",
+		"title": "*Skills*",
 		"views": {
 			"group": "Skill view",
 			"bars": "Progress bars",
@@ -65,10 +65,10 @@
 		"location": "Location"
 	},
 	"experience": {
-		"title": "Experience"
+		"title": "*Experience*"
 	},
 	"contact": {
-		"title": "Contact",
+		"title": "*Contact*",
 		"tagline": "Open to new opportunities. Feel free to reach out.",
 		"actions": {
 			"copyAria": "Copy {{label}}",
@@ -96,6 +96,6 @@
 		"cta": "Go to home"
 	},
 	"valueProposition": {
-		"title": "What I build"
+		"title": "What I *build*"
 	}
 }

@@ -3,6 +3,8 @@ import ProjectCard from './ProjectCard.astro';
 import ProjectsFooter from './ProjectsFooter.astro';
 import type { GitHubRepo } from '../types/github';
 import { t } from '@i18n/index';
+import SectionTitle from './SectionTitle.astro';
+import { SECTION_TITLES } from '../data/sectionTitles';
 
 export interface Props {
 	repos: GitHubRepo[];
@@ -28,7 +30,7 @@ const {
 	error = null,
 } = Astro.props;
 
-const headingId = 'projects-title';
+const headingId = SECTION_TITLES.projects.id;
 const labelAttrs = hideTitle
 	? { 'aria-label': title }
 	: { 'aria-labelledby': headingId };
@@ -51,15 +53,7 @@ const viewAll = t('projects.viewAll');
 	transition:name={`p-${headingId}`}
 >
 	{
-		!hideTitle && (
-			<h2
-				id={headingId}
-				class='section__title'
-				transition:name={`p-${headingId}-title`}
-			>
-				<a href='/proyectos'>{title}</a>
-			</h2>
-		)
+		!hideTitle && <SectionTitle section='projects' />
 	}
 
 	{

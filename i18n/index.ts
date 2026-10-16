@@ -6,4 +6,4 @@ export const messages = {
     es
 };
 init(messages, 'es');
-export { t, availableLocales, setLocale } from './i18n';
+export { t, tWords, availableLocales, setLocale } from './i18n';

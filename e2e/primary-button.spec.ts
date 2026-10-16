@@ -1,41 +1,19 @@
 import { test, expect, type Page } from '@playwright/test';
 import { startDevServer, waitForServer } from './helpers/dev-server';
 import { contrast } from '../tests/helpers/colour';
+import { THEMES, openIn as open, installHelpers, settled, composite, type Theme } from './helpers/rendered';
 
 // Spec 007: the primary button's ink, rendered. RF-3 (every consumer paints the
 // ink token), RF-4 (hover keeps 4.5:1 as composited over its ground) and the light
 // NFR (light renders white on #7A5D10, unchanged).
 
 let DEV_URL = '';
-const THEMES = ['light', 'dark'] as const;
-type Theme = (typeof THEMES)[number];
+const openIn = (page: Page, theme: Theme, route: string) => open(page, DEV_URL, theme, route);
 
-async function openIn(page: Page, theme: Theme, route: string) {
-    await page.addInitScript((t) => localStorage.setItem('theme', t), theme);
-    await page.emulateMedia({ colorScheme: theme });
-    await page.goto(DEV_URL + route);
-}
-
-// In-page helpers: opaque rgb() to #rrggbb, alpha compositing, the first opaque
-// ancestor, and a read repeated every 50 ms until two reads agree (1 s cap).
-async function installHelpers(page: Page) {
+async function installProbe(page: Page) {
+    await installHelpers(page);
     await page.evaluate(() => {
         const w = window as any;
-        w.__toHex = (css: string) => {
-            const m = css.match(/rgba?\(([^)]+)\)/);
-            if (!m) throw new Error(`not an rgb colour: ${css}`);
-            const [r, g, b, a = '1'] = m[1].split(/[\s,/]+/).filter(Boolean);
-            if (Number(a) < 1) throw new Error(`not opaque: ${css}`);
-            return '#' + [r, g, b].map((v) => Number(v).toString(16).padStart(2, '0')).join('');
-        };
-        w.__ground = (el: Element) => {
-            for (let n = el.parentElement; n; n = n.parentElement) {
-                const bg = getComputedStyle(n).backgroundColor;
-                const a = bg.match(/rgba?\(([^)]+)\)/)?.[1].split(/[\s,/]+/)[3];
-                if (bg !== 'transparent' && (a === undefined || Number(a) === 1)) return w.__toHex(bg);
-            }
-            throw new Error('no opaque ground up to html');
-        };
         w.__probe = () => {
             const s = document.createElement('span');
             s.style.color = 'var(--accent-surface-text)';
@@ -50,17 +28,6 @@ async function installHelpers(page: Page) {
     });
 }
 
-async function settled<T>(read: () => Promise<T>): Promise<T> {
-    let last = JSON.stringify(await read());
-    for (let i = 0; i < 20; i++) {
-        await new Promise((r) => setTimeout(r, 50));
-        const now = await read();
-        if (JSON.stringify(now) === last) return now;
-        last = JSON.stringify(now);
-    }
-    return read();
-}
-
 const colours = (page: Page, selector: string) =>
     page.locator(selector).first().evaluate((el) => {
         const w = window as any;
@@ -68,12 +35,6 @@ const colours = (page: Page, selector: string) =>
         const safe = (c: string) => { try { return w.__toHex(c); } catch { return c; } };
         return { color: safe(cs.color), bg: safe(cs.backgroundColor), opacity: Number(cs.opacity), ground: w.__ground(el) };
     });
-
-// Composite a colour at an opacity over its ground, per channel, rounded.
-function composite(fg: string, ground: string, alpha: number): string {
-    const ch = (h: string, i: number) => parseInt(h.slice(1 + i * 2, 3 + i * 2), 16);
-    return '#' + [0, 1, 2].map((i) => Math.round(alpha * ch(fg, i) + (1 - alpha) * ch(ground, i)).toString(16).padStart(2, '0')).join('');
-}
 
 async function firstProjectRoute(page: Page): Promise<string> {
     await page.goto(DEV_URL + '/');
@@ -116,14 +77,18 @@ test.describe('primary button ink (spec 007)', () => {
             const offenders: string[] = [];
             for (const route of ['home', '404', 'project'] as const) {
                 await openIn(page, theme, routeOf(route));
-                await installHelpers(page);
+                await installProbe(page);
                 const { want, fill, declared } = await page.evaluate(() => (window as any).__probe());
                 if (!declared) offenders.push(`RF-3: ${theme} ${route}: --accent-surface-text is not declared`);
                 // Discovery (plan D-6): anything painted with the fill is a consumer, known or not.
                 const strays = await page.evaluate(({ fill, want }) => {
                     const w = window as any;
                     const safe = (c: string) => { try { return w.__toHex(c); } catch { return c; } };
+                    // Only elements with text of their own: a masked glyph paints its fill with
+                    // currentColor (the gold) and carries no text to ink.
+                    const ownText = (el: Element) => [...el.childNodes].some((n) => n.nodeType === 3 && (n.textContent ?? '').trim());
                     return [...document.querySelectorAll('body *')]
+                        .filter((el) => ownText(el) || el.matches('a, button'))
                         .filter((el) => safe(getComputedStyle(el).backgroundColor) === fill)
                         .filter((el) => safe(getComputedStyle(el).color) !== want)
                         .map((el) => `${el.tagName.toLowerCase()}.${[...el.classList].join('.')}`);

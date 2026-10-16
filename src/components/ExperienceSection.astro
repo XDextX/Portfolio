@@ -1,19 +1,19 @@
 ---
 import ExperienceCard from './ExperienceCard.astro';
 import { EXPERIENCES } from '../data/experience';
-import { t } from '@i18n/index';
+import SectionTitle from './SectionTitle.astro';
+import { SECTION_TITLES } from '../data/sectionTitles';
 
 export interface Props {
 	locale?: 'es' | 'en';
 }
 
 const { locale = 'es' } = Astro.props;
-const titleId = 'work-exp-title';
-const title   = t('experience.title');
+const titleId = SECTION_TITLES.experience.id;
 ---
 
 <section class='section' id='Experience' aria-labelledby={titleId}>
-	<h2 id={titleId}>{title}</h2>
+	<SectionTitle section='experience' />
 
 	<ul class='exp-list'>
 		{EXPERIENCES.map((e) => (
