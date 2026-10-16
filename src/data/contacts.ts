@@ -3,7 +3,7 @@ import type { ContactItem } from "../types/contact";
 export const CONTACTS: ContactItem[] = [
     {
         id: "email",
-        label: "Email",
+        labelKey: "about.social.email",
         value: "germonram@gmail.com",
         href: "mailto:germonram@gmail.com",
         kind: "email",
@@ -17,7 +17,8 @@ export const CONTACTS: ContactItem[] = [
         value: "github.com/XDextX",
         href: "https://github.com/XDextX",
         kind: "github",
-        icon: "/icons/github.svg",
+        // The mark is white: one file per theme, or it vanishes on the light card (1.00:1).
+        icon: { light: "/icons/github-light.svg", dark: "/icons/github.svg" },
         sameAs: true
     },
     {

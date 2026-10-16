@@ -4,9 +4,16 @@ import { promises as fsp } from 'fs';
 import path from 'path';
 
 import { CONTACTS } from '../src/data/contacts';
+import * as contactUtils from '../src/utils/contact';
+import { t } from '@i18n/index';
 
 const emails = CONTACTS.filter((c) => c.kind === 'email');
 const web = CONTACTS.filter((c) => c.kind !== 'email');
+const util = (name: string) => {
+    const fn = (contactUtils as any)[name];
+    if (fn === undefined) throw new Error(`src/utils/contact.ts exports no ${name}`);
+    return fn;
+};
 
 describe('CONTACTS shape', () => {
     it('holds at least one contact, each with a unique id', () => {
@@ -17,12 +24,12 @@ describe('CONTACTS shape', () => {
     });
 
     it('declares every field with the right type', () => {
-        for (const contact of CONTACTS) {
+        for (const contact of CONTACTS as any[]) {
             expect(typeof contact.id, contact.id).toBe('string');
-            expect(typeof contact.label, contact.id).toBe('string');
+            expect(typeof (contact.label ?? contact.labelKey), contact.id).toBe('string');
             expect(typeof contact.value, contact.id).toBe('string');
-            expect(typeof contact.href, contact.id).toBe('string');
             expect(typeof contact.kind, contact.id).toBe('string');
+            expect(typeof contact.href, contact.id).toBe('string');
 
             if ('sameAs' in contact) {
                 expect(typeof contact.sameAs, contact.id).toBe('boolean');
@@ -33,8 +40,11 @@ describe('CONTACTS shape', () => {
     it('gives every contact a visible label and a non-empty value', () => {
         // `typeof x === 'string'` is satisfied by "", so a blank label renders an
         // empty button and still passes the shape check above.
+        const contactLabel = util('contactLabel');
         for (const contact of CONTACTS) {
-            expect(contact.label.trim(), contact.id).not.toBe('');
+            const label = contactLabel(contact, t);
+            expect(label.trim(), contact.id).not.toBe('');
+            expect(label, `${contact.id}: an untranslated key`).not.toMatch(/^[a-z]+(\.[a-zA-Z]+)+$/);
             expect(contact.value.trim(), contact.id).not.toBe('');
         }
     });
@@ -97,12 +107,39 @@ describe('CONTACTS icons', () => {
         // the current route, so "icons/x.svg" 404s on any nested page.
         // NOTE: path.join, not path.resolve — a leading "/" makes resolve()
         // treat the path as absolute against the drive root.
+        // Spec 018: one colour logo, or one per theme.
         for (const contact of CONTACTS) {
-            expect(contact.icon, contact.id).toBeTruthy();
-            expect(contact.icon, contact.id).toMatch(/^\//);
-
-            const stat = await fsp.stat(path.join(process.cwd(), 'public', contact.icon!));
-            expect(stat.isFile(), contact.id).toBe(true);
+            const pictures: string[] = typeof contact.icon === 'object' ? [contact.icon.light, contact.icon.dark] : [contact.icon];
+            for (const picture of pictures) {
+                expect(picture, contact.id).toMatch(/^\//);
+                const stat = await fsp.stat(path.join(process.cwd(), 'public', picture));
+                expect(stat.isFile(), `${contact.id}: ${picture}`).toBe(true);
+            }
         }
+    });
+});
+
+describe('contact helpers (spec 018 RF-1, RF-4)', () => {
+    it('holds the three linked channels, in order', () => {
+        expect(CONTACTS.map((c) => c.kind), 'order').toEqual(['email', 'github', 'linkedin']);
+    });
+
+    it("copyValue: the email value, a profile's https URL", () => {
+        const copyValue = util('copyValue');
+        for (const c of CONTACTS) {
+            const want = c.kind === 'email' || c.kind === 'phone' ? c.value : c.href;
+            expect(copyValue(c), c.id).toBe(want);
+        }
+        expect(copyValue({ id: 'w', kind: 'website', value: 'x.test', href: 'https://x.test', label: 'W', icon: '/i.svg' })).toBe('https://x.test');
+    });
+
+    it('contactLabel: the name, or the translated key', () => {
+        const contactLabel = util('contactLabel');
+        expect(contactLabel({ label: 'GitHub' }, (k: string) => `<${k}>`)).toBe('GitHub');
+        expect(contactLabel({ labelKey: 'a.b' }, (k: string) => `<${k}>`)).toBe('<a.b>');
+    });
+
+    it('feedback lasts 1.5 s', () => {
+        expect(util('FEEDBACK_MS')).toBe(1500);
     });
 });

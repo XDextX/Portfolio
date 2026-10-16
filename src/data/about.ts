@@ -58,6 +58,7 @@ export const ABOUT = {
     name: fullName(IDENTITY),
     nameParts: nameParts(IDENTITY),
     title: "Full-Stack Developer",
+    // The location datum, spelled once: the hero and the JSON-LD below read it (spec 018 RF-2).
     location: "Costa Rica",
     avatar: "https://github.com/XDextX.png",
     // Root-absolute: a relative path breaks on /proyectos and /proyectos/[name].
@@ -88,5 +89,5 @@ export const JsonLdAbout = {
         .filter((s) => s.sameAs)
         .map((s) => s.href),
     ...(emailContact ? { email: emailContact.value } : {}),
-    address: { "@type": "PostalAddress", addressCountry: "Costa Rica" }
+    address: { "@type": "PostalAddress", addressCountry: ABOUT.location }
 };

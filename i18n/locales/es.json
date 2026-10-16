@@ -87,7 +87,9 @@
 			"copyAria": "Copiar {{label}}",
 			"openAria": "Abrir {{label}}",
 			"copied": "¡Copiado!",
-			"error": "Error"
+			"error": "Error",
+			"copiedLive": "{{label}} copiado al portapapeles",
+			"errorLive": "No se pudo copiar {{label}}"
 		}
 	},
 	"nav": {

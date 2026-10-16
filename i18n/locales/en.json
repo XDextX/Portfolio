@@ -87,7 +87,9 @@
 			"copyAria": "Copy {{label}}",
 			"openAria": "Open {{label}}",
 			"copied": "Copied!",
-			"error": "Error"
+			"error": "Error",
+			"copiedLive": "{{label}} copied to the clipboard",
+			"errorLive": "Could not copy {{label}}"
 		}
 	},
 	"nav": {

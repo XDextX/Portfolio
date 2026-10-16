@@ -1,91 +1,90 @@
 ---
 import type { ContactItem } from '../types/contact';
+import SkillLogo from './SkillLogo.astro';
+import { contactLabel, copyValue, FEEDBACK_MS } from '../utils/contact';
 import { t } from '@i18n/index';
 
 export interface Props {
 	item: ContactItem;
 }
 
+/**
+ * One contact card: the channel's logo, its value as a link, and copy and open controls.
+ * @param item the contact; its kind decides what a copy writes and whether links open outside
+ */
 const { item } = Astro.props;
 
+const label      = contactLabel(item, t);
+const copy       = copyValue(item);
 const isExternal = item.kind !== 'email' && item.kind !== 'phone';
 const rel        = isExternal ? 'noopener noreferrer me' : undefined;
 const target     = isExternal ? '_blank' : undefined;
-const canCopy    = item.kind === 'email' || item.kind === 'phone';
 
-const copyAria = t('contact.actions.copyAria', { label: item.label });
-const openAria = t('contact.actions.openAria', { label: item.label });
-const copied   = t('contact.actions.copied');
-const error    = t('contact.actions.error');
+const copyAria   = t('contact.actions.copyAria', { label });
+const openAria   = t('contact.actions.openAria', { label });
+const copied     = t('contact.actions.copied');
+const error      = t('contact.actions.error');
+const copiedLive = t('contact.actions.copiedLive', { label });
+const errorLive  = t('contact.actions.errorLive', { label });
 ---
 
 <article
 	class='contact-card'
-	aria-label={`${item.label}: ${item.value}`}
+	aria-label={`${label}: ${item.value}`}
 >
 	<!-- Icon -->
-	{item.icon && (
-		<img class='contact-icon' src={item.icon} alt='' width='28' height='28' loading='lazy' />
-	)}
+	<span class='contact-icon'><SkillLogo logo={item.icon} size={28} /></span>
 
 	<!-- Info -->
 	<div class='contact-info'>
-		<span class='contact-label'>{item.label}</span>
-		<a class='contact-value' href={item.href} rel={rel} target={target}>
-			{item.value}
-		</a>
+		<span class='contact-label'>{label}</span>
+		<a class='contact-value' href={item.href} rel={rel} target={target}>{item.value}</a>
 	</div>
 
 	<!-- Actions -->
 	<div class='contact-actions'>
-		{canCopy && (
-			<button
-				class='icon-btn'
-				data-copy={item.value}
-				data-copied={copied}
-				data-error={error}
-				aria-label={copyAria}
-				title={copyAria}
-			>
-				<!-- Copy icon -->
-				<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'>
-					<rect x='9' y='9' width='13' height='13' rx='2' ry='2'/>
-					<path d='M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1'/>
-				</svg>
-			</button>
-		)}
+		<button class='icon-btn copy-btn' data-copy={copy} data-feedback-ms={FEEDBACK_MS} aria-label={copyAria} title={copyAria}>
+			<svg class='copy-btn__icon' xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'>
+				<rect x='9' y='9' width='13' height='13' rx='2' ry='2'/>
+				<path d='M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1'/>
+			</svg>
+			<span class='copy-btn__ok' aria-hidden='true'>{copied}</span>
+			<span class='copy-btn__err' aria-hidden='true'>{error}</span>
+		</button>
 
-		<a
-			class='icon-btn'
-			href={item.href}
-			rel={rel}
-			target={target}
-			aria-label={openAria}
-			title={openAria}
-		>
-			<!-- External / arrow icon -->
+		<a class='icon-btn' href={item.href} rel={rel} target={target} aria-label={openAria} title={openAria}>
 			<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'>
 				<line x1='7' y1='17' x2='17' y2='7'/><polyline points='7 7 17 7 17 17'/>
 			</svg>
 		</a>
 	</div>
+
+	<p class='sr-only' aria-live='polite' data-copy-live data-live-ok={copiedLive} data-live-err={errorLive}></p>
 </article>
 
 <script>
+	// Spec 018: the label is a class toggle over one grid cell, never an innerHTML swap, so
+	// the control keeps its size; the live region is cleared first so a repeat reads again.
 	document.addEventListener('astro:page-load', () => {
 		document.querySelectorAll<HTMLButtonElement>('button[data-copy]').forEach((btn) => {
+			const live = btn.closest('article')?.querySelector<HTMLElement>('[data-copy-live]');
+			const ms = Number(btn.dataset.feedbackMs);
+			let timer: ReturnType<typeof setTimeout> | undefined;
 			btn.addEventListener('click', async () => {
-				const val    = btn.dataset.copy ?? '';
-				const copied = btn.dataset.copied ?? '✓';
-				const err    = btn.dataset.error ?? '✗';
-				const icon   = btn.innerHTML;
+				clearTimeout(timer);
+				let ok = true;
 				try {
-					await navigator.clipboard.writeText(val);
-					btn.textContent = copied;
+					await navigator.clipboard.writeText(btn.dataset.copy ?? '');
 				} catch {
-					btn.textContent = err;
+					ok = false;
 				}
-				setTimeout(() => (btn.innerHTML = icon), 1500);
+				btn.classList.toggle('copy-btn--ok', ok);
+				btn.classList.toggle('copy-btn--err', !ok);
+				if (live) {
+					live.textContent = '';
+					requestAnimationFrame(() => { live.textContent = (ok ? live.dataset.liveOk : live.dataset.liveErr) ?? ''; });
+				}
+				timer = setTimeout(() => btn.classList.remove('copy-btn--ok', 'copy-btn--err'), ms);
 			});
 		});
 	});
@@ -157,12 +156,16 @@ const error    = t('contact.actions.error');
 		flex-shrink: 0;
 	}
 
+	/* Icon and both labels stack in one cell, the inactive ones hidden but sized, so the
+	   control is as wide as its longest state in each locale (AGENTS, label swap). */
 	.icon-btn {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 2rem;
-		height: 2rem;
+		display: inline-grid;
+		grid-template-areas: 'stack';
+		place-items: center;
+		block-size: 2rem;
+		min-inline-size: 2rem;
+		box-sizing: border-box;
+		padding-inline: var(--sp-2);
 		border-radius: var(--radius-md);
 		border: 1px solid var(--control-border);
 		background: transparent;
@@ -182,5 +185,21 @@ const error    = t('contact.actions.error');
 		color: var(--accent-surface-text);
 		border-color: var(--accent-text);
 		text-decoration: none;
+	}
+
+	.icon-btn > * {
+		grid-area: stack;
+	}
+
+	.copy-btn__ok,
+	.copy-btn__err,
+	.copy-btn--ok .copy-btn__icon,
+	.copy-btn--err .copy-btn__icon {
+		visibility: hidden;
+	}
+
+	.copy-btn--ok .copy-btn__ok,
+	.copy-btn--err .copy-btn__err {
+		visibility: visible;
 	}
 </style>

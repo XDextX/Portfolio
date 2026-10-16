@@ -43,9 +43,11 @@ describe('ABOUT.socials', () => {
         expect(mailto!.href).toMatch(/^mailto:[^\s@]+@[^\s@]+\.[^\s@]+$/);
     });
 
-    it('gives every social a label to render', () => {
+    it('gives every social a label to render', async () => {
+        // Spec 018: a contact's label is a name or a locale key; the hero reads its own key.
+        const { t } = await import('@i18n/index');
         for (const social of ABOUT.socials) {
-            expect(social.label.trim(), social.id).not.toBe('');
+            expect(t(social.labelKey).trim(), social.id).not.toBe('');
         }
     });
 
@@ -72,5 +74,28 @@ describe('AboutSection sources its data from ABOUT', () => {
     it('iterates ABOUT.socials instead of a hardcoded list', () => {
         const src = fs.readFileSync(COMPONENT, 'utf-8');
         expect(src).toMatch(/ABOUT\.socials\.map/);
+    });
+});
+
+describe('location once (spec 018 RF-2)', () => {
+    // A source read: an equal string duplicated renders the same (constitution 8). Job
+    // locations are another datum, so experience.ts is skipped.
+    const strip = (src: string) => src.replace(/<!--[\s\S]*?-->/g, ' ').replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/^\s*\/\/.*$/gm, ' ');
+    const walk = (dir: string, exts: string[]): string[] => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+        const full = path.join(dir, e.name);
+        return e.isDirectory() ? walk(full, exts) : exts.includes(path.extname(e.name)) ? [full] : [];
+    });
+
+    it('spells the location datum once, in about.ts', () => {
+        const loc = ABOUT.location;
+        expect(typeof loc === 'string' && loc.trim() !== '', 'ABOUT.location is empty').toBe(true);
+        const files = [
+            ...walk(path.join(process.cwd(), 'src', 'data'), ['.ts']).filter((f) => path.basename(f) !== 'experience.ts'),
+            ...['components', 'layouts', 'pages'].flatMap((d) => walk(path.join(process.cwd(), 'src', d), ['.astro'])),
+            ...walk(path.join(process.cwd(), 'i18n', 'locales'), ['.json']),
+        ];
+        const hits = files.map((f) => ({ f: path.relative(process.cwd(), f), n: strip(fs.readFileSync(f, 'utf-8')).split(loc).length - 1 })).filter((h) => h.n > 0);
+        const total = hits.reduce((a, h) => a + h.n, 0);
+        expect({ total, where: hits.map((h) => `${h.f} x${h.n}`) }).toEqual({ total: 1, where: [path.join('src', 'data', 'about.ts') + ' x1'] });
     });
 });
