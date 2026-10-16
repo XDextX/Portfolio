@@ -51,12 +51,12 @@
 			"list": "Lista compacta"
 		},
 		"areas": {
+			"languages": "Lenguajes",
 			"frontend": "Frontend",
 			"backend": "Backend",
-			"database": "Base de datos",
-			"cloud": "Nube",
-			"devops": "DevOps",
-			"other": "Otros"
+			"databases": "Bases de datos",
+			"cloudDevops": "Nube y DevOps",
+			"testing": "Testing"
 		}
 	},
 	"about": {

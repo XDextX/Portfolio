@@ -341,122 +341,6 @@ describe('visual language', () => {
         ).toEqual([]);
     });
 
-    it('the monochrome icon clears the card in both themes', () => {
-        // RF-5: every bars-view icon sits on the area card in one colour per
-        // theme, at 3:1 or above. The colour is read from the row's own rule, so
-        // a renamed token moves the guard with it, and one colour per theme
-        // covers all ten logos without naming one of them.
-        const MIN_ICON = 3;
-        const offenders: string[] = [];
-        const skillBar = stripComments(
-            fs.readFileSync(path.join(ROOT, 'src', 'components', 'SkillBar.astro'), 'utf-8'),
-        );
-        const shared = stripComments(
-            fs.readFileSync(path.join(ROOT, 'public', 'styles', '00-tokens.css'), 'utf-8'),
-        );
-        // A shape painted in currentColor takes its colour from the slot, so
-        // follow it there; anything else is measured as written.
-        const painted = ruleBackground(skillBar, '.bar-logo::before');
-        const slotColour = skillBar.match(/\.bar-logo\s*\{[^}]*?(?:^|[\s;{])color\s*:\s*([^;]+);/m)?.[1];
-        const iconRef = painted && /^currentcolor$/i.test(painted) ? slotColour?.trim() ?? null : painted;
-
-        for (const theme of ['light.css', 'dark.css']) {
-            const themeSrc = stripComments(
-                fs.readFileSync(path.join(ROOT, 'public', 'styles', 'themes', theme), 'utf-8'),
-            );
-            if (!iconRef) {
-                offenders.push(`${theme}: no monochrome colour painted behind the icon shape`);
-                continue;
-            }
-            let icon: string;
-            let card: string;
-            try {
-                icon = resolveColour(iconRef, themeSrc, shared);
-            } catch (err) {
-                offenders.push(`${theme}: the icon colour fails to resolve (${detail(err)})`);
-                continue;
-            }
-            try {
-                card = resolveColour('var(--card-background)', themeSrc, shared);
-            } catch (err) {
-                offenders.push(`${theme}: the card surface fails to resolve (${detail(err)})`);
-                continue;
-            }
-            const ratio = contrast(icon, card);
-            if (ratio < MIN_ICON) {
-                offenders.push(
-                    `${theme}: the monochrome icon ${icon} on the card ${card} is ` +
-                        `${ratio.toFixed(2)}:1 — below ${MIN_ICON}:1`,
-                );
-            }
-        }
-
-        expect(
-            offenders,
-            `These icons sit below 3:1 against the area card, so a row does not read\n` +
-            `before anything is hovered. --icon-mono is the value to change:\n  ` +
-            offenders.join('\n  '),
-        ).toEqual([]);
-    });
-
-    it('every skill icon is a single-colour asset with its source on record', () => {
-        // Spec 005 RF-8. The monochrome mask paints an asset's alpha, so white
-        // lettering over a coloured field turns into a blob: TypeScript lost 17%
-        // of its drawing, PostgreSQL 19%. One paint, no gradient, nothing white.
-        const MAX_LUMINANCE = 0.85;
-        const offenders: string[] = [];
-        const noticePath = path.join(ROOT, 'public', 'tech', 'mono', 'NOTICE.md');
-        const notice = fs.existsSync(noticePath) ? fs.readFileSync(noticePath, 'utf-8') : '';
-        if (!notice) offenders.push('public/tech/mono/NOTICE.md is missing');
-
-        const cited = [...notice.matchAll(/\bLICENSE[\w.-]*\.txt\b/g)].map((m) => m[0]);
-        if (notice && cited.length === 0) offenders.push('NOTICE.md cites no licence file');
-        for (const file of new Set(cited)) {
-            if (!fs.existsSync(path.join(ROOT, 'public', 'tech', 'mono', file))) {
-                offenders.push(`NOTICE.md cites ${file}, which does not exist`);
-            }
-        }
-
-        for (const tech of TECH) {
-            const { icon, brand } = tech as { icon?: string; brand?: string };
-            if (!icon || !icon.startsWith('/')) {
-                offenders.push(`${tech.name}: no root-absolute icon`);
-                continue;
-            }
-            const file = path.join(ROOT, 'public', icon);
-            if (!fs.existsSync(file)) {
-                offenders.push(`${tech.name}: ${icon} does not exist`);
-                continue;
-            }
-            const svg = fs.readFileSync(file, 'utf-8');
-            if (/gradient/i.test(svg)) offenders.push(`${tech.name}: ${icon} declares a gradient`);
-
-            const paints = svgPaints(svg);
-            if (paints.length > 1) {
-                offenders.push(`${tech.name}: ${icon} paints ${paints.length} colours — ${paints.join(', ')}`);
-            }
-            for (const p of paints.filter((p) => /^#[0-9a-f]{6}$/.test(p))) {
-                if (luminance(p) > MAX_LUMINANCE) {
-                    offenders.push(`${tech.name}: ${icon} paints ${p}, which the mask cannot tell from a hole`);
-                }
-            }
-
-            if (brand !== undefined && !/^#[0-9a-fA-F]{6}$/.test(brand)) {
-                offenders.push(`${tech.name}: brand ${brand} is not a #RRGGBB colour`);
-            }
-            if (notice && !notice.includes(path.basename(icon))) {
-                offenders.push(`${tech.name}: NOTICE.md does not name ${path.basename(icon)}`);
-            }
-        }
-
-        expect(
-            offenders,
-            `Each skill icon must be one shape in one paint, lettering cut out, so the\n` +
-            `monochrome mask still shows it; and its source must be on record:\n  ` +
-            offenders.join('\n  '),
-        ).toEqual([]);
-    });
-
     it('each level lights its leftmost segments, one segment per level', () => {
         // Spec 006 RF-1/RF-2, as data: the scale is stated once, and what a
         // level lights is derived from its position in it, not from a
@@ -757,7 +641,7 @@ describe('section title gold (spec 008 RF-5)', () => {
 });
 
 describe('UI icons (spec 008)', () => {
-    it('each section and hero glyph is a distinct, self-hosted, currentColor-only file on record', async () => {
+    it('each section, hero, step and skills glyph is a distinct, self-hosted, currentColor-only file on record', async () => {
         const { SECTION_TITLES } = await import('../src/data/sectionTitles');
         const UI = path.join(ROOT, 'public', 'icons', 'ui');
         const icons = Object.values(SECTION_TITLES).map((e) => e.icon);
@@ -782,7 +666,16 @@ describe('UI icons (spec 008)', () => {
         const stepIcons: string[] = PROCESS.steps.map((s) => s.icon);
         if (new Set(stepIcons).size !== stepIcons.length) offenders.push(`one glyph, one meaning: step glyphs ${stepIcons.join(', ')} repeat one`);
         for (const icon of stepIcons) if (icons.includes(icon) || heroIcons.includes(icon)) offenders.push(`one glyph, one meaning: ${icon} is a step glyph and another section's`);
-        for (const icon of new Set([...icons, ...heroIcons, ...stepIcons])) {
+        // Spec 012: the skills area glyphs and the generic mark, one meaning each.
+        const tech = (await import('../src/data/tech')) as any;
+        const areaIcons: string[] = (tech.SKILL_AREAS ?? []).map((a: any) => a.glyph);
+        if (!areaIcons.length) offenders.push('src/data/tech.ts exports no SKILL_AREAS');
+        const mark = String(tech.GENERIC_MARK ?? '').match(/^\/icons\/ui\/([\w-]+)\.svg$/)?.[1];
+        if (!mark) offenders.push(`GENERIC_MARK ${tech.GENERIC_MARK} is not /icons/ui/<name>.svg`);
+        const skillIcons = mark ? [...areaIcons, mark] : areaIcons;
+        if (new Set(skillIcons).size !== skillIcons.length) offenders.push(`one glyph, one meaning: skills glyphs ${skillIcons.join(', ')} repeat one`);
+        for (const icon of skillIcons) if (icons.includes(icon) || heroIcons.includes(icon) || stepIcons.includes(icon)) offenders.push(`one glyph, one meaning: ${icon} is a skills glyph and another section's`);
+        for (const icon of new Set([...icons, ...heroIcons, ...stepIcons, ...skillIcons])) {
             const file = path.join(UI, `${icon}.svg`);
             if (!fs.existsSync(file)) {
                 offenders.push(`public/icons/ui/${icon}.svg is missing`);

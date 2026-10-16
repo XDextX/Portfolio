@@ -77,38 +77,29 @@ describe('i18n locales', () => {
     });
 });
 
-describe('skills area cards (RF-4)', () => {
+describe('skills area cards (spec 012 RF-3, RF-4)', () => {
     // Astro components cannot be rendered under vitest — `npm test` never
     // opens a browser — so the card structure below is read from source, the
     // same reason tests/markup.test.ts scans files instead of the DOM.
-    const TECH_SRC = fs
-        .readFileSync(path.join(ROOT, 'src', 'data', 'tech.ts'), 'utf-8')
-        .replace(/\/\*[\s\S]*?\*\//g, ' ')
-        .replace(/^\s*\/\/.*$/gm, ' ');
-    // Category values from the data entries (`category: 'Frontend'`), never a
-    // literal list: the data file is the source of which areas exist.
-    const categories = Array.from(
-        new Set([...TECH_SRC.matchAll(/category:\s*'([^']+)'/g)].map((m) => m[1])),
-    );
-    const areaKey = (category: string) => `skills.areas.${category.toLowerCase()}`;
+    // Spec 012's Definitions table, dated 2026-10-15: the heading each declared area reads.
+    const HEADINGS: Record<string, { es: string; en: string }> = {
+        languages: { es: 'Lenguajes', en: 'Languages' },
+        frontend: { es: 'Frontend', en: 'Frontend' },
+        backend: { es: 'Backend', en: 'Backend' },
+        databases: { es: 'Bases de datos', en: 'Databases' },
+        cloudDevops: { es: 'Nube y DevOps', en: 'Cloud & DevOps' },
+        testing: { es: 'Testing', en: 'Testing' },
+    };
+    const loadAreas = async () => ((await import('../src/data/tech')) as any).SKILL_AREAS as { key: string; glyph: string }[] | undefined;
 
-    const gridSrc = () =>
-        fs
-            .readFileSync(path.join(ROOT, 'src', 'components', 'TechGrid.astro'), 'utf-8')
-            .replace(/\r\n/g, '\n')
-            .replace(/\/\*[\s\S]*?\*\//g, ' ')
-            .replace(/^\s*\/\/.*$/gm, ' ');
+    const strip = (src: string) =>
+        src.replace(/\r\n/g, '\n').replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/^\s*\/\/.*$/gm, ' ');
+    const gridSrc = () => strip(fs.readFileSync(path.join(ROOT, 'src', 'components', 'TechGrid.astro'), 'utf-8'));
+    const headingSrc = () => {
+        const file = path.join(ROOT, 'src', 'components', 'AreaHeading.astro');
+        return fs.existsSync(file) ? strip(fs.readFileSync(file, 'utf-8')) : '';
+    };
 
-    /** The data field the grouping keys on, read from the grouping itself. */
-    const groupKey = () =>
-        gridSrc().match(/groupBy\(items\s*,\s*\(?\s*\w+\s*\)?\s*=>\s*\w+\.(\w+)/)?.[1] ?? '';
-
-    /** The bucket a tech with no category lands in, read from the grouping. */
-    const fallbackCategory = () =>
-        gridSrc().match(/groupBy\(items[^;]*\?\?\s*'([^']+)'/)?.[1] ?? '';
-
-    // The bars panel only: the compact list behind the toggle is phase 2 and
-    // stays as is.
     const barsPanel = () => {
         const src = gridSrc();
         return src.slice(src.indexOf("data-panel='bars'"), src.indexOf('<!-- LIST -->'));
@@ -137,119 +128,62 @@ describe('skills area cards (RF-4)', () => {
      */
     const cardFrameRule = (cardClass: string) => {
         const rule = new RegExp(`\\.${cardClass}\\s*\\{[^}]*\\}`, 's');
-        const shared = fs
-            .readFileSync(path.join(ROOT, 'public', 'styles', '03-components.css'), 'utf-8')
-            .replace(/\r\n/g, '\n')
-            .replace(/\/\*[\s\S]*?\*\//g, ' ')
-            .replace(/^\s*\/\/.*$/gm, ' ');
+        const shared = strip(fs.readFileSync(path.join(ROOT, 'public', 'styles', '03-components.css'), 'utf-8'));
         const src = gridSrc();
-        return (
-            src.slice(src.indexOf('<style>')).match(rule)?.[0] ??
-            shared.match(rule)?.[0] ??
-            ''
-        );
+        return src.slice(src.indexOf('<style>')).match(rule)?.[0] ?? shared.match(rule)?.[0] ?? '';
     };
 
-    it('finds data categories, so the guards below are not vacuous', () => {
-        expect(categories.length).toBeGreaterThan(0);
-        expect(barsPanel().length).toBeGreaterThan(0);
-        expect(groupKey(), 'the category grouping is gone').not.toBe('');
-        expect(fallbackCategory(), 'the uncategorised bucket is gone').not.toBe('');
-        expect(callBlock(barsPanel(), 'byCategory.map(')).not.toBe('');
+    it('finds the declared areas and the grouping, so the guards below are not vacuous', async () => {
+        const areas = await loadAreas();
+        expect(areas?.length ?? 0, 'src/data/tech.ts exports no SKILL_AREAS').toBeGreaterThan(0);
+        // The grouping is computed once in the frontmatter and iterated by the bars panel.
+        expect(gridSrc(), 'TechGrid does not group with populatedAreas(').toMatch(/\bareas\s*=\s*populatedAreas\(\s*SKILL_AREAS\b/);
+        expect(callBlock(barsPanel(), 'areas.map(')).not.toBe('');
     });
 
-    it('every data category resolves to an area heading in both locales', () => {
-        const en = locale('en');
-        const es = locale('es');
+    it('every declared area resolves to its Definitions heading in both locales (RF-4)', async () => {
+        const areas = (await loadAreas()) ?? [];
         const offenders: string[] = [];
-        // The uncategorised bucket renders a heading of its own, so it is read
-        // from the grouping rather than spelled here.
-        for (const category of [...categories, fallbackCategory()]) {
-            const key = areaKey(category);
-            for (const [name, messages] of [
-                ['en', en],
-                ['es', es],
-            ] as const) {
-                const value = resolve(messages, key);
-                if (typeof value !== 'string' || value.trim() === '' || value === key) {
-                    offenders.push(`${key} missing in ${name}.json`);
-                }
+        if (JSON.stringify(areas.map((a) => a.key)) !== JSON.stringify(Object.keys(HEADINGS))) {
+            offenders.push(`declared areas are ${areas.map((a) => a.key).join(', ') || 'none'}, not ${Object.keys(HEADINGS).join(', ')}`);
+        }
+        for (const [key, want] of Object.entries(HEADINGS)) {
+            for (const lang of ['es', 'en'] as const) {
+                const got = resolve(locale(lang), `skills.areas.${key}`);
+                if (got !== want[lang]) offenders.push(`skills.areas.${key} in ${lang}.json is ${JSON.stringify(got)}, not "${want[lang]}"`);
             }
         }
-        expect(
-            offenders,
-            `Each bars-view area heading resolves through the locale files, so these\n` +
-                `ship the raw key to a visitor with nothing in the console:\n  ` +
-                offenders.join('\n  '),
-        ).toEqual([]);
+        for (const lang of ['es', 'en'] as const) {
+            const extra = Object.keys((resolve(locale(lang), 'skills.areas') as object) ?? {}).filter((k) => !(k in HEADINGS));
+            if (extra.length) offenders.push(`${lang}.json keeps undeclared area keys: ${extra.join(', ')}`);
+        }
+        expect(offenders, offenders.join('\n')).toEqual([]);
     });
 
-    it('the bars view renders one bordered card per data category with a translated heading', () => {
+    it('the bars view renders one bordered card per populated area with a translated heading', () => {
         const bars = barsPanel();
-        // The per-category iteration itself: the block the grouping callback
-        // renders. Counted from the markup, never from a list of area names.
-        const perCategory = callBlock(bars, 'byCategory.map(');
-        expect(
-            perCategory,
-            `The bars panel no longer iterates the category grouping, so it has no\n` +
-                `card per area at all:\n  ${bars}`,
-        ).not.toBe('');
+        const perArea = callBlock(bars, 'areas.map(');
+        expect(perArea, `The bars panel no longer iterates the populated areas:\n  ${bars}`).not.toBe('');
 
-        // The container is read off the markup: the element a category heading
-        // sits inside. Deleting it, or renaming the class on the markup side
-        // only, has to fail here rather than leave an orphan CSS rule behind.
-        const containers = [
-            ...perCategory.matchAll(/<div\b[^>]*\bclass=['"]([\w-]+)['"][^>]*>\s*<h[1-6]\b/g),
-        ];
-        expect(
-            containers.length,
-            `Expected one card container wrapping a category heading per iteration, so\n` +
-                `each area reads as one bordered unit. Found ${containers.length} inside\n` +
-                `the bars panel's per-category map.` +
-                (containers.length ? ':\n  ' + containers.map((m) => m[0]).join('\n  ') : ''),
-        ).toBe(1);
+        // The container is read off the markup: the element a heading sits inside.
+        const containers = [...perArea.matchAll(/<div\b[^>]*\bclass=['"]([\w-]+)['"][^>]*>\s*<(?:h[1-6]\b|AreaHeading\b)/g)];
+        expect(containers.length, `Expected one card container wrapping an area heading per iteration; found ${containers.length}`).toBe(1);
         const cardClass = containers[0][1];
 
-        // The grouping keys on the data's own field, so the number of cards is
-        // the number of categories in the data file — nothing is counted here.
-        const key = groupKey();
-        expect(
-            TECH_SRC,
-            `TechGrid groups on \`${key}\`, a field the data entries do not carry, so\n` +
-                `every tech lands in one bucket and the bars view renders one card:`,
-        ).toMatch(new RegExp(`\\b${key}\\s*:`));
+        // No heading spelled literally: the key is the lookup, the text lives in the locales.
+        const literals = Object.values(HEADINGS).flatMap((h) => [h.es, h.en]).filter((h) => bars.includes(`>${h}<`) || bars.includes(`'${h}'`));
+        expect(literals, `These area headings are spelled in the bars panel:\n  ${literals.join('\n  ')}`).toEqual([]);
 
-        // The data value is the lookup only: no area name spelled as text.
-        const literals = categories.filter(
-            (category) =>
-                bars.includes(`'${category}'`) ||
-                bars.includes(`"${category}"`) ||
-                bars.includes(`>${category}<`),
-        );
-        expect(
-            literals,
-            `These area names are spelled literally in the bars panel; the data value\n` +
-                `is the lookup key into skills.areas, never visitor text:\n  ` +
-                literals.join('\n  '),
-        ).toEqual([]);
+        // The heading goes through t(): inline, or inside AreaHeading's own <h4>.
+        const inline = perArea.match(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/)?.[1] ?? '';
+        const viaComponent = /<AreaHeading\b/.test(perArea);
+        const translated = viaComponent
+            ? /<h4\b[^>]*>[\s\S]*\{t\(/.test(headingSrc())
+            : /\{t\(/.test(inline);
+        expect(translated, `The area heading does not resolve through t() (${viaComponent ? 'AreaHeading.astro' : inline})`).toBe(true);
 
-        // Each card carries its heading through t().
-        const heading = perCategory.match(/<h[1-6]\b[^>]*>([^<]*)<\/h[1-6]>/)?.[1] ?? '';
-        expect(
-            heading,
-            `The heading inside the card container does not resolve through t():\n  ${heading}`,
-        ).toMatch(/^\{t\(/);
-
-        // And the card is bordered with the shared card padding — looked up by
-        // the class the markup mounts, so the two sides cannot drift apart
-        // whether the rule lives in the component or in the shared sheet.
         const cardRule = cardFrameRule(cardClass);
-        expect(
-            cardRule,
-            `No \`.${cardClass}\` rule styles the container the bars panel renders, in\n` +
-                `TechGrid's <style> or in /styles/03-components.css, so each area has no\n` +
-                `border of its own:\n  ${cardClass}`,
-        ).not.toBe('');
+        expect(cardRule, `No \`.${cardClass}\` rule borders the area card`).not.toBe('');
         expect(cardRule).toMatch(/border:\s*1px solid var\(--color-border\)/);
         expect(cardRule).toMatch(/padding:\s*1\.25rem/);
     });

@@ -18,5 +18,12 @@ outline glyphs, painted the same way; the skills row's brand logos live apart, i
 | `code.svg` | Tabler Icons v3.49.0, `icons/outline/code.svg` | `LICENSE-tabler.txt` | "Lo que construyo" step 2, develop |
 | `database.svg` | Tabler Icons v3.49.0, `icons/outline/database.svg` | `LICENSE-tabler.txt` | "Lo que construyo" step 3, integrate and optimise |
 | `rocket.svg` | Tabler Icons v3.49.0, `icons/outline/rocket.svg` | `LICENSE-tabler.txt` | "Lo que construyo" step 4, deploy and evolve |
+| `braces.svg` | Tabler Icons v3.49.0, `icons/outline/braces.svg` | `LICENSE-tabler.txt` | Skills area: Languages |
+| `layout.svg` | Tabler Icons v3.49.0, `icons/outline/layout.svg` | `LICENSE-tabler.txt` | Skills area: Frontend |
+| `server.svg` | Tabler Icons v3.49.0, `icons/outline/server.svg` | `LICENSE-tabler.txt` | Skills area: Backend |
+| `table.svg` | Tabler Icons v3.49.0, `icons/outline/table.svg` | `LICENSE-tabler.txt` | Skills area: Databases |
+| `cloud.svg` | Tabler Icons v3.49.0, `icons/outline/cloud.svg` | `LICENSE-tabler.txt` | Skills area: Cloud & DevOps |
+| `test-pipe.svg` | Tabler Icons v3.49.0, `icons/outline/test-pipe.svg` | `LICENSE-tabler.txt` | Skills area: Testing (declared, no skill yet) |
+| `broadcast.svg` | Tabler Icons v3.49.0, `icons/outline/broadcast.svg` | `LICENSE-tabler.txt` | Generic mark for a skill with no logo of its own |
 
 Tabler Icons: https://github.com/tabler/tabler-icons

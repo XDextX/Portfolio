@@ -51,12 +51,12 @@
 			"list": "Compact list"
 		},
 		"areas": {
+			"languages": "Languages",
 			"frontend": "Frontend",
 			"backend": "Backend",
-			"database": "Database",
-			"cloud": "Cloud",
-			"devops": "DevOps",
-			"other": "Other"
+			"databases": "Databases",
+			"cloudDevops": "Cloud & DevOps",
+			"testing": "Testing"
 		}
 	},
 	"about": {
