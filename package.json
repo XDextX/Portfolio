@@ -24,6 +24,6 @@
     "husky": "^9.1.7",
     "node-fetch": "^3.3.2",
     "playwright": "^1.56.0",
-    "vitest": "^1.1.9"
+    "vitest": "^3.2.7"
   }
 }

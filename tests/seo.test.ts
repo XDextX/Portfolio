@@ -12,6 +12,7 @@ import { TECH } from '../src/data/tech';
 import { ABOUT } from '../src/data/about';
 import { init, setLocale, t } from '../i18n/i18n';
 import type { GitHubRepo } from '@type/github';
+import { buildRepo as baseRepo } from './helpers/github-mocks';
 import type { Readings } from '../scripts/og-cover.ts';
 
 const locale = (name: 'es' | 'en') =>
@@ -19,9 +20,9 @@ const locale = (name: 'es' | 'en') =>
 
 const LOCALES = ['es', 'en'] as const;
 
-// `@i18n/index` runs `init()` at import time and needs an alias the runner has
-// none of (D-2). `i18n/i18n` is the same `t()` underneath, imported by path and
-// initialised here, so the description is interpolated by the shipping code.
+// `@i18n/index` runs `init()` at import time. `i18n/i18n` is the same `t()`
+// underneath, imported by path and initialised here, so this test owns its locale
+// and the description is still interpolated by the shipping code.
 init({ es: locale('es'), en: locale('en') }, 'es');
 
 // Two shapes of draft. SHORT is what today's data produces: under the maximum,
@@ -260,22 +261,20 @@ describe('the other three routes metadata (RF-9)', () => {
     });
 });
 
-// Local to this file on purpose: the builder in github-helpers.test.ts is not
-// exported, and hoisting it into tests/helpers/ would edit a file no task here owns.
+// The shared builder (spec 014 moved it to tests/helpers/) with this file's fixture:
+// a described TypeScript repository with a fixed date.
 function buildRepo(overrides: Partial<GitHubRepo> = {}): GitHubRepo {
-    return {
+    return baseRepo({
         id: 7,
         name: 'portfolio',
         full_name: 'someone/portfolio',
         description: 'A portfolio built with Astro',
         html_url: 'https://github.com/someone/portfolio',
         language: 'TypeScript',
-        stargazers_count: 0,
-        forks_count: 0,
         updated_at: '2026-01-01T00:00:00Z',
         owner: { login: 'someone', avatar_url: '' },
         ...overrides,
-    };
+    });
 }
 
 const PAGE_URL = 'https://example.test/proyectos/portfolio';
@@ -839,7 +838,8 @@ describe('the package.json dependency sets (T-S3, RF-3)', () => {
             husky: '^9.1.7',
             'node-fetch': '^3.3.2',
             playwright: '^1.56.0',
-            vitest: '^1.1.9',
+            // ^3.2: Vite 6, the one Astro 5 runs on, so .astro compiles in vitest (spec 014 D-1, owner OK).
+            vitest: '^3.2.7',
         });
     });
 });
