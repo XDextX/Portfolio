@@ -74,6 +74,17 @@
     --clr-intermediate-text: #1F4494;
     --clr-advanced-text: #14572A;
 
+    /* "Lo que construyo" steps only (AGENTS exception, spec 011): tints 1.08-1.18
+       on the sheet, so the card keeps its border; each tone clears 5.5:1 on its tint. */
+    --step-1-tint: #FCF3D6;
+    --step-2-tint: #E3ECFB;
+    --step-3-tint: #DEF2E5;
+    --step-4-tint: #ECE6FA;
+    --step-1-tone: var(--accent-text);
+    --step-2-tone: var(--clr-intermediate-text);
+    --step-3-tone: var(--clr-advanced-text);
+    --step-4-tone: #5532A0;
+
     color-scheme: light;
 }
 

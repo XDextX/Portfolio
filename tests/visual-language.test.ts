@@ -777,7 +777,12 @@ describe('UI icons (spec 008)', () => {
         if (new Set(icons).size !== icons.length) offenders.push(`one glyph, one meaning: ${icons.join(', ')} repeats one`);
         const notice = fs.existsSync(path.join(UI, 'NOTICE.md')) ? fs.readFileSync(path.join(UI, 'NOTICE.md'), 'utf-8') : '';
         if (!fs.existsSync(path.join(UI, 'LICENSE-tabler.txt'))) offenders.push('public/icons/ui/LICENSE-tabler.txt is missing');
-        for (const icon of new Set([...icons, ...heroIcons])) {
+        // Spec 011: the process steps' glyphs, one meaning each, shared with no other section.
+        const { PROCESS } = await import('../src/data/process');
+        const stepIcons: string[] = PROCESS.steps.map((s) => s.icon);
+        if (new Set(stepIcons).size !== stepIcons.length) offenders.push(`one glyph, one meaning: step glyphs ${stepIcons.join(', ')} repeat one`);
+        for (const icon of stepIcons) if (icons.includes(icon) || heroIcons.includes(icon)) offenders.push(`one glyph, one meaning: ${icon} is a step glyph and another section's`);
+        for (const icon of new Set([...icons, ...heroIcons, ...stepIcons])) {
             const file = path.join(UI, `${icon}.svg`);
             if (!fs.existsSync(file)) {
                 offenders.push(`public/icons/ui/${icon}.svg is missing`);
@@ -968,8 +973,9 @@ describe('hero type (spec 010)', () => {
         expect(offenders, offenders.join('\n')).toEqual([]);
     });
 
-    it('italic coverage: the italic face covers every phrase, both locales (RF-3)', async () => {
+    it('italic coverage: the italic face covers every phrase and the process note, both locales (RF-3)', async () => {
         const { ABOUT } = (await import('../src/data/about')) as any;
+        const { PROCESS } = await import('../src/data/process');
         const italic = faces().filter((f) => f.family === 'IBM Plex Sans' && f.style === 'italic');
         const keys: string[] = ABOUT.phraseKeys ?? [];
         const offenders: string[] = [];
@@ -984,6 +990,24 @@ describe('hero type (spec 010)', () => {
                     const cp = ch.codePointAt(0)!;
                     if (!italic.some((f) => inRanges(cp, f.ranges))) offenders.push(`RF-3: ${lang} ${key} "${ch}" U+${cp.toString(16).toUpperCase()} is outside the italic face`);
                 }
+            }
+            for (const ch of PROCESS.note[lang as 'es' | 'en']) {
+                const cp = ch.codePointAt(0)!;
+                if (!italic.some((f) => inRanges(cp, f.ranges))) offenders.push(`spec 011: ${lang} note "${ch}" U+${cp.toString(16).toUpperCase()} is outside the italic face`);
+            }
+        }
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+});
+
+describe('step colour scope (spec 011)', () => {
+    it('only the process section reads a step tint or tone', () => {
+        // Source, not rendering: the aliased tones render like their existing uses (spec 011 NFR).
+        const offenders: string[] = [];
+        for (const { file, css } of styleSources(ROOT)) {
+            const n = [...css.matchAll(/var\(\s*--step-\d+-(?:tint|tone)\b/g)].length;
+            if (n && path.basename(file) !== 'ValuePropositionSection.astro') {
+                offenders.push(`${path.relative(ROOT, file)} reads a step colour ${n} time(s)`);
             }
         }
         expect(offenders, offenders.join('\n')).toEqual([]);

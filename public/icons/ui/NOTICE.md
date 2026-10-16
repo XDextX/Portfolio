@@ -14,5 +14,9 @@ outline glyphs, painted the same way; the skills row's brand logos live apart, i
 | `mail.svg` | Tabler Icons v3.49.0, `icons/outline/mail.svg` | `LICENSE-tabler.txt` | Contact title; the hero's email button |
 | `brand-github.svg` | Tabler Icons v3.49.0, `icons/outline/brand-github.svg` | `LICENSE-tabler.txt` | The hero's GitHub button |
 | `brand-linkedin.svg` | Tabler Icons v3.49.0, `icons/outline/brand-linkedin.svg` | `LICENSE-tabler.txt` | The hero's LinkedIn button |
+| `bulb.svg` | Tabler Icons v3.49.0, `icons/outline/bulb.svg` | `LICENSE-tabler.txt` | "Lo que construyo" step 1, analyse and design |
+| `code.svg` | Tabler Icons v3.49.0, `icons/outline/code.svg` | `LICENSE-tabler.txt` | "Lo que construyo" step 2, develop |
+| `database.svg` | Tabler Icons v3.49.0, `icons/outline/database.svg` | `LICENSE-tabler.txt` | "Lo que construyo" step 3, integrate and optimise |
+| `rocket.svg` | Tabler Icons v3.49.0, `icons/outline/rocket.svg` | `LICENSE-tabler.txt` | "Lo que construyo" step 4, deploy and evolve |
 
 Tabler Icons: https://github.com/tabler/tabler-icons

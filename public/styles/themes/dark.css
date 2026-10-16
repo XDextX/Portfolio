@@ -59,6 +59,17 @@
     --clr-intermediate: #9DBCF5;
     --clr-advanced: #34D399;
 
+    /* "Lo que construyo" steps only (AGENTS exception, spec 011): the navy card
+       for all four, the tone alone tells them apart; each clears 5:1 on it. */
+    --step-1-tint: var(--card-background);
+    --step-2-tint: var(--card-background);
+    --step-3-tint: var(--card-background);
+    --step-4-tint: var(--card-background);
+    --step-1-tone: var(--accent-text);
+    --step-2-tone: var(--clr-intermediate);
+    --step-3-tone: var(--clr-advanced-text);
+    --step-4-tone: #C7B5F7;
+
     /* Neutral scale — navy steps, so a chip, a track and a card all belong to
        the same hue. Each surface name is var() of the step it means, so the
        ramp has one source and a name can never drift off it. */

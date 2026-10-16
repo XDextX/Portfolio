@@ -1,7 +1,7 @@
 ---
-import { ABOUT } from '../data/about';
 import SectionTitle from './SectionTitle.astro';
 import { SECTION_TITLES } from '../data/sectionTitles';
+import { PROCESS } from '../data/process';
 
 export interface Props {
 	locale?: 'es' | 'en';
@@ -9,49 +9,148 @@ export interface Props {
 
 const { locale = 'es' } = Astro.props;
 const titleId = SECTION_TITLES.valueProposition.id;
-// Indexed by locale, not chosen by a ternary: t() is for chrome, ABOUT is for
-// this sentence, and visual-language.test.ts:131 reads the ternary shape as prose
-// living in the component.
-const proposition = ABOUT.valueProposition[locale];
-const points = ABOUT.proofPoints.map((p) => p[locale]);
+// Spec 011. Text indexed by locale, not chosen by a ternary (visual-language.test.ts
+// reads that shape as prose in the component). Number, tint and tone come from the
+// position: the number is the list's own marker, tint and tone are :nth-child(N).
+const { intro, note, steps } = PROCESS;
 ---
 
-<section class='section' id='ValueProposition' aria-labelledby={titleId}>
+<section class='section process' id='ValueProposition' aria-labelledby={titleId}>
 	<SectionTitle section='valueProposition' />
 
-	<p class='value-proposition'>{proposition}</p>
+	<p class='process__intro'>{intro[locale]}</p>
+	<p class='process__note'>{note[locale]}</p>
 
-	<ul class='value-points'>
-		{points.map((text) => (
-			<li>{text}</li>
+	<ol class='steps'>
+		{steps.map((s, i) => (
+			<li class='step card-frame'>
+				<span class='step__icon' aria-hidden='true' style={`--icon: url(/icons/ui/${s.icon}.svg)`}></span>
+				<h3 class='step__title'>{s.title[locale]}</h3>
+				<p class='step__desc'>{s.description[locale]}</p>
+				<ul class='step__tags' role='list'>
+					{s.tags[locale].map((g) => <li class='step__tag'>{g}</li>)}
+				</ul>
+				{i < steps.length - 1 && <span class='step__arrow' aria-hidden='true'></span>}
+			</li>
 		))}
-	</ul>
+	</ol>
 </section>
 
 <style>
-	.value-proposition {
-		font-size: var(--fs-lg);
-		font-weight: 600;
-		color: var(--text-color);
-		line-height: var(--lh-normal);
-		max-width: var(--measure);
+	.process {
+		container-type: inline-size;
 	}
 
-	.value-points {
-		margin: 0;
-		display: flex;
-		flex-direction: column;
-		gap: var(--sp-3);
-	}
-
-	.value-points li {
-		max-width: var(--measure);
+	.process__intro {
 		font-size: var(--fs-base);
+		color: var(--text-secondary);
+		line-height: var(--lh-normal);
+		max-inline-size: var(--measure);
+		margin: 0;
+	}
+
+	.process__note {
+		font-size: var(--fs-base);
+		font-style: italic;
+		font-weight: 400;
+		color: var(--text-secondary);
+		margin: var(--sp-2) 0 var(--sp-4);
+	}
+
+	.steps {
+		list-style: decimal inside;
+		display: grid;
+		gap: 2rem;
+		margin: 0;
+		padding: 0;
+	}
+
+	.step {
+		position: relative;
+		background: var(--tint);
+	}
+
+	.step::marker {
+		color: var(--text-color);
+		font-size: var(--fs-lg);
+		font-weight: 700;
+	}
+
+	.step:nth-child(1) { --tint: var(--step-1-tint); --tone: var(--step-1-tone); }
+	.step:nth-child(2) { --tint: var(--step-2-tint); --tone: var(--step-2-tone); }
+	.step:nth-child(3) { --tint: var(--step-3-tint); --tone: var(--step-3-tone); }
+	.step:nth-child(4) { --tint: var(--step-4-tint); --tone: var(--step-4-tone); }
+
+	.step__icon {
+		display: inline-block;
+		inline-size: 2rem;
+		block-size: 2rem;
+		margin-inline-start: var(--sp-2);
+		vertical-align: middle;
+		color: var(--tone);
+		background-color: currentColor;
+		mask: var(--icon) center / contain no-repeat;
+		-webkit-mask: var(--icon) center / contain no-repeat;
+	}
+
+	.step__title {
+		margin: var(--sp-3) 0 var(--sp-2);
+		font-size: var(--fs-lg);
+		font-weight: 700;
+		color: var(--text-color);
+		line-height: 1.3;
+	}
+
+	.step__desc {
+		margin: 0 0 var(--sp-3);
+		font-size: var(--fs-sm);
 		color: var(--text-secondary);
 		line-height: var(--lh-normal);
 	}
 
-	.value-points li::marker {
-		color: var(--accent-text);
+	.step__tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.step__tag {
+		padding: 0.2rem 0.5rem;
+		font-size: var(--fs-xs);
+		font-weight: 500;
+		white-space: nowrap;
+		color: var(--text-secondary);
+		background: var(--tag-surface);
+		border-radius: var(--radius-xs);
+	}
+
+	/* Centred in the 2rem gap; the 1px is .card-frame's border, outside the padding box
+	   that 100% measures. Rotated, not redrawn, so one shape points both ways. */
+	.step__arrow {
+		position: absolute;
+		inline-size: 1rem;
+		block-size: 1rem;
+		background-color: var(--accent-text);
+		clip-path: polygon(0 40%, 55% 40%, 55% 15%, 100% 50%, 55% 85%, 55% 60%, 0 60%);
+		inset-block-start: calc(100% + 1px + (2rem - 1rem) / 2);
+		inset-inline-start: calc(50% - 0.5rem);
+		rotate: 90deg;
+	}
+
+	/* Four in a row needs 4 x (floor + card chrome) + 3 arrow slots (spec 011 Layout):
+	   968px of row, a 1131px viewport today. */
+	@container (min-width: calc(4 * (11rem + 2 * (1.25rem + 1px)) + 3 * 2rem)) {
+		.steps {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+		}
+
+		.step__arrow {
+			inset-block-start: calc(50% - 0.5rem);
+			inset-inline-start: calc(100% + 1px + (2rem - 1rem) / 2);
+			rotate: none;
+		}
 	}
 </style>
