@@ -118,3 +118,22 @@
     border-color: var(--accent-text);
     color: var(--accent-text);
 }
+
+/* Glows (spec 009): navy steps on each home section, the brand gold in the hero only.
+   "in srgb" is written out: a color-mix() stop otherwise interpolates in Oklab, which
+   leaves the navy ramp. closest-side ends every glow at the sheet, so no seam shows. */
+:root[data-theme="dark"] main > .section {
+    background-image: radial-gradient(ellipse closest-side at 20% 40% in srgb,
+        color-mix(in srgb, var(--neutral-100) 50%, var(--main-bg)), var(--main-bg));
+}
+
+:root[data-theme="dark"] main > .section--hero {
+    background-image: radial-gradient(ellipse closest-side at 50% 35% in srgb,
+        color-mix(in srgb, var(--brand-accent) 5%, var(--main-bg)), var(--main-bg));
+}
+
+@media (forced-colors: active) {
+    :root[data-theme="dark"] main > .section {
+        background-image: none;
+    }
+}

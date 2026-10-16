@@ -4,7 +4,7 @@ import path from 'path';
 import { LEVEL_COLOR, LEVEL_TEXT_COLOR, LEVEL_SCALE, type TechLevel } from '../src/data/levelLabels';
 import * as levelData from '../src/data/levelLabels';
 import { TECH } from '../src/data/tech';
-import { stripComments, luminance, contrast, toHex, resolveColour, cssRules, styleSources, hue, hueDistance, borderColourOf } from './helpers/colour';
+import { stripComments, luminance, contrast, toHex, resolveColour, cssRules, styleSources, hue, hueDistance, borderColourOf, parseColour, parseGradients, composites, onRamp } from './helpers/colour';
 
 /**
  * The visual language, enforced rather than described. A rule that only lives in
@@ -855,6 +855,57 @@ describe('control borders (spec 017)', () => {
                 if (d > 10) offenders.push(`NFR: ${theme}: ${c} is ${d.toFixed(1)}° from the neutral hue`);
             } catch (err) {
                 offenders.push(`RF-2: ${theme}: ${detail(err)}`);
+            }
+        }
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+});
+
+describe('colour helper: gradients (spec 009)', () => {
+    it('parses a computed colour, including color(srgb …) with alpha', () => {
+        expect(parseColour('color(srgb 0.1 0.2 0.3 / 0.05)')).toEqual({ r: 25.5, g: 51, b: 76.5, a: 0.05 });
+        expect(parseColour('rgba(36, 57, 114, 0.5)')).toEqual({ r: 36, g: 57, b: 114, a: 0.5 });
+        expect(() => parseColour('oklch(0.5 0.1 250)')).toThrow();
+    });
+
+    it('rejects a colour off the navy ramp', () => {
+        const ramp = ['#16233F', '#1F3059', '#243972', '#2B4372', '#3A578F'].map((h) => parseColour(h));
+        expect(onRamp(parseColour('#7C3AED'), ramp)).toBe(false);
+        expect(onRamp(parseColour('#243972'), ramp)).toBe(true);
+    });
+
+    it('samples a two-stop gradient over the sheet', () => {
+        const [g] = parseGradients('linear-gradient(rgb(0, 0, 0), rgb(255, 255, 255))');
+        const s = composites(g, parseColour('rgb(0, 0, 0)'), 2).map((c) => c.r);
+        expect(s).toEqual([0, 127.5, 255]);
+        expect(g.srgb).toBe(true);
+        expect(() => parseGradients('url(/x.png)')).toThrow();
+    });
+});
+
+describe('dark glow data (spec 009)', () => {
+    const STYLES = path.join(ROOT, 'public', 'styles');
+    const read = (...p: string[]) => stripComments(fs.readFileSync(path.join(STYLES, ...p), 'utf-8'));
+
+    it('the dark ramp rises strictly from the ground to the soft fill (RF-7 data)', () => {
+        const layers = [read('themes', 'dark.css'), read('themes', 'light.css'), read('00-tokens.css')];
+        const ramp = ['--bg', '--neutral-50', '--main-bg', '--neutral-100', '--neutral-200'];
+        const L = ramp.map((t) => luminance(resolveColour(`var(${t})`, ...layers)));
+        const offenders = L.slice(1).map((l, i) => (l <= L[i] ? `RF-7: ${ramp[i + 1]} (${l.toFixed(4)}) is not lighter than ${ramp[i]} (${L[i].toFixed(4)})` : '')).filter(Boolean);
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+
+    it('every dark-theme gradient interpolates in sRGB (RF-4 data)', () => {
+        const offenders: string[] = [];
+        for (const { file, css } of styleSources(ROOT)) {
+            for (const rule of cssRules(css)) {
+                if (!rule.selectors.some((s) => s.includes('[data-theme="dark"]'))) continue;
+                for (const m of rule.body.matchAll(/[\w-]*gradient\(([^;]*)/g)) {
+                    // The gradient's own method is in its first argument; a color-mix() stop's
+                    // "in srgb" further on says nothing about how the gradient interpolates.
+                    const head = m[1].split(/,(?![^(]*\))/)[0];
+                    if (!/\bin srgb\b/.test(head)) offenders.push(`RF-4: ${path.relative(ROOT, file)} ${rule.selectors.join(', ')} has a gradient without "in srgb"`);
+                }
             }
         }
         expect(offenders, offenders.join('\n')).toEqual([]);

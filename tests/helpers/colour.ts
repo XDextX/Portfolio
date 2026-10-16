@@ -190,3 +190,119 @@ export function borderColourOf(decls: Map<string, string>): string | null {
     const colour = short.trim().split(/\s+(?![^(]*\))/).filter((t) => !KEYWORD.test(t));
     return colour.length ? colour.join(' ') : null;
 }
+
+/** A colour with 0–255 float channels and an alpha in [0, 1]. */
+export interface Rgba {
+    r: number;
+    g: number;
+    b: number;
+    a: number;
+}
+
+/**
+ * Parse a computed colour: `rgb()`, `rgba()`, `color(srgb r g b / a)` or `#rrggbb`.
+ * @param css the serialised colour
+ * @returns its channels; throws on any other space, so an `oklch()` stop fails loudly
+ */
+export function parseColour(css: string): Rgba {
+    const s = css.trim();
+    if (/^#[0-9a-f]{3}([0-9a-f]{3})?$/i.test(s)) {
+        const h = toHex(s);
+        return { r: parseInt(h.slice(1, 3), 16), g: parseInt(h.slice(3, 5), 16), b: parseInt(h.slice(5, 7), 16), a: 1 };
+    }
+    const rgb = s.match(/^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)(?:\s*[,/]\s*([\d.]+%?))?\s*\)$/i);
+    if (rgb) {
+        const a = rgb[4] === undefined ? 1 : rgb[4].endsWith('%') ? parseFloat(rgb[4]) / 100 : Number(rgb[4]);
+        return { r: Number(rgb[1]), g: Number(rgb[2]), b: Number(rgb[3]), a };
+    }
+    const srgb = s.match(/^color\(\s*srgb\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s*\/\s*([\d.]+))?\s*\)$/i);
+    if (srgb) {
+        const ch = (v: string) => Math.round(Number(v) * 255 * 1e6) / 1e6;
+        return { r: ch(srgb[1]), g: ch(srgb[2]), b: ch(srgb[3]), a: srgb[4] === undefined ? 1 : Number(srgb[4]) };
+    }
+    throw new Error(`not a measurable sRGB colour: ${css}`);
+}
+
+/**
+ * The gradients in a computed `background-image`.
+ * @param image the computed value
+ * @returns each gradient's stops and whether it interpolates in sRGB; `none` gives []
+ */
+export function parseGradients(image: string): { srgb: boolean; stops: Rgba[] }[] {
+    if (image.trim() === 'none') return [];
+    if (/url\(/i.test(image)) throw new Error(`an image, not a gradient: ${image}`);
+    const out: { srgb: boolean; stops: Rgba[] }[] = [];
+    const re = /[\w-]*gradient\(/g;
+    for (let m = re.exec(image); m; m = re.exec(image)) {
+        let depth = 1;
+        let i = m.index + m[0].length;
+        for (; i < image.length && depth; i++) depth += image[i] === '(' ? 1 : image[i] === ')' ? -1 : 0;
+        const body = image.slice(m.index + m[0].length, i - 1);
+        const colours = body.match(/(?:rgba?|color)\([^()]*\)/gi) ?? [];
+        const stops = colours.map(parseColour);
+        const srgb = /\bin srgb\b/i.test(body) || colours.every((c) => /^rgba?\(/i.test(c));
+        out.push({ srgb, stops });
+        re.lastIndex = i;
+    }
+    return out;
+}
+
+/**
+ * Every colour a gradient renders over an opaque sheet, each segment sampled.
+ * @param g a parsed gradient @param sheet the opaque ground @param steps samples per segment
+ * @returns the composites, endpoints included
+ */
+export function composites(g: { stops: Rgba[] }, sheet: Rgba, steps = 64): Rgba[] {
+    const over = (c: Rgba): Rgba => ({
+        r: c.a * c.r + (1 - c.a) * sheet.r,
+        g: c.a * c.g + (1 - c.a) * sheet.g,
+        b: c.a * c.b + (1 - c.a) * sheet.b,
+        a: 1,
+    });
+    const flat = g.stops.map(over);
+    const out: Rgba[] = flat.length ? [flat[0]] : [];
+    for (let i = 1; i < flat.length; i++) {
+        for (let s = 1; s <= steps; s++) {
+            const t = s / steps;
+            const [p, q] = [flat[i - 1], flat[i]];
+            out.push({ r: p.r + (q.r - p.r) * t, g: p.g + (q.g - p.g) * t, b: p.b + (q.b - p.b) * t, a: 1 });
+        }
+    }
+    return out;
+}
+
+const hexOf = (c: Rgba) => '#' + [c.r, c.g, c.b].map((v) => Math.round(v).toString(16).padStart(2, '0')).join('');
+
+/**
+ * The lowest contrast a colour reaches against a gradient's composites.
+ * @param colour the foreground @param samples the gradient's composites
+ * @returns the worst ratio
+ */
+export function worstPoint(colour: Rgba, samples: Rgba[]): number {
+    return Math.min(...samples.map((s) => contrast(hexOf(colour), hexOf(s))));
+}
+
+/**
+ * Whether a colour lies on the ramp: transparent, or within `tol` of a segment between two ramp colours.
+ * @param c the colour @param allowed the ramp @param tol per-channel tolerance
+ * @returns true when on the ramp
+ */
+export function onRamp(c: Rgba, allowed: Rgba[], tol = 1): boolean {
+    if (c.a === 0) return true;
+    const near = (p: Rgba, q: Rgba) => {
+        const d = [q.r - p.r, q.g - p.g, q.b - p.b];
+        const len = d[0] ** 2 + d[1] ** 2 + d[2] ** 2;
+        const t = len ? Math.max(0, Math.min(1, ((c.r - p.r) * d[0] + (c.g - p.g) * d[1] + (c.b - p.b) * d[2]) / len)) : 0;
+        return [p.r + d[0] * t - c.r, p.g + d[1] * t - c.g, p.b + d[2] * t - c.b].every((v) => Math.abs(v) <= tol);
+    };
+    return allowed.some((p, i) => allowed.slice(i).some((q) => near(p, q)));
+}
+
+/**
+ * The WCAG contrast floor for a piece of text.
+ * @param px font size in px @param weight font weight
+ * @returns 3 for large text (≥ 24px, or ≥ 18.66px at 700+), else 4.5
+ */
+export function floorFor(px: number, weight: number): 3 | 4.5 {
+    return px >= 24 || (px >= 18.66 && weight >= 700) ? 3 : 4.5;
+}

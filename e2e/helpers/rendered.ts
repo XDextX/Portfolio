@@ -38,6 +38,19 @@ export async function installHelpers(page: Page) {
             }
             throw new Error('no opaque ground up to html');
         };
+        // Spec 009: a glow surface reached before an opaque ground is the ground; a
+        // translucent ancestor on the way makes the colour unmeasurable, never a skip.
+        w.__groundOf = (el: Element, glowSelector: string) => {
+            // Starts at the element itself: a button's own opaque fill is its text's ground.
+            for (let n: Element | null = el; n; n = n.parentElement) {
+                const cs = getComputedStyle(n);
+                const a = cs.backgroundColor.match(/rgba?\(([^)]+)\)/)?.[1].split(/[\s,/]+/)[3];
+                if (cs.backgroundColor !== 'transparent' && (a === undefined || Number(a) === 1)) return { glow: false, colour: w.__toHex(cs.backgroundColor) };
+                if (n.matches(glowSelector) && /gradient\(/.test(cs.backgroundImage)) return { glow: true, index: [...document.querySelectorAll(glowSelector)].indexOf(n) };
+                if (Number(cs.opacity) < 1) throw new Error(`not measurable: ${n.tagName.toLowerCase()} has opacity ${cs.opacity}`);
+            }
+            throw new Error('no ground up to html');
+        };
     });
 }
 
