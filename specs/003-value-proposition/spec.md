@@ -1,6 +1,7 @@
 # Spec 003 — Value proposition section
 
-**Status:** implemented
+**Status:** superseded
+**Superseded:** 2026-10-15 · by spec 011 ("Lo que construyo" as four process steps), which replaces the proposition and the proof points
 **Approved:** 2026-10-10 · la aclaración cerrada: las palabras las escribió el dueño —la proposición y los tres proof points, en `es` y en `en`—, después de que se le preguntara por ellas en vez de inventarlas · tres correcciones sobre el texto anterior: el check de RF-1 pasa a Playwright, porque `npm test` es `vitest --run tests` y no renderiza ninguna ruta con `output: "server"`; RF-2 baja su promesa a lo que su guard comprueba, porque que un lector pueda verificar un punto es criterio del autor; y el NFR del LCP se reescribe alrededor de `p.about-bio`, que es el elemento LCP medido (88/152/84 ms a 390×844, 958×888 y 1440×900), no del avatar · se añade *Approved wording* y se corrige `Out of scope`: la 004 ya hizo el SEO por página, y los once repositorios con un solo `README` se quedan listados por decisión del dueño · cambio 2026-10-11 del dueño: la sección pasa a segunda tras el hero (RF-1 reescrito a `ids[1]`) y el wording se reemplaza — el `es` nuevo es del dueño, el `en` es traducción del planificador ("tradúcela tú") — · 224 lines, 6 RF
 
 ## Context and goal
