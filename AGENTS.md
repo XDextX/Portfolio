@@ -307,6 +307,12 @@ call.
   accent is the most recognisable generated palette there is, and it cancels a navy-and-gold pair
   out into a default with a logo dropped on it. Reintroducing warm neutrals reads as a warmer,
   friendlier improvement to anyone who finds it. It is a regression.
+- **One exception, scoped to the "Lo que construyo" steps (spec 011)**: each step's icon takes a
+  tone in both themes, and in light each card takes a pastel tint — step 1's gold tint included —
+  as its fill, beside `--neutral-200` as the soft fill everywhere else. The cool canvas still
+  governs the ground; the tint marks identity, not the card's edge, so the card keeps its border.
+  No element outside that section takes a step colour. *Settled by `tests/visual-language.test.ts`*
+  (step colour scope) and `e2e/process-steps.spec.ts` (exception scope).
 - **The dark theme is one hue** — sheet, cards one step up, neutral scale in navy steps. Two
   surfaces in different hues read as two systems fighting rather than steps of one. A navy page is
   deliberate and stays; near-black with one acid accent is not the default to reach for.
