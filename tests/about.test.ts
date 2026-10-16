@@ -4,6 +4,7 @@ import { promises as fsp } from 'fs';
 import path from 'path';
 
 import { ABOUT } from '../src/data/about';
+import { stripComments } from './helpers/source';
 
 const COMPONENT = path.resolve(process.cwd(), 'src', 'components', 'AboutSection.astro');
 
@@ -80,7 +81,6 @@ describe('AboutSection sources its data from ABOUT', () => {
 describe('location once (spec 018 RF-2)', () => {
     // A source read: an equal string duplicated renders the same (constitution 8). Job
     // locations are another datum, so experience.ts is skipped.
-    const strip = (src: string) => src.replace(/<!--[\s\S]*?-->/g, ' ').replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/^\s*\/\/.*$/gm, ' ');
     const walk = (dir: string, exts: string[]): string[] => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
         const full = path.join(dir, e.name);
         return e.isDirectory() ? walk(full, exts) : exts.includes(path.extname(e.name)) ? [full] : [];
@@ -94,7 +94,7 @@ describe('location once (spec 018 RF-2)', () => {
             ...['components', 'layouts', 'pages'].flatMap((d) => walk(path.join(process.cwd(), 'src', d), ['.astro'])),
             ...walk(path.join(process.cwd(), 'i18n', 'locales'), ['.json']),
         ];
-        const hits = files.map((f) => ({ f: path.relative(process.cwd(), f), n: strip(fs.readFileSync(f, 'utf-8')).split(loc).length - 1 })).filter((h) => h.n > 0);
+        const hits = files.map((f) => ({ f: path.relative(process.cwd(), f), n: stripComments(fs.readFileSync(f, 'utf-8')).split(loc).length - 1 })).filter((h) => h.n > 0);
         const total = hits.reduce((a, h) => a + h.n, 0);
         expect({ total, where: hits.map((h) => `${h.f} x${h.n}`) }).toEqual({ total: 1, where: [path.join('src', 'data', 'about.ts') + ' x1'] });
     });

@@ -90,6 +90,26 @@
 			"error": "Error",
 			"copiedLive": "{{label}} copiado al portapapeles",
 			"errorLive": "No se pudo copiar {{label}}"
+		},
+		"form": {
+			"name": "Nombre",
+			"subject": "Asunto",
+			"message": "Mensaje",
+			"submit": "Enviar mensaje",
+			"privacy": "Solo para responderte; este sitio no guarda tu mensaje. Se envía a través de Mailtrap.",
+			"trap": "Deja este campo vacío",
+			"errors": {
+				"name": "Escribe tu nombre, en una sola línea.",
+				"email": "Escribe un correo válido, como nombre@dominio.com.",
+				"subject": "Escribe un asunto, en una sola línea.",
+				"message": "Escribe tu mensaje."
+			},
+			"outcome": {
+				"sent": "Mensaje enviado. Te responderé pronto.",
+				"invalid": "Revisa los campos marcados.",
+				"limited": "Has enviado varios mensajes seguidos. Inténtalo de nuevo en unos minutos.",
+				"failed": "No se pudo enviar el mensaje. Inténtalo más tarde o escríbeme por correo."
+			}
 		}
 	},
 	"nav": {

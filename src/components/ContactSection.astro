@@ -1,5 +1,6 @@
 ---
 import ContactCard from './ContactCard.astro';
+import ContactForm from './ContactForm.astro';
 import { CONTACTS } from '../data/contacts';
 import { t } from '@i18n/index';
 import SectionTitle from './SectionTitle.astro';
@@ -34,6 +35,8 @@ const tagline = t('contact.tagline');
 			))
 		}
 	</ul>
+
+	<ContactForm />
 </section>
 
 <style>

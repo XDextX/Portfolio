@@ -90,6 +90,26 @@
 			"error": "Error",
 			"copiedLive": "{{label}} copied to the clipboard",
 			"errorLive": "Could not copy {{label}}"
+		},
+		"form": {
+			"name": "Name",
+			"subject": "Subject",
+			"message": "Message",
+			"submit": "Send message",
+			"privacy": "Only used to reply to you; this site does not store your message. It is sent through Mailtrap.",
+			"trap": "Leave this field empty",
+			"errors": {
+				"name": "Enter your name, on one line.",
+				"email": "Enter a valid email, like name@domain.com.",
+				"subject": "Enter a subject, on one line.",
+				"message": "Enter your message."
+			},
+			"outcome": {
+				"sent": "Message sent. I will reply soon.",
+				"invalid": "Check the marked fields.",
+				"limited": "You have sent several messages in a row. Try again in a few minutes.",
+				"failed": "The message could not be sent. Try again later or email me."
+			}
 		}
 	},
 	"nav": {

@@ -1,0 +1,229 @@
+---
+import { t } from '@i18n/index';
+import { FIELD_LIMITS, type Field } from '../pages/lib/contact';
+
+/**
+ * Spec 015: the contact form. Posts to the page without scripts (index.astro runs the handler
+ * into Astro.locals.contact) and to /api/contact with them; both answer through one handler.
+ */
+interface Props {}
+
+const state = Astro.locals.contact;
+const FIELDS = Object.keys(FIELD_LIMITS) as Field[];
+const LABEL_KEYS: Record<Field, string> = {
+	name: 'contact.form.name',
+	email: 'about.social.email',
+	subject: 'contact.form.subject',
+	message: 'contact.form.message',
+};
+const TYPES: Partial<Record<Field, string>> = { email: 'email' };
+const AUTOCOMPLETE: Partial<Record<Field, string>> = { name: 'name', email: 'email' };
+const bad = (f: Field) => !!state?.fields.includes(f);
+const value = (f: Field) => state?.values?.[f] ?? '';
+---
+
+<form method='post' action='#Contact' class='contact-form' data-contact-form>
+	{
+		FIELDS.map((f) => (
+			<div class='contact-form__field'>
+				<label class='contact-form__label'>
+					<span>{t(LABEL_KEYS[f])}</span>
+					{f === 'message' ? (
+						<textarea
+							class='contact-form__control contact-form__control--area'
+							name={f}
+							rows='6'
+							required
+							maxlength={FIELD_LIMITS[f]}
+							aria-invalid={bad(f) ? 'true' : undefined}
+							aria-describedby={bad(f) ? `contact-err-${f}` : undefined}
+						>{value(f)}</textarea>
+					) : (
+						<input
+							class='contact-form__control'
+							name={f}
+							type={TYPES[f] ?? 'text'}
+							autocomplete={AUTOCOMPLETE[f]}
+							required
+							maxlength={FIELD_LIMITS[f]}
+							value={value(f)}
+							aria-invalid={bad(f) ? 'true' : undefined}
+							aria-describedby={bad(f) ? `contact-err-${f}` : undefined}
+						/>
+					)}
+				</label>
+				<p class='contact-form__error' id={`contact-err-${f}`} data-error-for={f} hidden={!bad(f)}>
+					{t(`contact.form.errors.${f}`)}
+				</p>
+			</div>
+		))
+	}
+	<div class='contact-form__trap' aria-hidden='true'>
+		<label>
+			{t('contact.form.trap')}
+			<input name='website' type='text' tabindex='-1' autocomplete='off' />
+		</label>
+	</div>
+	<button type='submit' class='btn btn--primary contact-form__submit'>{t('contact.form.submit')}</button>
+	<p class='contact-form__privacy' data-contact-privacy>{t('contact.form.privacy')}</p>
+	<p
+		class='contact-form__status'
+		role='status'
+		aria-live='polite'
+		data-contact-status
+		data-sent={t('contact.form.outcome.sent')}
+		data-invalid={t('contact.form.outcome.invalid')}
+		data-limited={t('contact.form.outcome.limited')}
+		data-failed={t('contact.form.outcome.failed')}
+	>
+		{state ? t(`contact.form.outcome.${state.outcome}`) : ''}
+	</p>
+</form>
+
+<script>
+	type Outcome = 'sent' | 'invalid' | 'limited' | 'failed';
+	const OUTCOMES: Outcome[] = ['sent', 'invalid', 'limited', 'failed'];
+
+	function enhance(form: HTMLFormElement) {
+		if (form.dataset.enhanced) return;
+		form.dataset.enhanced = '1';
+		const status = form.querySelector<HTMLElement>('[data-contact-status]')!;
+		let pending = false;
+		form.addEventListener('submit', async (ev) => {
+			ev.preventDefault();
+			if (pending) return;
+			pending = true;
+			form.setAttribute('aria-busy', 'true');
+			try {
+				let outcome: Outcome = 'failed';
+				let fields: string[] = [];
+				try {
+					const res = await fetch('/api/contact', {
+						method: 'POST',
+						body: new URLSearchParams(new FormData(form) as unknown as Record<string, string>),
+					});
+					const body = await res.json();
+					if (OUTCOMES.includes(body.outcome)) { outcome = body.outcome; fields = body.fields ?? []; }
+				} catch { /* network or parse failure reads as failed */ }
+				// Navigated away while waiting: the answer belongs to a form nobody sees.
+				if (!form.isConnected) return;
+				let first: HTMLElement | null = null;
+				for (const err of form.querySelectorAll<HTMLElement>('[data-error-for]')) {
+					const f = err.dataset.errorFor!;
+					const control = form.elements.namedItem(f) as HTMLInputElement | null;
+					const invalid = fields.includes(f);
+					err.hidden = !invalid;
+					if (!control) continue;
+					if (invalid) {
+						control.setAttribute('aria-invalid', 'true');
+						control.setAttribute('aria-describedby', err.id);
+						first ??= control;
+					} else {
+						control.removeAttribute('aria-invalid');
+						control.removeAttribute('aria-describedby');
+					}
+				}
+				if (outcome === 'sent') form.reset();
+				// Cleared first so a repeated outcome is announced again.
+				status.textContent = '';
+				requestAnimationFrame(() => { status.textContent = status.dataset[outcome] ?? ''; });
+				if (outcome === 'invalid') first?.focus();
+			} finally {
+				pending = false;
+				form.removeAttribute('aria-busy');
+			}
+		});
+	}
+
+	document.addEventListener('astro:page-load', () => {
+		document.querySelectorAll<HTMLFormElement>('form[data-contact-form]').forEach(enhance);
+	});
+</script>
+
+<style>
+	.contact-form {
+		display: grid;
+		gap: var(--sp-4);
+		max-width: var(--measure);
+		margin-top: var(--sp-6);
+	}
+
+	.contact-form__label {
+		display: grid;
+		gap: var(--sp-2);
+		font-weight: 600;
+		color: var(--text-color);
+	}
+
+	.contact-form__control {
+		box-sizing: border-box;
+		inline-size: 100%;
+		padding: 0.55rem 0.75rem;
+		font: inherit;
+		font-weight: 400;
+		color: var(--text-color);
+		background: var(--card-background);
+		border: 1px solid var(--control-border);
+		border-radius: var(--radius-sm);
+		transition: border-color 0.15s ease;
+	}
+
+	.contact-form__control--area {
+		resize: vertical;
+		min-block-size: 8rem;
+	}
+
+	.contact-form__control:hover {
+		border-color: var(--accent-text);
+	}
+
+	.contact-form__control:focus-visible {
+		outline: 2px solid var(--focus-ring);
+		outline-offset: 2px;
+	}
+
+	.contact-form__control[aria-invalid='true'] {
+		border: 2px solid var(--fg);
+	}
+
+	.contact-form__error {
+		margin: var(--sp-2) 0 0;
+		font-size: var(--fs-sm);
+		font-weight: 600;
+		color: var(--danger-color);
+	}
+
+	.contact-form__error[hidden] {
+		display: none;
+	}
+
+	/* Off screen rather than display: none, which some bots read as "skip this field"; unpainted
+	   so no unthemed control counts as sitting on a glow (spec 009 RF-6 measured it at 2.81:1). */
+	.contact-form__trap {
+		position: absolute;
+		visibility: hidden;
+		left: -10000px;
+		inline-size: 1px;
+		block-size: 1px;
+		overflow: hidden;
+	}
+
+	/* .btn transitions every property, the outline included: on Tab the ring started at its
+	   initial 3px in the navy ink and read 1.00:1 on the dark glow (spec 009 RF-6). */
+	.contact-form__submit {
+		justify-self: start;
+		transition-property: transform, box-shadow, background-color, border-color, color;
+	}
+
+	.contact-form__privacy {
+		margin: 0;
+		font-size: var(--fs-sm);
+		color: var(--neutral-600);
+	}
+
+	.contact-form__status {
+		margin: 0;
+		font-weight: 600;
+		color: var(--text-color);
+	}
+</style>
