@@ -321,7 +321,8 @@ call.
   `e2e/primary-button.spec.ts`.*
 - **IBM Plex Sans, variable 100–700, for everything; IBM Plex Mono, 400/600, for code and small data
   only.** A bare system stack is not an acceptable simplification: every visitor sees whatever their
-  OS ships and the site has no voice of its own.
+  OS ships and the site has no voice of its own. *Settled by `tests/visual-language.test.ts`*
+  (font families).
 - **`05-fonts.css` links before the other stylesheets** — `@font-face` must be known before anything
   computes a line box, or the first paint uses the fallback and the text reflows a frame later.
 - **The variable font's range is a hard limit.** `font-weight: 800` clamps to 700 while the CSS
@@ -341,7 +342,8 @@ call.
 - **Let the content choose the silhouette**: expose the shape as a prop, and do not frame a shape
   with a second outline that says nothing — a ring in `--color-border` is the same token every card
   border uses.
-- **UI icons live in `public/icons/ui/`, apart from brand logos,** with their `NOTICE.md` and the
+- **UI icons live in `public/icons/ui/`, apart from the skills row's brand logos in `public/tech/`,**
+  monochrome Tabler `brand-*` glyphs included, with their `NOTICE.md` and the
   Tabler licence, and are painted as a CSS mask in `currentColor` so they follow the text and the
   theme — an `<img>` cannot inherit it, and a Tabler stroke drew black on navy (2.15:1). One glyph,
   one meaning across the page (spec 008). *Settled by `tests/visual-language.test.ts`* (ui icons).
