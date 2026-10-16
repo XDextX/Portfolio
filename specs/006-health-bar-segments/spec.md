@@ -12,6 +12,11 @@
 
 ## Decision log
 
+**Spec 012 reshapes the rows around this spec (2026-10-16).** Superseded: the
+"hover recolours the icon" NFR — a skill row has no hover state. Standing: RF-1 to
+RF-10; RF-4's frame keeps the monochrome icon colour. The single-skill-area edge
+case no longer describes the data: after 012 every populated area holds two skills.
+
 **As many area cards per line as fit (owner, 2026-10-15).** Asked before the
 RF-9 row was approved: more area cards on a line when they fit. Measured with a
 live prototype of the change, section height today against with it — 1280px:

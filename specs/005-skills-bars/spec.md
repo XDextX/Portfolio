@@ -6,6 +6,12 @@
 
 ## Decision log
 
+**Spec 012 reshapes this spec (2026-10-16).** Superseded: RF-5 and RF-8, and the
+hover NFRs — the row draws its original colour logo at rest and has no hover state.
+Amended: RF-4 — areas come from the declared list in `src/data/tech.ts`, and an
+area with no skill is not rendered. Standing: RF-1, RF-3, RF-6 and RF-7 (the 22px
+slot survives a failed load, against the new `SkillLogo` mount).
+
 **RF-2 is replaced by spec 006's RF-3 (2026-10-15).** Spec 006 turned the bar
 into a framed health bar of one segment per level, so the pair RF-2 measured —
 a level's fill against the track — became a lit segment against an unlit one.

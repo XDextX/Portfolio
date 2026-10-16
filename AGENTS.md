@@ -313,6 +313,10 @@ call.
   governs the ground; the tint marks identity, not the card's edge, so the card keeps its border.
   No element outside that section takes a step colour. *Settled by `tests/visual-language.test.ts`*
   (step colour scope) and `e2e/process-steps.spec.ts` (exception scope).
+- **Brand logos are content, outside the navy-and-gold rule** — a skill's logo is the product's own
+  mark in its own colours, shown at rest (spec 012). Recolouring it into the palette trades the
+  brand for an imitation, so its contrast is accepted as measured; everything the site draws itself
+  stays navy and gold. Its source and licence are on record: `public/tech/NOTICE.md`.
 - **The dark theme is one hue** — sheet, cards one step up, neutral scale in navy steps. Two
   surfaces in different hues read as two systems fighting rather than steps of one. A navy page is
   deliberate and stays; near-black with one acid accent is not the default to reach for.
@@ -367,12 +371,10 @@ call.
   soft-fill border sat at 1.27–1.54:1, under the 3:1 a control boundary needs; the rest clears
   3:1 on the sheet and the card in each theme (spec 017). Decorative borders keep
   `--color-border`. *Settled by `tests/visual-language.test.ts` and `e2e/control-borders.spec.ts`.*
-- **A hover may recolour an icon, and that is the whole exception.** The skills row swaps its
-  monochrome icon for the brand logo on hover and paints **no** border, background, outline or
-  lift: the row is not a control, and a border made it read as selected. Owner decision on spec 005.
-- **That recolour sits inside `@media (hover: hover)`** — touch applies `:hover` on tap and keeps it,
-  so an ungated rule leaves the brand colour on. `any-hover` is not enough: a touch screen with a
-  mouse attached reports it. *Both settled by `tests/markup.test.ts`.*
+- **A skill row has no hover state.** It is not a control: its colour logo shows at rest on every
+  device, and a hover that recoloured the icon or drew a border made the row read as selected
+  (spec 012, replacing spec 005's monochrome-to-brand hover). *Settled by `e2e/skills.spec.ts`*
+  (row at rest).
 
 ### Sensitive data
 
