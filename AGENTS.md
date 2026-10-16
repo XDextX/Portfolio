@@ -351,6 +351,10 @@ call.
   hover with a background change alone: it is the weakest channel available and it *lowers* the
   contrast of whatever sits on it — the theme toggle measured 16.44 → 14.11 in light and 8.31 →
   6.08 in dark. *Both settled by `tests/visual-language.test.ts`,* which carries the measurement.
+- **A bordered control rests in `--control-border` and turns `--accent-text` on hover** — the
+  soft-fill border sat at 1.27–1.54:1, under the 3:1 a control boundary needs; the rest clears
+  3:1 on the sheet and the card in each theme (spec 017). Decorative borders keep
+  `--color-border`. *Settled by `tests/visual-language.test.ts` and `e2e/control-borders.spec.ts`.*
 - **A hover may recolour an icon, and that is the whole exception.** The skills row swaps its
   monochrome icon for the brand logo on hover and paints **no** border, background, outline or
   lift: the row is not a control, and a border made it read as selected. Owner decision on spec 005.
