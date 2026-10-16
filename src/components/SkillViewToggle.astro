@@ -15,8 +15,6 @@ import { t } from '@i18n/index';
 	>
 		<svg
 			xmlns='http://www.w3.org/2000/svg'
-			width='16'
-			height='16'
 			viewBox='0 0 24 24'
 			fill='none'
 			stroke='currentColor'
@@ -31,6 +29,7 @@ import { t } from '@i18n/index';
 				x2='12'
 				y2='4'></line><line x1='6' y1='20' x2='6' y2='14'></line>
 		</svg>
+		<span class='toggle-indicator' aria-hidden='true'></span>
 	</button>
 
 	<button
@@ -42,8 +41,6 @@ import { t } from '@i18n/index';
 	>
 		<svg
 			xmlns='http://www.w3.org/2000/svg'
-			width='16'
-			height='16'
 			viewBox='0 0 24 24'
 			fill='none'
 			stroke='currentColor'
@@ -66,6 +63,7 @@ import { t } from '@i18n/index';
 				x2='3.01'
 				y2='18'></line>
 		</svg>
+		<span class='toggle-indicator' aria-hidden='true'></span>
 	</button>
 </div>
 
@@ -91,6 +89,7 @@ import { t } from '@i18n/index';
 	}
 
 	.toggle-btn {
+		position: relative;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -106,18 +105,38 @@ import { t } from '@i18n/index';
 			color var(--dur) var(--ease);
 	}
 
+	.toggle-btn svg {
+		inline-size: 1rem;
+		block-size: 1rem;
+	}
+
 	.toggle-btn:hover {
 		background: var(--neutral-200);
 		color: var(--text-color);
 	}
 
 	/*
-	 * --neutral-200, also --tag-surface in light: one colour for a soft fill
-	 * inside the sheet. It was --bg-color, which only light.css defined, so dark
-	 * fell through to the light value and painted #E4E8EE on the navy sheet.
+	 * Spec 012: the active state hangs on aria-pressed, which the server renders, so it
+	 * shows with scripts off. The fill stays (--neutral-200, the soft fill inside the
+	 * sheet); alone it was 1.37:1 in dark, so the gold bar is what tells the views apart.
 	 */
-	.toggle-btn.active {
+	.toggle-btn[aria-pressed='true'] {
 		background: var(--neutral-200);
 		color: var(--accent-text);
+	}
+
+	/* Centred under the 1rem icon in the 2rem button: inset by half the difference.
+	   No transition, so reduced motion has nothing to drop. */
+	.toggle-indicator {
+		position: absolute;
+		inset-inline: calc((2rem - 1rem) / 2);
+		inset-block-end: 0.2rem;
+		block-size: 2px;
+		background: var(--accent-text);
+		visibility: hidden;
+	}
+
+	.toggle-btn[aria-pressed='true'] .toggle-indicator {
+		visibility: visible;
 	}
 </style>
