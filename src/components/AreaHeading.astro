@@ -1,0 +1,40 @@
+---
+import { t } from '@i18n/index';
+
+export interface Props {
+	area: { key: string; glyph: string };
+}
+
+/**
+ * One skills area heading: its Tabler glyph, then the translated heading (spec 012).
+ * @param area the declared area: its key (the locale lookup) and its glyph in /icons/ui
+ */
+const { area } = Astro.props;
+---
+
+<h4 class='cat-label'><span class='area-icon' aria-hidden='true' style={`--icon: url(/icons/ui/${area.glyph}.svg)`}></span>{t(`skills.areas.${area.key}`)}</h4>
+
+<style>
+	/* The data spells the heading the way it should read, so no uppercase or
+	   tracking; size carries the hierarchy (h2 --fs-xl, area --fs-base, items --fs-sm).
+	   The text wraps beside the glyph, so the card minimum (006 RF-10) holds. */
+	.cat-label {
+		display: flex;
+		align-items: center;
+		gap: var(--sp-2);
+		font-size: var(--fs-base);
+		font-weight: 600;
+		color: var(--text-secondary);
+		margin: 0 0 var(--sp-3) 0;
+	}
+
+	/* Monochrome, not gold: gold already marks the section title and the hover. */
+	.area-icon {
+		flex: none;
+		inline-size: 1em;
+		block-size: 1em;
+		background-color: var(--icon-mono);
+		mask: var(--icon) center / contain no-repeat;
+		-webkit-mask: var(--icon) center / contain no-repeat;
+	}
+</style>

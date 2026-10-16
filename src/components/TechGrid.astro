@@ -2,50 +2,25 @@
 import SkillBar from './SkillBar.astro';
 import SkillChip from './SkillChip.astro';
 import SkillViewToggle from './SkillViewToggle.astro';
+import AreaHeading from './AreaHeading.astro';
 import { type TechLevel } from '../data/levelLabels';
-import { t } from '@i18n/index';
+import { SKILL_AREAS, populatedAreas, type TechEntry } from '../data/tech';
 
 /**
  * Skills grid with a bars view and a compact list view.
- * @param items tech entries grouped by their data category.
+ * @param items tech entries, grouped under the declared areas they name.
  * @param locale active locale for the row badges.
  */
-
-export interface TechItem {
-	name: string;
-	logo: string;
-	icon: string;
-	brand?: string;
-	href?: string;
-	level?: TechLevel;
-	category?: string;
-}
-
 export interface Props {
-	items: TechItem[];
+	items: TechEntry[];
 	locale?: 'es' | 'en';
 }
 
 const { items, locale = 'es' } = Astro.props;
 
-function groupBy<T>(arr: T[], key: (item: T) => string): [string, T[]][] {
-	const map = new Map<string, T[]>();
-	for (const item of arr) {
-		const bucket = map.get(key(item)) ?? [];
-		bucket.push(item);
-		map.set(key(item), bucket);
-	}
-	return Array.from(map.entries());
-}
-
-const byCategory = groupBy(items, (t) => t.category ?? 'Other');
-
-// The data value is the lookup only: `Frontend` reads `skills.areas.frontend`,
-// so no area name is spelled as visitor text in the bars panel.
-
-// The area card is the shared frame and nothing else. No hover: it groups rows,
-// it is not itself a control.
-const areaKey = (category: string) => `skills.areas.${category.toLowerCase()}`;
+// Spec 012: areas render in SKILL_AREAS order, an empty one not at all. The key is
+// the lookup only, so no heading is spelled here. The card groups rows; no hover.
+const areas = populatedAreas(SKILL_AREAS, items);
 ---
 
 <div class='tech-grid'>
@@ -57,15 +32,14 @@ const areaKey = (category: string) => `skills.areas.${category.toLowerCase()}`;
 	<div data-panel='bars' class='panel'>
 		<div class='bars-grid'>
 			{
-				byCategory.map(([cat, techs]) => (
+				areas.map((area) => (
 					<div class='card-frame'>
-						<h4 class='cat-label'>{t(areaKey(cat))}</h4>
+						<AreaHeading area={area} />
 						<ul class='bars-list'>
-							{techs.map((tech) => (
+							{area.items.map((tech) => (
 								<SkillBar
 									name={tech.name}
-									icon={tech.icon}
-									brand={tech.brand}
+									logo={tech.logo}
 									level={(tech.level ?? 'beginner') as TechLevel}
 									locale={locale}
 								/>
@@ -81,11 +55,11 @@ const areaKey = (category: string) => `skills.areas.${category.toLowerCase()}`;
 	<div data-panel='list' class='panel hidden'>
 		<div class='chip-grid'>
 			{
-				byCategory.map(([cat, techs]) => (
+				areas.map((area) => (
 					<div class='cat-group'>
-						<h4 class='cat-label'>{cat}</h4>
+						<AreaHeading area={area} />
 						<ul class='chip-list'>
-							{techs.map((tech) => (
+							{area.items.map((tech) => (
 								<li>
 									<SkillChip
 										name={tech.name}
@@ -117,7 +91,6 @@ const areaKey = (category: string) => `skills.areas.${category.toLowerCase()}`;
 		root.querySelectorAll('[data-view]').forEach((b) => {
 			const active = (b as HTMLElement).dataset.view === view;
 			b.setAttribute('aria-pressed', String(active));
-			b.classList.toggle('active', active);
 		});
 		localStorage.setItem(STORAGE_KEY, view);
 
@@ -181,18 +154,6 @@ const areaKey = (category: string) => `skills.areas.${category.toLowerCase()}`;
 
 	.cat-group {
 		margin-bottom: var(--sp-2);
-	}
-
-	/* The data already spells the category the way it should read — "Frontend",
-	   not "FRONTEND" — so uppercasing plus 0.06em of tracking was shouting a
-	   correct word. Hierarchy is carried by size: h2 --fs-xl, category --fs-base,
-	   items --fs-sm. .contact-label keeps uppercase because "Email" in sentence
-	   case reads as the common noun. */
-	.cat-label {
-		font-size: var(--fs-base);
-		font-weight: 600;
-		color: var(--text-secondary);
-		margin: 0 0 var(--sp-3) 0;
 	}
 
 	.panel.hidden {
