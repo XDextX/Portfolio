@@ -3,7 +3,7 @@
 **Status:** implemented
 **Size:** M
 **Approved:** 2026-10-15 · five clarify rounds, no blocker left; owner decisions: hero + home sections glow, cards flat, control borders held at 3:1 with spec 017 first, RF-7 as soft, gold only in the hero · 202 lines, 8 RF
-**Implemented:** 2026-10-15 · commits `31aa491` (docs) and `ed8f494` (feat) · 8/8 tasks, `npm test` 178/178, e2e 26/26, build green · 8/8 RF and NFRs validated; 16 injections red, 2 replaced by 2b, 7 recorded (Chromium drops gradients under forced colours unaided); seen in dark and light
+**Implemented:** 2026-10-15 · commits `f63f5c8` (docs) and `89c51db` (feat) · 8/8 tasks, `npm test` 178/178, e2e 26/26, build green · 8/8 RF and NFRs validated; 16 injections red, 2 replaced by 2b, 7 recorded (Chromium drops gradients under forced colours unaided); seen in dark and light
 
 ## Context and goal
 

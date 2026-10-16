@@ -3,7 +3,7 @@
 **Status:** implemented
 **Size:** M
 **Approved:** 2026-10-15 · two clarify rounds, no blocker left; seven owner decisions recorded · 207 lines, 8 RF
-**Implemented:** 2026-10-15 · commits `57dbc96` (docs) and `68ece8e` (feat) · 9/9 tasks, `npm test` 182/182, e2e 41/41, build green · 8/8 RF, NFRs and edge cases validated; 17 injections red, 2 replaced by 2b; LCP 172/164/164 ms, same elements; seen in light and dark, es and en
+**Implemented:** 2026-10-15 · commits `f38b273` (docs) and `db7ccec` (feat) · 9/9 tasks, `npm test` 182/182, e2e 41/41, build green · 8/8 RF, NFRs and edge cases validated; 17 injections red, 2 replaced by 2b; LCP 172/164/164 ms, same elements; seen in light and dark, es and en
 
 **Depends on:** spec 007 (primary button), which owns the CV button's fill and text colour;
 spec 016 (focus ring), which owns every focus ring the hero draws; spec 009 (dark glows),

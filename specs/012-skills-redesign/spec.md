@@ -4,7 +4,7 @@
 **Size:** L
 **Approved:** 2026-10-15 · three clarify rounds, no blocker left; six owner decisions recorded · 291 lines, 14 RF
 **Changed:** 2026-10-16 · owner decision: Astro keeps its official svgl.app marks (Devicon has no white-mark Astro); Original logo definition and Decision updated
-**Implemented:** 2026-10-16 · commits `882a9f5` (docs), `ea31181` (data and assets), `c3274d8` (SkillLogo), `02560de` (AreaHeading), `8655bb0` (toggle) · 11/11 tasks, `npm test` 183/183, e2e 72/72, build green · 14/14 RF, NFRs and edge cases validated; 28 injections red, 0 and 6 re-run after test fixes; layout prediction met; logo contrasts recorded; seen in light and dark, both views
+**Implemented:** 2026-10-16 · commits `655f557` (docs), `9bdca35` (data and assets), `7c9c569` (SkillLogo), `6df8d14` (AreaHeading), `553ab12` (toggle) · 11/11 tasks, `npm test` 183/183, e2e 72/72, build green · 14/14 RF, NFRs and edge cases validated; 28 injections red, 0 and 6 re-run after test fixes; layout prediction met; logo contrasts recorded; seen in light and dark, both views
 
 ## Context and goal
 

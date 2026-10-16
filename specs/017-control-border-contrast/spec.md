@@ -4,7 +4,7 @@
 **Size:** M
 **Approved (superseded by the 2026-10-15 change below):** 2026-10-15 · two clarify rounds, no blocker left, trimmed to Size S; owner decision: controls only · 94 lines, 3 RF
 **Approved:** 2026-10-15 · re-approval after the hover change of requirement (RF-3 new, 1.5:1 floor to RF-4, Size M); round 3 clarify, its blocker discarded (the e2e amendment is a prerequisite of the whole redesign) · 111 lines, 4 RF
-**Implemented:** 2026-10-15 · commits `16b2fa1` (docs) and `1e68bdf` (fix) · 7/7 tasks, `npm test` 173/173, e2e 20/20, build green · 4/4 RF and NFRs validated; 19 injections red; seen in both themes on /, /proyectos and the 404
+**Implemented:** 2026-10-15 · commits `01d4877` (docs) and `58c0fb7` (fix) · 7/7 tasks, `npm test` 173/173, e2e 20/20, build green · 4/4 RF and NFRs validated; 19 injections red; seen in both themes on /, /proyectos and the 404
 
 ## Context and goal
 

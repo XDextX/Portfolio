@@ -3,7 +3,7 @@
 **Status:** implemented
 **Size:** M
 **Approved:** 2026-10-15 · two clarify rounds under the new process, no blocker left; owner decisions: dark ink brand navy, shared default deleted, Demo included · 143 lines, 4 RF
-**Implemented:** 2026-10-15 · commits `956a13b` `63b317a` `3574d65` (rules, hook) and `ecec84e` `1bf25f8` (helper, fix) · 8/8 tasks, `npm test` 164/164, e2e 7/7, build green · 4/4 RF and NFRs validated; 14 injections red, 9 dropped, 12 replaced by 12b; seen in both themes at 1280 and 375px
+**Implemented:** 2026-10-15 · commits `bc62d2b` `26efb27` `94ccfe7` (rules, hook) and `b11c7be` `4a03106` (helper, fix) · 8/8 tasks, `npm test` 164/164, e2e 7/7, build green · 4/4 RF and NFRs validated; 14 injections red, 9 dropped, 12 replaced by 12b; seen in both themes at 1280 and 375px
 
 ## Context and goal
 
@@ -11,7 +11,7 @@ The owner's design shows the primary button in the dark theme as a light gold fi
 with dark text; today it is dark gold with white text in both themes. That is not
 a taste choice: six declarations write a literal white on the accent surface, so
 the fill is pinned dark by a working rule and its guard. When one broken comment
-opener dropped the dark fill (fixed in `26ea361`), three buttons rendered white on
+opener dropped the dark fill (fixed in `a6e09c9`), three buttons rendered white on
 light gold at 1.66:1 with every guard green.
 
 The owner adopted the proposal (2026-10-15): remove every literal white on the

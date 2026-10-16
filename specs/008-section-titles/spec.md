@@ -3,7 +3,7 @@
 **Status:** implemented
 **Size:** M
 **Approved:** 2026-10-15 · two clarify rounds, no blocker left; owner decisions: gold word Experiencia, five Tabler glyphs, titles 24px · 173 lines, 8 RF
-**Implemented:** 2026-10-15 · commits `32cdf45` (docs) and `3dfdb32` (feat) · 9/9 tasks, `npm test` 169/169, e2e 18/18, build green · 8/8 RF and NFRs validated; 20 injections red, 19 cannot bite in Chrome; seen in both themes and locales at 1280 and 390px
+**Implemented:** 2026-10-15 · commits `76e27ad` (docs) and `0c2ea65` (feat) · 9/9 tasks, `npm test` 169/169, e2e 18/18, build green · 8/8 RF and NFRs validated; 20 injections red, 19 cannot bite in Chrome; seen in both themes and locales at 1280 and 390px
 
 ## Context and goal
 

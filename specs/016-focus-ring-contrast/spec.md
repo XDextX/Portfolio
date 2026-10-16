@@ -3,7 +3,7 @@
 **Status:** implemented
 
 **Approved:** 2026-10-15 · seven clarify rounds, findings fixed; dark ring = text white (owner) · 189 lines, 7 RF
-**Implemented:** 2026-10-15 · commits `098d5e0` (docs) and `a5f4e04` (fix) · 6/6 tasks, `npm test` 162/162, `npm run build` green · 7/7 RF, NFRs and edge cases validated; 15 injections red as the plan predicted; seen in both themes at desktop and 375px
+**Implemented:** 2026-10-15 · commits `b8a66ab` (docs) and `f00ddd2` (fix) · 6/6 tasks, `npm test` 162/162, `npm run build` green · 7/7 RF, NFRs and edge cases validated; 15 injections red as the plan predicted; seen in both themes at desktop and 375px
 
 ## Context and goal
 

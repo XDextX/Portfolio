@@ -4,7 +4,7 @@
 **Size:** M
 **Approved:** 2026-10-15 · two clarify rounds, no blocker left; owner decisions: copy (US spelling), step 2–4 colours, stacked below 1131 px, 012 yields the glyphs · 262 lines, 8 RF
 **Changed:** 2026-10-15 · owner decision: the tag radius is `--radius-xs` (2 px), not the skill chip's 4 px (Interface NFR)
-**Implemented:** 2026-10-15 · commits `7684f4e` (docs) and `7d4b0bc` (feat) · 9/10 tasks before this record, T-10 here · `npm test` 182/182, e2e 55/55, build green · 8/8 RF, NFRs and edge cases validated; 17 injections red, 7b replaced by 7b'; LCP never this section; seen in light and dark, es and en, 1280 and 1130px, forced colours once
+**Implemented:** 2026-10-15 · commits `8d52039` (docs) and `7ab044f` (feat) · 9/10 tasks before this record, T-10 here · `npm test` 182/182, e2e 55/55, build green · 8/8 RF, NFRs and edge cases validated; 17 injections red, 7b replaced by 7b'; LCP never this section; seen in light and dark, es and en, 1280 and 1130px, forced colours once
 
 ## Context and goal
 

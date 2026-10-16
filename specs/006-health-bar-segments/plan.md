@@ -4,7 +4,7 @@ Spec: `specs/006-health-bar-segments/spec.md` (10 RF, each with a check, no open
 questions), approved 2026-10-15; RF-9 and RF-10 added and re-approved the same
 day. RF-9 now reads "as many rows per line as fit", which the auto-fill below
 already did. The `--radius-pill` amendment the spec puts
-first is already committed (`745f7c5`).
+first is already committed (`9d725d9`).
 
 Runner: `npm test` (`vitest --run tests`, read from `package.json`). Build:
 `npm run build`. Rendered verification against a running dev server at 1280px

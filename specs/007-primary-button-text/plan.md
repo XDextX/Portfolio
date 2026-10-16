@@ -6,7 +6,7 @@
 **Approved:** 2026-10-15 · re-approval: aligned with spec 016's D-5 (colour maths in tests/helpers/colour.ts; no resolver cycle case here, injection 9 dropped) · 174 lines
 
 **Ordering.** Spec 016 lands first: it moved the colour maths to
-`tests/helpers/colour.ts` (016 D-5, `1d6d254`/`a5f4e04`), with `resolveColour(expr, ...layers)`
+`tests/helpers/colour.ts` (016 D-5, `59eeb73`/`f00ddd2`), with `resolveColour(expr, ...layers)`
 and `styleSources()`, and every vitest guard here is built on those two, not on a second
 lookup. Before any code: the two prerequisites the spec lists — the `AGENTS.md`
 amendment (own `docs:` commit) and the constitution 7 amendment that puts the e2e
