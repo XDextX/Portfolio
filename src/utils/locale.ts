@@ -3,6 +3,8 @@ import { setLocale } from '@i18n/index';
 
 const SUPPORTED = ['es', 'en'] as const;
 export type Locale = (typeof SUPPORTED)[number];
+/** What resolveLocale reads; a page's Astro global and a middleware context both fit. */
+export type LocaleSource = Pick<AstroGlobal, 'url' | 'cookies' | 'request'>;
 
 const DEFAULT_LOCALE: Locale = 'es';
 const COOKIE_NAME = 'lang';
@@ -14,22 +16,22 @@ function normalizeLocale(value: string | null | undefined): Locale | null {
 	return SUPPORTED.includes(clean as Locale) ? (clean as Locale) : null;
 }
 
-function fromQuery(Astro: AstroGlobal): Locale | null {
+function fromQuery(Astro: LocaleSource): Locale | null {
 	return normalizeLocale(Astro.url.searchParams.get('lang'));
 }
 
-function fromCookie(Astro: AstroGlobal): Locale | null {
+function fromCookie(Astro: LocaleSource): Locale | null {
 	return normalizeLocale(Astro.cookies.get(COOKIE_NAME)?.value);
 }
 
-function fromHeader(Astro: AstroGlobal): Locale | null {
+function fromHeader(Astro: LocaleSource): Locale | null {
 	const header = Astro.request?.headers?.get('accept-language');
 	if (!header) return null;
 	const [first] = header.split(',');
 	return normalizeLocale(first);
 }
 
-export function resolveLocale(Astro: AstroGlobal): Locale {
+export function resolveLocale(Astro: LocaleSource): Locale {
 	return fromQuery(Astro) ?? fromCookie(Astro) ?? fromHeader(Astro) ?? DEFAULT_LOCALE;
 }
 
