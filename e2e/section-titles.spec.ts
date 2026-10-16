@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 import { startDevServer, waitForServer } from './helpers/dev-server';
-import { THEMES, openIn, installHelpers, settled } from './helpers/rendered';
+import { THEMES, openIn, installHelpers, settled, axTree } from './helpers/rendered';
 import { titleWords, plainText } from '../i18n/i18n';
 import { SECTION_TITLES } from '../src/data/sectionTitles';
 
@@ -119,8 +119,7 @@ test.describe('section titles (spec 008)', () => {
 
         test(`each heading is named by its plain title — ${locale} (RF-6)`, async ({ page }) => {
             await openIn(page, DEV_URL, 'light', `/?lang=${locale}`);
-            const cdp = await page.context().newCDPSession(page);
-            const { nodes } = (await cdp.send('Accessibility.getFullAXTree')) as { nodes: any[] };
+            const nodes = await axTree(page);
             const headings = nodes.filter((n) => n.role?.value === 'heading' && n.properties?.some((p: any) => p.name === 'level' && p.value.value === 2));
             const names = headings.map((n) => n.name?.value as string);
             const offenders: string[] = [];

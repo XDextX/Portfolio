@@ -2,7 +2,8 @@
 
 The interface glyphs in this folder are copied unmodified from Tabler Icons v3.49.0,
 `icons/outline/`, under the MIT licence in `LICENSE-tabler.txt` beside them. They are
-painted as a CSS mask in `currentColor`; brand logos live apart, in `public/tech/`.
+painted as a CSS mask in `currentColor`. The two `brand-*` files are Tabler's monochrome
+outline glyphs, painted the same way; the skills row's brand logos live apart, in `public/tech/`.
 
 | File | Source | Licence | Meaning on the page |
 |---|---|---|---|
@@ -10,6 +11,8 @@ painted as a CSS mask in `currentColor`; brand logos live apart, in `public/tech
 | `chart-bar.svg` | Tabler Icons v3.49.0, `icons/outline/chart-bar.svg` | `LICENSE-tabler.txt` | Skills title |
 | `briefcase.svg` | Tabler Icons v3.49.0, `icons/outline/briefcase.svg` | `LICENSE-tabler.txt` | Experience title |
 | `folder.svg` | Tabler Icons v3.49.0, `icons/outline/folder.svg` | `LICENSE-tabler.txt` | Projects title |
-| `mail.svg` | Tabler Icons v3.49.0, `icons/outline/mail.svg` | `LICENSE-tabler.txt` | Contact title |
+| `mail.svg` | Tabler Icons v3.49.0, `icons/outline/mail.svg` | `LICENSE-tabler.txt` | Contact title; the hero's email button |
+| `brand-github.svg` | Tabler Icons v3.49.0, `icons/outline/brand-github.svg` | `LICENSE-tabler.txt` | The hero's GitHub button |
+| `brand-linkedin.svg` | Tabler Icons v3.49.0, `icons/outline/brand-linkedin.svg` | `LICENSE-tabler.txt` | The hero's LinkedIn button |
 
 Tabler Icons: https://github.com/tabler/tabler-icons

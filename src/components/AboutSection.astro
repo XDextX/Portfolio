@@ -17,6 +17,7 @@ const personJsonLd = withJsonLd ? JsonLdAbout : null;
 const cvLabel       = t('about.cv');
 const actionsLabel  = t('about.actions');
 const locationLabel = t('about.location');
+const { given, family } = ABOUT.nameParts;
 
 /*
  * Kept here because Astro emits the template body verbatim. The artwork is an
@@ -43,7 +44,7 @@ const locationLabel = t('about.location');
 		<!-- Content -->
 		<div class='about-content'>
 			<div class='about-meta'>
-				<h1 id='about-title' class='about-name'>{ABOUT.name}</h1>
+				<h1 id='about-title' class='about-name'><span class='about-name__given'>{given}</span>{family && [' ', <span class='about-name__family'>{family}</span>]}</h1>
 				<div class='about-sub'>
 					<span class='about-job'>{ABOUT.title}</span>
 					<span class='about-location' aria-label={locationLabel}>
@@ -52,6 +53,8 @@ const locationLabel = t('about.location');
 					</span>
 				</div>
 			</div>
+
+			<ul class='about-phrases' role='list'>{ABOUT.phraseKeys.map((k) => <li>{t(k)}</li>)}</ul>
 
 			<p class='about-bio'>{ABOUT.bio[lang]}</p>
 
@@ -71,10 +74,8 @@ const locationLabel = t('about.location');
 						href={s.href}
 						target='_blank'
 						rel='noopener noreferrer me'
-						aria-label={s.label}
-						title={s.label}
 					>
-						{s.label}
+						<span class='btn-social__icon' aria-hidden='true' style={`--icon: url(${s.glyph})`}></span>{t(s.labelKey)}
 					</a>
 				))}
 			</nav>
@@ -115,10 +116,17 @@ const locationLabel = t('about.location');
 	.about-name {
 		font-size: clamp(2.5rem, 2rem + 2.2vw, var(--fs-4xl));
 		font-weight: 700;
-		color: var(--accent-text);
 		margin: 0;
 		line-height: var(--lh-tight);
 		letter-spacing: -0.01em;
+	}
+
+	.about-name__given {
+		color: var(--text-color);
+	}
+
+	.about-name__family {
+		color: var(--accent-text);
 	}
 
 	.about-sub {
@@ -140,6 +148,36 @@ const locationLabel = t('about.location');
 		gap: 0.3rem;
 		font-size: var(--fs-sm);
 		color: var(--neutral-600);
+	}
+
+	/* The chevron rides at the start of its word (li is nowrap), so it never starts a
+	   line alone, and content: '' keeps it out of the item names. */
+	.about-phrases {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--sp-2) var(--sp-3);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		font-size: var(--fs-lg);
+		font-style: italic;
+		font-weight: 400;
+		color: var(--text-secondary);
+	}
+
+	.about-phrases li {
+		white-space: nowrap;
+	}
+
+	.about-phrases li + li::before {
+		content: '';
+		display: inline-block;
+		inline-size: 0.4em;
+		block-size: 0.4em;
+		margin-inline-end: var(--sp-3);
+		border-block-start: 2px solid var(--accent-text);
+		border-inline-end: 2px solid var(--accent-text);
+		transform: translateY(-0.1em) rotate(45deg);
 	}
 
 	/* Capped because the 180px avatar column plus the gap leave the text a
@@ -166,6 +204,8 @@ const locationLabel = t('about.location');
 		display: inline-flex;
 		align-items: center;
 		gap: 0.4rem;
+		block-size: 2.5rem;
+		box-sizing: border-box;
 		padding: 0.5rem 1.1rem;
 		border-radius: var(--radius-md);
 		background: var(--accent-surface);
@@ -186,6 +226,9 @@ const locationLabel = t('about.location');
 	.btn-social {
 		display: inline-flex;
 		align-items: center;
+		gap: 0.4rem;
+		block-size: 2.5rem;
+		box-sizing: border-box;
 		padding: 0.5rem 0.9rem;
 		border-radius: var(--radius-md);
 		border: 1px solid var(--control-border);
@@ -197,6 +240,15 @@ const locationLabel = t('about.location');
 		transition:
 			border-color var(--dur) var(--ease),
 			color var(--dur) var(--ease);
+	}
+
+	.btn-social__icon {
+		inline-size: 1rem;
+		block-size: 1rem;
+		flex: none;
+		background-color: currentColor;
+		mask: var(--icon) center / contain no-repeat;
+		-webkit-mask: var(--icon) center / contain no-repeat;
 	}
 
 	.btn-social:hover {

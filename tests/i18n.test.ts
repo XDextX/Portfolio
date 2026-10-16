@@ -324,3 +324,18 @@ describe('section title gold word (spec 008 RF-7)', () => {
         expect(offenders, offenders.join('\n')).toEqual([]);
     });
 });
+
+describe('hero keys (spec 010)', () => {
+    it('every phrase key and social label key resolves in both locales (RF-2, RF-8)', async () => {
+        // Keys held as data: the t('…') scan above cannot see them.
+        const { ABOUT } = (await import('../src/data/about')) as any;
+        const keys: string[] = [...(ABOUT.phraseKeys ?? []), ...ABOUT.socials.map((s: any) => s.labelKey)];
+        const offenders: string[] = [];
+        if ((ABOUT.phraseKeys ?? []).length !== 4) offenders.push(`RF-2: ABOUT.phraseKeys holds ${(ABOUT.phraseKeys ?? []).length} keys, not 4`);
+        for (const key of keys) {
+            if (typeof key !== 'string') { offenders.push(`RF-8: a social has no labelKey`); continue; }
+            for (const lang of ['en', 'es'] as const) if (typeof resolve(locale(lang), key) !== 'string') offenders.push(`${key} missing in ${lang}.json`);
+        }
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+});

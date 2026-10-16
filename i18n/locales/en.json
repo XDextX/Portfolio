@@ -62,7 +62,18 @@
 	"about": {
 		"cv": "Download CV",
 		"actions": "Actions",
-		"location": "Location"
+		"location": "Location",
+		"phrases": {
+			"ideas": "Ideas",
+			"code": "Code",
+			"solutions": "Solutions",
+			"results": "Results"
+		},
+		"social": {
+			"github": "GitHub",
+			"linkedin": "LinkedIn",
+			"email": "Email"
+		}
 	},
 	"experience": {
 		"title": "*Experience*"

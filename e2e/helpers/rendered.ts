@@ -79,3 +79,26 @@ export function composite(fg: string, ground: string, alpha: number): string {
     const ch = (h: string, i: number) => parseInt(h.slice(1 + i * 2, 3 + i * 2), 16);
     return '#' + [0, 1, 2].map((i) => Math.round(alpha * ch(fg, i) + (1 - alpha) * ch(ground, i)).toString(16).padStart(2, '0')).join('');
 }
+
+/**
+ * The page's full accessibility tree, as Chrome computes it.
+ * @param page the Playwright page
+ * @returns every AX node, CDP shape
+ */
+export async function axTree(page: Page): Promise<any[]> {
+    const cdp = await page.context().newCDPSession(page);
+    return ((await cdp.send('Accessibility.getFullAXTree')) as { nodes: any[] }).nodes;
+}
+
+/**
+ * The AX nodes of one role under the first element a selector matches.
+ * @param page the Playwright page @param selector a CSS selector @param role an ARIA role
+ * @returns the matching AX nodes, in tree order
+ */
+export async function axQuery(page: Page, selector: string, role: string): Promise<any[]> {
+    const cdp = await page.context().newCDPSession(page);
+    const { root } = (await cdp.send('DOM.getDocument')) as any;
+    const { nodeId } = (await cdp.send('DOM.querySelector', { nodeId: root.nodeId, selector })) as any;
+    if (!nodeId) throw new Error(`no element matches ${selector}`);
+    return ((await cdp.send('Accessibility.queryAXTree', { nodeId, role })) as { nodes: any[] }).nodes;
+}

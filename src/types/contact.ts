@@ -9,3 +9,9 @@ export type ContactItem = {
     icon?: string;          // root-absolute path to an svg in /public/icons
     sameAs?: boolean;       // publishable profile: feeds JSON-LD sameAs / rel=me
 };
+
+/** A contact as the hero's social button draws it: a translated label beside one glyph. */
+export type HeroSocial = ContactItem & {
+    labelKey: string;       // locale key of the visible label
+    glyph: string;          // root-absolute path to a mask glyph in /public/icons/ui
+};

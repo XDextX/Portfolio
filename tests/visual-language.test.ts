@@ -198,20 +198,16 @@ describe('visual language', () => {
         ).toEqual([]);
     });
 
-    it('the person is described in one place', () => {
+    it('the person is described in one place', async () => {
         // "Person identity lives in src/data/about.ts only." A literal name in
         // a component is a duplicate source even in a meta tag, and BaseLayout
         // had three: the default title, the default description and og:site_name.
-        const src = fs.readFileSync(
-            path.join(ROOT, 'src', 'data', 'about.ts'),
-            'utf-8',
-        );
-        // The file uses double quotes for that field, and a single-quoted pattern
-        // found nothing and threw — a guard that cannot read its own subject.
-        const name = src.match(/name\s*:\s*["']([^"']+)["']/)?.[1];
-        if (!name) throw new Error('no name found in src/data/about.ts');
-
-        const parts = name.split(/\s+/).filter((p) => p.length > 2);
+        const { ABOUT } = await import('../src/data/about');
+        const name = ABOUT.name;
+        const parts = [ABOUT.nameParts.given, ABOUT.nameParts.family ?? '']
+            .flatMap((p) => p.split(/\s+/))
+            .filter((p) => p.length > 2);
+        if (!parts.length) throw new Error('no name part found in src/data/about.ts');
         const offenders: string[] = [];
 
         for (const file of walk(path.join(ROOT, 'src'), ['.astro', '.ts'])) {
@@ -761,15 +757,27 @@ describe('section title gold (spec 008 RF-5)', () => {
 });
 
 describe('UI icons (spec 008)', () => {
-    it('each section glyph is a distinct, self-hosted, currentColor-only file on record', async () => {
+    it('each section and hero glyph is a distinct, self-hosted, currentColor-only file on record', async () => {
         const { SECTION_TITLES } = await import('../src/data/sectionTitles');
         const UI = path.join(ROOT, 'public', 'icons', 'ui');
         const icons = Object.values(SECTION_TITLES).map((e) => e.icon);
         const offenders: string[] = [];
+        // Spec 010: the hero's social glyphs, root-absolute; email shares the contact title's file.
+        const { ABOUT } = (await import('../src/data/about')) as any;
+        const heroGlyphs: { id: string; glyph?: string }[] = ABOUT.socials;
+        const heroIcons: string[] = [];
+        for (const s of heroGlyphs) {
+            const m = s.glyph?.match(/^\/icons\/ui\/([\w-]+)\.svg$/);
+            if (!m) { offenders.push(`hero ${s.id}: glyph ${s.glyph} is not /icons/ui/<name>.svg`); continue; }
+            heroIcons.push(m[1]);
+        }
+        if (new Set(heroIcons).size !== heroIcons.length) offenders.push(`one glyph, one meaning: hero glyphs ${heroIcons.join(', ')} repeat one`);
+        const email = heroGlyphs.find((s) => s.id === 'email');
+        if (email?.glyph !== `/icons/ui/${SECTION_TITLES.contact.icon}.svg`) offenders.push('the email button does not share the contact title glyph');
         if (new Set(icons).size !== icons.length) offenders.push(`one glyph, one meaning: ${icons.join(', ')} repeats one`);
         const notice = fs.existsSync(path.join(UI, 'NOTICE.md')) ? fs.readFileSync(path.join(UI, 'NOTICE.md'), 'utf-8') : '';
         if (!fs.existsSync(path.join(UI, 'LICENSE-tabler.txt'))) offenders.push('public/icons/ui/LICENSE-tabler.txt is missing');
-        for (const icon of icons) {
+        for (const icon of new Set([...icons, ...heroIcons])) {
             const file = path.join(UI, `${icon}.svg`);
             if (!fs.existsSync(file)) {
                 offenders.push(`public/icons/ui/${icon}.svg is missing`);
@@ -905,6 +913,76 @@ describe('dark glow data (spec 009)', () => {
                     // "in srgb" further on says nothing about how the gradient interpolates.
                     const head = m[1].split(/,(?![^(]*\))/)[0];
                     if (!/\bin srgb\b/.test(head)) offenders.push(`RF-4: ${path.relative(ROOT, file)} ${rule.selectors.join(', ')} has a gradient without "in srgb"`);
+                }
+            }
+        }
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+});
+
+describe('name cases (spec 010 RF-7)', () => {
+    it('joins the parts the data states, and refuses malformed ones', async () => {
+        const { fullName, nameParts } = await import('../src/data/about');
+        expect(fullName({ given: 'Ana' })).toBe('Ana');
+        expect(nameParts({ given: 'Ana' }).family).toBeNull();
+        expect(fullName({ given: 'María José', family: 'Ruiz' })).toBe('María José Ruiz');
+        expect(nameParts({ given: 'María José', family: 'Ruiz' })).toEqual({ given: 'María José', family: 'Ruiz' });
+        for (const bad of [{ given: '' }, { given: ' Ana' }, { given: 'Ana  María' }, { given: 'Ana', family: 'Ruiz ' }]) {
+            expect(() => fullName(bad), JSON.stringify(bad)).toThrow();
+        }
+    });
+});
+
+// Spec 010: the @font-face blocks of a sheet, `unicode-range` parsed to [lo, hi] pairs.
+function fontFaces(css: string): { family: string; style: string; src: string[]; ranges: [number, number][] }[] {
+    return [...css.matchAll(/@font-face\s*\{([^}]*)\}/g)].map(([, body]) => {
+        const prop = (p: string) => body.match(new RegExp(`(?:^|;)\\s*${p}\\s*:\\s*([^;]+)`))?.[1].trim() ?? '';
+        const ranges = prop('unicode-range').split(',').filter(Boolean).map((r) => {
+            const [lo, hi = lo] = r.trim().replace(/^U\+/i, '').split('-').map((h) => parseInt(h, 16));
+            return [lo, hi] as [number, number];
+        });
+        return {
+            family: prop('font-family').replace(/['"]/g, ''),
+            style: prop('font-style') || 'normal',
+            src: [...prop('src').matchAll(/url\(\s*['"]?([^'")]+)['"]?\s*\)/g)].map((m) => m[1]),
+            ranges,
+        };
+    });
+}
+
+const inRanges = (cp: number, ranges: [number, number][]) => ranges.some(([lo, hi]) => cp >= lo && cp <= hi);
+
+describe('hero type (spec 010)', () => {
+    const faces = () => styleSources(ROOT).flatMap(({ css }) => fontFaces(css));
+
+    it('font families: two self-hosted families, one Sans face italic', () => {
+        const offenders: string[] = [];
+        const all = faces();
+        const families = [...new Set(all.map((f) => f.family))].sort();
+        if (JSON.stringify(families) !== JSON.stringify(['IBM Plex Mono', 'IBM Plex Sans'])) offenders.push(`families are ${families.join(', ')}`);
+        for (const f of all) for (const src of f.src) {
+            if (!/^\/fonts\/[^/]+\.woff2$/.test(src)) offenders.push(`${f.family}: ${src} is not a root-absolute /fonts/*.woff2`);
+            else if (!fs.existsSync(path.join(ROOT, 'public', src))) offenders.push(`${f.family}: public${src} is missing`);
+        }
+        if (!all.some((f) => f.family === 'IBM Plex Sans' && f.style === 'italic')) offenders.push('no IBM Plex Sans face is italic');
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+
+    it('italic coverage: the italic face covers every phrase, both locales (RF-3)', async () => {
+        const { ABOUT } = (await import('../src/data/about')) as any;
+        const italic = faces().filter((f) => f.family === 'IBM Plex Sans' && f.style === 'italic');
+        const keys: string[] = ABOUT.phraseKeys ?? [];
+        const offenders: string[] = [];
+        if (!italic.length) offenders.push('RF-3: no italic IBM Plex Sans face');
+        if (keys.length !== 4) offenders.push(`RF-3: ABOUT.phraseKeys holds ${keys.length} keys, not 4`);
+        for (const lang of ['es', 'en']) {
+            const json = JSON.parse(fs.readFileSync(path.join(ROOT, 'i18n', 'locales', `${lang}.json`), 'utf-8'));
+            for (const key of keys) {
+                const value: unknown = key.split('.').reduce((o: any, k) => o?.[k], json);
+                if (typeof value !== 'string') { offenders.push(`RF-3: ${key} has no ${lang} value`); continue; }
+                for (const ch of value) {
+                    const cp = ch.codePointAt(0)!;
+                    if (!italic.some((f) => inRanges(cp, f.ranges))) offenders.push(`RF-3: ${lang} ${key} "${ch}" U+${cp.toString(16).toUpperCase()} is outside the italic face`);
                 }
             }
         }

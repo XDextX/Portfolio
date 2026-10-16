@@ -62,7 +62,18 @@
 	"about": {
 		"cv": "Descargar CV",
 		"actions": "Acciones",
-		"location": "Ubicación"
+		"location": "Ubicación",
+		"phrases": {
+			"ideas": "Ideas",
+			"code": "Código",
+			"solutions": "Soluciones",
+			"results": "Resultados"
+		},
+		"social": {
+			"github": "GitHub",
+			"linkedin": "LinkedIn",
+			"email": "Correo"
+		}
 	},
 	"experience": {
 		"title": "*Experiencia* laboral"

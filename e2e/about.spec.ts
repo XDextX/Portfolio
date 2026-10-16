@@ -67,15 +67,8 @@ test.describe.serial('About section e2e', () => {
         const avatar = imgs.find(s => s && s.src && s.src.includes('github.com'));
         expect(avatar).toBeTruthy();
 
-        // Check avatar alt equals ABOUT.name from data file
-        const fs = await import('fs');
-        const path = await import('path');
-        const aboutSrc = fs.readFileSync(path.resolve(process.cwd(), 'src', 'data', 'about.ts'), 'utf-8');
-        const match = aboutSrc.match(/name:\s*"([^"]+)"/);
-        const expectedName = match ? match[1] : null;
-        if (expectedName) {
-            const altMatch = imgs.find(i => i && i.alt === expectedName);
-            expect(altMatch).toBeTruthy();
-        }
+        // The avatar alt is the computed full name, unconditionally (spec 010).
+        const { ABOUT } = await import('../src/data/about');
+        expect(imgs.some(i => i && i.alt === ABOUT.name), `no img with alt "${ABOUT.name}"`).toBe(true);
     });
 });
