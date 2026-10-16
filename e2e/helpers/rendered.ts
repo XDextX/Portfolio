@@ -12,11 +12,19 @@ export type Theme = (typeof THEMES)[number];
 export async function openIn(page: Page, base: string, theme: Theme, route: string) {
     await page.addInitScript((t) => localStorage.setItem('theme', t), theme);
     await page.emulateMedia({ colorScheme: theme });
-    await page.goto(base + route);
+    await gotoPastOverlay(page, base + route);
+}
+
+/**
+ * Navigate, reloading past Vite's error overlay up to twice.
+ * @param page the Playwright page @param url the full address
+ */
+export async function gotoPastOverlay(page: Page, url: string) {
+    await page.goto(url);
     // A cold dev server can answer the first request mid dependency-optimisation, and
     // Vite's error overlay then swallows every click (three hook runs failed this way).
     for (let i = 0; i < 2 && (await page.locator('vite-error-overlay').count()); i++) {
-        console.warn(`openIn: vite-error-overlay on ${route}, reloading`);
+        console.warn(`gotoPastOverlay: vite-error-overlay on ${url}, reloading`);
         await page.reload();
     }
 }

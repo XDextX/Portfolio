@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { startDevServer, waitForServer } from './helpers/dev-server';
-import { THEMES, openIn, installHelpers, settled, axQuery, type Theme } from './helpers/rendered';
+import { THEMES, openIn, gotoPastOverlay, installHelpers, settled, axQuery, type Theme } from './helpers/rendered';
 import { contrast, parseColour, parseGradients, composites, worstPoint } from '../tests/helpers/colour';
 import { EXPERIENCES } from '../src/data/experience';
 
@@ -53,11 +53,12 @@ test.describe('experience timeline (spec 013)', () => {
             test(`timeline: one dot per job on a contiguous rail — ${w}px${js ? '' : ', scripts off'} (RF-1)`, async ({ browser }) => {
                 const ctx = await browser.newContext({ javaScriptEnabled: js, viewport: { width: w, height: h } });
                 const page = await ctx.newPage();
-                await page.goto(DEV_URL + '/?lang=es');
+                await gotoPastOverlay(page, DEV_URL + '/?lang=es');
                 const g = await geometry(page);
                 // The rail must not paint over a dot: the topmost element at each dot's centre is the dot.
                 const covered = await page.locator(`${ITEMS} > .exp-dot`).evaluateAll((dots) => dots.map((d) => {
-                    d.scrollIntoView({ block: 'center' });
+                    // Instant: html:focus-within makes scrolling smooth, and a mid-scroll read hit the wrong element.
+                    d.scrollIntoView({ block: 'center', behavior: 'instant' });
                     const b = d.getBoundingClientRect();
                     return document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2) === d;
                 }));
