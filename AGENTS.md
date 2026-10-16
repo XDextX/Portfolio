@@ -159,6 +159,9 @@ call.
 - **A stale number is worse than no comment**, because it reads as current — a change that
   invalidates a measurement touches the comment in the same commit.
 - A note in a stylesheet must not name a token as if it used one.
+- **`shortcut:` markers live in the working tree only** — Ponytail leaves them to flag a deliberate
+  shortcut; resolve or move each to `Memory.md` before committing. *Settled by `.husky/pre-commit`,*
+  which cancels a commit whose staged code adds one.
 
 ### Tests
 

@@ -1,9 +1,16 @@
 #!/usr/bin/env sh
 # Runs before every commit; any failure cancels it (constitution 7).
+#   - shortcut: markers  none in the staged code (AGENTS.md, Comments)
 #   - npm test           vitest, data and source guards
 #   - npm run test:e2e   Playwright on the installed Chrome, rendered checks
 # lint and format are not run: neither eslint nor prettier is installed.
 # Bypass, only when intentional:  git commit --no-verify
+
+if git diff --cached -U0 -- . ':!*.md' ':!.husky' | grep -n '^+.*shortcut:'; then
+  echo ""
+  echo "❌ shortcut: markers in the staged code — remove them, then commit."
+  exit 1
+fi
 
 npm test
 if [ $? -ne 0 ]; then
