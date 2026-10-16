@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
-import { spawn } from 'child_process';
 import fetch from 'node-fetch';
+import { startDevServer, waitForServer } from './helpers/dev-server';
 
-const DEV_URL = 'http://localhost:4321';
+let DEV_URL = '';
 
 // Captured 2026-10-11 by loading `/` from `npm run dev` and recording every
 // request host (listener attached before goto, two runs, same set). `localhost`
@@ -10,62 +10,13 @@ const DEV_URL = 'http://localhost:4321';
 // redirect `github.com` -> `avatars.githubusercontent.com`.
 const HOME_HOSTS = new Set(['avatars.githubusercontent.com', 'github.com']);
 
-function startDevServer() {
-    const proc = spawn('npm', ['run', 'dev'], { shell: true, stdio: ['ignore', 'pipe', 'pipe'] });
-
-    let stdout = '';
-    proc.stdout?.on('data', (d) => {
-        try { stdout += d.toString(); } catch (e) { }
-    });
-    proc.stderr?.on('data', (d) => {
-        try { stdout += d.toString(); } catch (e) { }
-    });
-
-    const readyPromise = new Promise<void>((resolve, reject) => {
-        const timeout = setTimeout(() => reject(new Error('Dev server start timed out')), 60000);
-        const check = () => {
-            if (/https?:\/\/localhost:\d+/.test(stdout) || /Local:.*http/.test(stdout)) {
-                clearTimeout(timeout);
-                resolve();
-            }
-        };
-        proc.stdout?.on('data', () => check());
-        proc.stderr?.on('data', () => check());
-        // also poll stdout periodically
-        const interval = setInterval(() => {
-            check();
-            if (proc.killed) {
-                clearInterval(interval);
-                clearTimeout(timeout);
-                reject(new Error('Dev server process exited early'));
-            }
-        }, 500);
-    });
-
-    return { proc, readyPromise };
-}
-
-async function waitForServer(url: string, timeout = 60000) {
-    const start = Date.now();
-    while (Date.now() - start < timeout) {
-        try {
-            const r = await fetch(url);
-            if (r.ok) return;
-        } catch (e) {
-            // ignore
-        }
-        await new Promise((r) => setTimeout(r, 500));
-    }
-    throw new Error(`Server did not become ready at ${url}`);
-}
-
 test.describe.serial('About section e2e', () => {
     let proc: any;
 
     test.beforeAll("Before all", async () => {
         const started = startDevServer();
         proc = started.proc;
-        await started.readyPromise;
+        DEV_URL = await started.readyPromise;
         // after stdout indicates ready, also poll the url
         await waitForServer(DEV_URL, 30000);
     });
