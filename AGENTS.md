@@ -310,6 +310,10 @@ call.
 - **The dark theme is one hue** — sheet, cards one step up, neutral scale in navy steps. Two
   surfaces in different hues read as two systems fighting rather than steps of one. A navy page is
   deliberate and stays; near-black with one acid accent is not the default to reach for.
+- **A dark glow is a gradient of those navy steps, on a home section only** — the brand gold in
+  the hero's glow alone, never another hue, every composite between the chip step and the card
+  step, and no text, icon, control border or focus ring under its floor at the gradient's worst
+  point (spec 009). *Settled by `e2e/dark-glows.spec.ts` and `tests/visual-language.test.ts`.*
 - **The ink on the accent surface is `--accent-surface-text`, declared in each theme file** —
   never a hardcoded `#fff`: six of them put white on the light-gold dark fill at 1.66:1. The fill
   is a theme choice (dark gold in light, the brand gold in dark); the ink clears 4.5:1 on it at
