@@ -21,12 +21,6 @@
        surfaces (button fill, border, bar). */
     --accent-text: #BFA258;
 
-    /* Primary button fill with white text on top. The brand gold only
-       gives 1.66:1 against white, so the light theme darkens it.
-       Stays dark in BOTH themes: three components hardcode color #fff on the
-       primary button, so a light fill would put white on cream. */
-    --accent-surface: #E3C770;
-
     /* Typography. Plex Sans is self-hosted from /fonts (see 05-fonts.css); the
        system stack stays in the fallback chain so a failed font request degrades
        to something sane instead of to Times. */

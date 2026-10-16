@@ -53,8 +53,9 @@
     /* Focus ring: the brand navy, 8.46:1 or more on every light ground (spec 016). */
     --focus-ring: var(--color-brand);
 
-    /* Gold primary button with white text: 6.18:1 — passes AA. */
+    /* Primary button: white on the dark gold, 6.18:1 (spec 007). */
     --accent-surface: var(--accent-text);
+    --accent-surface-text: var(--neutral-0);
 
     /* Error / alert text on the sheet: ~6.6:1 — passes AA. */
     --danger-color: #B3261E;

@@ -39,14 +39,10 @@
        1.00:1; white clears 6.66:1 on the softest ground (spec 016). */
     --focus-ring: var(--text-color);
 
-    /* Primary button fill, and it must NOT be the brand gold. Unset here it
-       inherited #E3C770 from 00-tokens.css: white on light gold, 1.66:1 against
-       4.5:1, with four places hardcoding `color: #fff` on it. Same hue as
-       --accent-text, different lightness — white sits on this one, not that. */
-
-    /* The same value as light.css, for the same reason: this token is a fill
-       under hardcoded white, not a theme-relative choice. */
-    --accent-surface: #7A5D10;
+    /* Primary button: the brand gold under the brand navy, 6.66:1 (spec 007).
+       White on this gold would be 1.66:1, so the ink is a token, never #fff. */
+    --accent-surface: var(--brand-accent);
+    --accent-surface-text: var(--color-brand);
 
     /* Error / alert text on the navy field. */
     --danger-color: #F2B8B5;

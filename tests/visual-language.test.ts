@@ -233,66 +233,6 @@ describe('visual language', () => {
         ).toEqual([]);
     });
 
-    it('a surface that white text sits on is dark in both themes', () => {
-        /*
-         * `--accent-surface` carried #E3C770 in dark: the theme file never set it,
-         * so it inherited from 00-tokens.css and every primary button put white on
-         * light gold at 1.66:1. AGENTS.md said "dark in both themes" all along.
-         */
-        const AA_TEXT = 4.5;
-
-        const THEME_DIR = path.join(ROOT, 'public', 'styles', 'themes');
-        const read = (file: string) =>
-            stripComments(fs.readFileSync(path.join(THEME_DIR, file), 'utf-8'));
-
-        const offenders: string[] = [];
-
-        for (const file of ['light.css', 'dark.css']) {
-            const src = read(file);
-            const declared = src.match(/--accent-surface\s*:\s*([^;]+);/i);
-            if (!declared) {
-                offenders.push(
-                    `${file} does not set --accent-surface, so it inherits whatever ` +
-                    `00-tokens.css holds — and the two were written for different jobs`,
-                );
-                continue;
-            }
-            // Follow one level of var() so an alias is checked, not skipped.
-            let value = declared[1].trim();
-            const alias = value.match(/^var\(\s*(--[a-z0-9-]+)/i);
-            if (alias) {
-                const target = alias[1];
-                const targetValue = src.match(
-                    new RegExp(`${target}\\s*:\\s*(#[0-9a-f]{3,8})`, 'i'),
-                );
-                if (!targetValue) {
-                    offenders.push(
-                        `${file}: --accent-surface is ${value}, which does not resolve here`,
-                    );
-                    continue;
-                }
-                value = targetValue[1];
-            }
-            if (!/^#[0-9a-f]{3,8}$/i.test(value)) continue;
-
-            const ratio = contrast('#FFFFFF', value);
-            if (ratio < AA_TEXT) {
-                offenders.push(
-                    `${file}: --accent-surface is ${value}, which gives white text ` +
-                    `${ratio.toFixed(2)}:1 — below ${AA_TEXT}:1`,
-                );
-            }
-        }
-
-        expect(
-            offenders,
-            `These themes put white text on --accent-surface without enough contrast.\n` +
-            `Three components hardcode color: #fff on it, so the fill has to hold under\n` +
-            `white rather than merely look like the accent:\n  ` +
-            offenders.join('\n  '),
-        ).toEqual([]);
-    });
-
     it('level fills clear the track in both themes', () => {
         // Spec 006 RF-3 (was 005 RF-2): each level's lit segment at 3:1 or above
         // against an unlit segment, in both themes. Lit colours come from
@@ -729,6 +669,64 @@ describe('focus colour per theme (spec 016)', () => {
             const expected = theme === 'light' ? ['RF-5', 'var(--color-brand)'] : ['RF-6', 'var(--text-color)'];
             const want = resolveColour(expected[1], ...layers);
             if (ring !== want) offenders.push(`${expected[0]}: ${theme} ring is ${ring}, expected ${expected[1]} (${want})`);
+        }
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+});
+
+describe('primary button ink (spec 007)', () => {
+    const STYLES = path.join(ROOT, 'public', 'styles');
+    const read = (...p: string[]) => stripComments(fs.readFileSync(path.join(STYLES, ...p), 'utf-8'));
+    const light = read('themes', 'light.css');
+    const dark = read('themes', 'dark.css');
+    const shared = read('00-tokens.css');
+    const LAYERS = { light: [light, shared], dark: [dark, light, shared] } as const;
+    const decl = (token: string) => new RegExp(`(?<![\w-])${token}\s*:\s*([^;]+);`);
+    const TOKENS = ['--accent-surface', '--accent-surface-text'];
+
+    it('the button text clears 4.5:1 on the accent surface in each theme (RF-1)', () => {
+        const offenders: string[] = [];
+        for (const [theme, layers] of Object.entries(LAYERS)) {
+            try {
+                const ink = resolveColour('var(--accent-surface-text)', ...layers);
+                const fill = resolveColour('var(--accent-surface)', ...layers);
+                const ratio = contrast(ink, fill);
+                if (ratio < 4.5) offenders.push(`RF-1: ${theme}: ${ink} on ${fill} is ${ratio.toFixed(2)}:1`);
+            } catch (err) {
+                offenders.push(`RF-1: ${theme}: ${detail(err)}`);
+            }
+        }
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+
+    it('in dark the fill is the brand gold, lighter than its brand-navy ink (RF-2, one hue)', () => {
+        const offenders: string[] = [];
+        try {
+            const ink = resolveColour('var(--accent-surface-text)', ...LAYERS.dark);
+            const fill = resolveColour('var(--accent-surface)', ...LAYERS.dark);
+            if (luminance(fill) <= luminance(ink)) offenders.push(`RF-2: dark fill ${fill} is not lighter than its ink ${ink}`);
+            if (ink !== resolveColour('var(--color-brand)', ...LAYERS.dark)) offenders.push(`RF-2: dark ink ${ink} is not the brand navy`);
+            if (fill !== resolveColour('var(--brand-accent)', ...LAYERS.dark)) offenders.push(`RF-2: dark fill ${fill} is not the brand gold`);
+        } catch (err) {
+            offenders.push(`RF-2: dark: ${detail(err)}`);
+        }
+        for (const token of TOKENS) {
+            const m = dark.match(decl(token));
+            if (m && !/^var\(--[\w-]+\)$/.test(m[1].trim())) offenders.push(`RF-2: dark.css sets ${token} to ${m[1].trim()}, not an alias`);
+        }
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+
+    it('each theme declares the fill and its ink itself, and nothing else does (NFR)', () => {
+        const offenders: string[] = [];
+        for (const token of TOKENS) {
+            for (const [name, src] of [['light.css', light], ['dark.css', dark]] as const) {
+                if (!decl(token).test(src)) offenders.push(`NFR: ${name} does not declare ${token}`);
+            }
+            for (const { file, css } of styleSources(ROOT)) {
+                if (path.basename(path.dirname(file)) === 'themes') continue;
+                if (decl(token).test(css)) offenders.push(`NFR: ${path.relative(ROOT, file)} declares ${token}`);
+            }
         }
         expect(offenders, offenders.join('\n')).toEqual([]);
     });

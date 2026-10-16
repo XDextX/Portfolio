@@ -29,6 +29,13 @@
     transform: translateY(0);
 }
 
+/* The primary .btn — the 404 home button and the project page's "Demo" (spec 007). */
+.btn--primary {
+    background: var(--accent-surface);
+    border: 1px solid var(--accent-surface);
+    color: var(--accent-surface-text);
+}
+
 .card {
     border-radius: var(--radius-lg);
     padding: var(--sp-4);
@@ -78,10 +85,10 @@
 .btn-action.primary {
     background: var(--accent-surface);
     border-color: var(--accent-surface);
-    color: #fff;
+    color: var(--accent-surface-text);
 }
 
 .btn-action.primary:hover {
     opacity: 0.88;
-    color: #fff;
+    color: var(--accent-surface-text);
 }
