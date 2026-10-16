@@ -1,0 +1,58 @@
+---
+import { GENERIC_MARK, type Logo } from '../data/tech';
+
+export interface Props {
+	logo?: Logo;
+	size: number;
+}
+
+/**
+ * What a skill's slot draws: its original logo, one file per theme, or the generic mark.
+ * @param logo the entry's logo; absent draws GENERIC_MARK in --icon-mono
+ * @param size the square, in px
+ */
+const { logo, size } = Astro.props;
+// Spec 012 D-1: two <img>s, one hidden per theme, so the site's toggle picks the file
+// (a <picture> would follow the OS). A display:none lazy image is not fetched.
+// The mark paints --icon-mono, not currentColor: the chip's hover turns its text gold.
+---
+
+{logo === undefined && (
+	<span class='mark' style={`--mark: url(${GENERIC_MARK}); --size: ${size}px`}></span>
+)}
+{typeof logo === 'string' && (
+	<img src={logo} alt='' width={size} height={size} loading='lazy' />
+)}
+{typeof logo === 'object' && (
+	<>
+		<img class='logo--light' src={logo.light} alt='' width={size} height={size} loading='lazy' />
+		<img class='logo--dark' src={logo.dark} alt='' width={size} height={size} loading='lazy' />
+	</>
+)}
+
+<style>
+	img {
+		display: block;
+	}
+
+	.logo--dark {
+		display: none;
+	}
+
+	:global(:root[data-theme='dark']) .logo--light {
+		display: none;
+	}
+
+	:global(:root[data-theme='dark']) .logo--dark {
+		display: block;
+	}
+
+	.mark {
+		display: block;
+		inline-size: var(--size);
+		block-size: var(--size);
+		background-color: var(--icon-mono);
+		mask: var(--mark) center / contain no-repeat;
+		-webkit-mask: var(--mark) center / contain no-repeat;
+	}
+</style>

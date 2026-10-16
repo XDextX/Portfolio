@@ -1,9 +1,11 @@
 ---
+import SkillLogo from './SkillLogo.astro';
 import { LEVEL_COLOR, levelLabelMap, type TechLevel } from '../data/levelLabels';
+import type { Logo } from '../data/tech';
 
 export interface Props {
 	name: string;
-	logo: string;
+	logo?: Logo;
 	href?: string;
 	level: TechLevel;
 	locale?: 'es' | 'en';
@@ -23,7 +25,7 @@ const Tag = href ? 'a' : 'span';
 	title={label}
 	style={`--dot:${color}`}
 >
-	<img src={logo} alt='' width='18' height='18' loading='lazy' />
+	<SkillLogo logo={logo} size={18} />
 	{name}
 	{/* The dot is aria-hidden, so without this the level reached assistive tech
 	    only through a title attribute. */}

@@ -1,18 +1,19 @@
 ---
+import SkillLogo from './SkillLogo.astro';
 import { LEVEL_SCALE, LEVEL_COLOR, LEVEL_TEXT_COLOR, levelLabelMap, segmentsFor, type TechLevel } from '../data/levelLabels';
+import type { Logo } from '../data/tech';
 
 export interface Props {
 	name: string;
-	icon: string;
-	brand?: string;
+	logo?: Logo;
 	level: TechLevel;
 	locale?: 'es' | 'en';
 }
 
 /**
- * One bars-view skill row: icon, name over track, level badge.
- * @param name tech name shown above the track; icon its single-colour asset URL.
- * @param brand the hover colour, absent for a generic icon; level drives fill and label.
+ * One bars-view skill row: logo, name over track, level badge.
+ * @param name tech name shown above the track; logo its original logo (spec 012).
+ * @param level drives fill and label.
  */
 
 /*
@@ -21,14 +22,14 @@ export interface Props {
  * a precision the data lacks, stated twice. This shipped 271 characters a page.
  */
 
-const { name, icon, brand, level, locale = 'es' } = Astro.props;
+const { name, logo, level, locale = 'es' } = Astro.props;
 const color     = LEVEL_COLOR[level];
 const textColor = LEVEL_TEXT_COLOR[level];
 const label     = levelLabelMap[locale][level];
 ---
 
 <li class='bar-row'>
-	<span class='bar-logo' aria-hidden='true' style={`--logo: url("${icon}")${brand ? `; --brand: ${brand}` : ''}`}></span>
+	<span class='bar-logo' aria-hidden='true'><SkillLogo logo={logo} size={22} /></span>
 	<div class='bar-main'>
 		<span class='bar-name'>{name}</span>
 		<div class='bar-track' aria-hidden='true' style={`--clr:${color};--segments:${LEVEL_SCALE.length}`}>
@@ -50,34 +51,11 @@ const label     = levelLabelMap[locale][level];
 		gap: 0.6rem;
 	}
 
-	/* The icon is the asset's alpha painted in the slot's colour, so one
-	   `color` change recolours it. The asset must be single-colour: white
-	   lettering over a field reads as a hole only if it is one (RF-8).
-	   The 22px box is the slot, held here rather than by the asset arriving. */
+	/* The 22px box is the slot, held here rather than by the logo arriving, so a
+	   file that fails to load moves nothing. No hover rule: the row is not a control. */
 	.bar-logo {
-		position: relative;
 		width: 22px;
 		height: 22px;
-		color: var(--icon-mono);
-	}
-
-	.bar-logo::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		background-color: currentColor;
-		mask: var(--logo) center / contain no-repeat;
-		-webkit-mask: var(--logo) center / contain no-repeat;
-	}
-
-	/* The hover changes the icon's colour and nothing else; a row with no
-		brand keeps the theme's. It sets `color`, not a background, so it is
-		not a background-only hover. Gated on (hover: hover): touch applies
-		:hover on tap and keeps it, and a device with no hover stays mono. */
-	@media (hover: hover) {
-		.bar-row:hover .bar-logo {
-			color: var(--brand, var(--icon-mono));
-		}
 	}
 
 	.bar-main {
