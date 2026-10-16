@@ -59,7 +59,7 @@
     gap: 0.3rem;
     padding: 0.3rem 0.7rem;
     border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--control-border);
     background: transparent;
     color: var(--text-color);
     font-size: var(--fs-xs);

@@ -4,7 +4,7 @@ import path from 'path';
 import { LEVEL_COLOR, LEVEL_TEXT_COLOR, LEVEL_SCALE, type TechLevel } from '../src/data/levelLabels';
 import * as levelData from '../src/data/levelLabels';
 import { TECH } from '../src/data/tech';
-import { stripComments, luminance, contrast, toHex, resolveColour, cssRules, styleSources } from './helpers/colour';
+import { stripComments, luminance, contrast, toHex, resolveColour, cssRules, styleSources, hue, hueDistance, borderColourOf } from './helpers/colour';
 
 /**
  * The visual language, enforced rather than described. A rule that only lives in
@@ -778,6 +778,84 @@ describe('UI icons (spec 008)', () => {
             const paints = svgPaints(fs.readFileSync(file, 'utf-8')).filter((p) => p !== 'currentcolor');
             if (paints.length) offenders.push(`${icon}.svg paints ${paints.join(', ')}, not only currentColor`);
             if (!notice.includes(`\`${icon}.svg\``)) offenders.push(`NOTICE.md does not name ${icon}.svg`);
+        }
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+});
+
+describe('colour helper: hue and border colour (spec 017)', () => {
+    it('measures hue and circular hue distance', () => {
+        expect(hue('#FF0000')).toBe(0);
+        expect(hue('#0000FF')).toBe(240);
+        expect(hueDistance(350, 10)).toBe(20);
+    });
+
+    it('reads the colour term of a border', () => {
+        expect(borderColourOf(new Map([['border-color', 'var(--x)']]))).toBe('var(--x)');
+        expect(borderColourOf(new Map([['border', '1px solid var(--x)']]))).toBe('var(--x)');
+        expect(borderColourOf(new Map([['border', 'none']]))).toBeNull();
+    });
+});
+
+describe('control borders (spec 017)', () => {
+    const CONTROLS: [string, string][] = [
+        ['LanguageSwitcher.astro', '.language-switcher'],
+        ['ThemeSwitch.astro', '.theme-btn'],
+        ['AboutSection.astro', '.btn-social'],
+        ['SkillViewToggle.astro', '.view-toggle'],
+        ['SkillChip.astro', '.chip'],
+        ['03-components.css', '.btn-action'],
+        ['ContactCard.astro', '.icon-btn'],
+    ];
+    const WANT = 'var(--control-border)';
+    const declsOf = (body: string) =>
+        new Map([...body.matchAll(/([\w-]+)\s*:\s*([^;]+)/g)].map((m) => [m[1].toLowerCase(), m[2].trim()] as [string, string]));
+    const sources = styleSources(ROOT);
+
+    it('every bordered control rests in the control border colour (RF-1)', () => {
+        const offenders: string[] = [];
+        for (const [file, selector] of CONTROLS) {
+            const src = sources.filter((s) => path.basename(s.file) === file);
+            const rule = src.flatMap((s) => cssRules(s.css)).find((r) => r.selectors.includes(selector) && !r.media);
+            const colour = rule ? borderColourOf(declsOf(rule.body)) : null;
+            if (colour !== WANT) offenders.push(`RF-1: ${file} ${selector} rests in ${colour ?? 'no border colour'}`);
+        }
+        const names = new Set(CONTROLS.map(([, s]) => s));
+        for (const { file, css } of sources) {
+            for (const rule of cssRules(css)) {
+                for (const sel of rule.selectors) {
+                    const bare = sel.replace(/^:root(\[data-theme="dark"\])?\s+/, '');
+                    if (!names.has(bare) || bare === sel && !/themes/.test(file)) continue;
+                    const colour = borderColourOf(declsOf(rule.body));
+                    if (colour && colour !== WANT) offenders.push(`RF-1: ${path.relative(ROOT, file)} ${sel} overrides the border with ${colour}`);
+                }
+            }
+        }
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+
+    it('the control border clears 3:1 on sheet and card, stays 1.5:1 from the hover gold, and keeps the hue (RF-2, RF-4)', () => {
+        const STYLES = path.join(ROOT, 'public', 'styles');
+        const read = (...p: string[]) => stripComments(fs.readFileSync(path.join(STYLES, ...p), 'utf-8'));
+        const light = read('themes', 'light.css');
+        const dark = read('themes', 'dark.css');
+        const shared = read('00-tokens.css');
+        const LAYERS = { light: [light, shared], dark: [dark, light, shared] } as const;
+        const offenders: string[] = [];
+        for (const [theme, layers] of Object.entries(LAYERS)) {
+            try {
+                const c = resolveColour('var(--control-border)', ...layers);
+                for (const ground of ['--main-bg', '--card-background']) {
+                    const r = contrast(c, resolveColour(`var(${ground})`, ...layers));
+                    if (r < 3) offenders.push(`RF-2: ${theme}: ${c} on ${ground} is ${r.toFixed(2)}:1`);
+                }
+                const g = contrast(c, resolveColour('var(--accent-text)', ...layers));
+                if (g < 1.5) offenders.push(`RF-4: ${theme}: ${c} is ${g.toFixed(2)}:1 from the hover gold`);
+                const d = hueDistance(hue(c), hue(resolveColour('var(--neutral-200)', ...layers)));
+                if (d > 10) offenders.push(`NFR: ${theme}: ${c} is ${d.toFixed(1)}° from the neutral hue`);
+            } catch (err) {
+                offenders.push(`RF-2: ${theme}: ${detail(err)}`);
+            }
         }
         expect(offenders, offenders.join('\n')).toEqual([]);
     });

@@ -65,6 +65,8 @@
     --neutral-50: #1F3059;
     --neutral-100: #2B4372;
     --neutral-200: #3A578F;
+    /* Control boundary: 3.59:1 on the sheet, 3.18 on a card, 1.86 from the gold (spec 017). */
+    --neutral-400: #7D93C2;
     --neutral-600: var(--text-secondary);
     --neutral-800: #E8EDF5;
     --neutral-900: #FFFFFF;
@@ -72,6 +74,7 @@
     --neutral-0: var(--bg);
 
     --color-border: var(--neutral-200);
+    --control-border: var(--neutral-400);
     --tag-surface: var(--neutral-50);
     --card-background: var(--neutral-100);
     /* Bars-view icon: the same alias as light.css, over this theme own
@@ -104,7 +107,7 @@
 :root[data-theme="dark"] .theme-btn {
     background: var(--neutral-100);
     color: var(--neutral-800);
-    border-color: var(--neutral-200);
+    border-color: var(--control-border);
 }
 
 /* Hover moves the border to the gold and the icon with it, matching light.css.

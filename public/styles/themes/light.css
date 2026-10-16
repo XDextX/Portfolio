@@ -25,12 +25,15 @@
     --neutral-50: #F4F6F9;
     --neutral-100: #EAEEF3;
     --neutral-200: #DCE2E9;
+    /* Control boundary: 3.19:1 on the sheet, 3.28 on a card, 1.89 from the gold (spec 017). */
+    --neutral-400: #848F9F;
     --neutral-600: var(--text-secondary);
     --neutral-800: #1B2634;
     --neutral-900: #101822;
 
     /* Borders & surfaces */
     --color-border: var(--neutral-200);
+    --control-border: var(--neutral-400);
     --card-background: #FFFFFF;
     --neutral-0: var(--card-background);
 
@@ -109,7 +112,7 @@
 :root .theme-btn {
     background: var(--neutral-0);
     color: var(--neutral-800);
-    border-color: var(--neutral-200);
+    border-color: var(--control-border);
 }
 
 /* Hover moves the border to the gold and the icon with it — the same signal the

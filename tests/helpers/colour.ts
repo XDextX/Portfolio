@@ -151,3 +151,42 @@ export function styleSources(root: string): { file: string; css: string }[] {
     );
     return [...sheets, ...blocks];
 }
+
+/**
+ * HSL hue of an opaque colour, in degrees; 0 for a grey.
+ * @param hex `#rrggbb`
+ * @returns hue in [0, 360)
+ */
+export function hue(hex: string): number {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+    const max = Math.max(r, g, b);
+    const d = max - Math.min(r, g, b);
+    if (d === 0) return 0;
+    const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    return (h * 60 + 360) % 360;
+}
+
+/**
+ * Circular distance between two hues.
+ * @param a degrees @param b degrees
+ * @returns the shorter way round, in [0, 180]
+ */
+export function hueDistance(a: number, b: number): number {
+    const d = Math.abs(a - b) % 360;
+    return Math.min(d, 360 - d);
+}
+
+/**
+ * The colour term of a rule's border: `border-color`, else the `border` shorthand's colour.
+ * @param decls the rule's declarations, property to value
+ * @returns the colour, or null when the rule sets none (`none`, `0`, width and style only)
+ */
+export function borderColourOf(decls: Map<string, string>): string | null {
+    const explicit = decls.get('border-color');
+    if (explicit) return explicit.trim();
+    const short = decls.get('border');
+    if (!short) return null;
+    const KEYWORD = /^(?:\d[\w.]*|thin|medium|thick|none|hidden|solid|dashed|dotted|double|groove|ridge|inset|outset)$/i;
+    const colour = short.trim().split(/\s+(?![^(]*\))/).filter((t) => !KEYWORD.test(t));
+    return colour.length ? colour.join(' ') : null;
+}
