@@ -20,9 +20,11 @@ in the code. `AGENTS.md` elaborates these and yields to them on any conflict.
    `src/data/*.ts` and `i18n/locales/*.json`, rendering is
    `src/components/*.astro`, and only routes live in `src/pages/`.
    *Check:* `notfound.test.ts` — `Resume.astro` is not in `pages/`.
-6. **The token has one reader.** `GITHUB_TOKEN` is read in
-   `src/pages/lib/github.ts` and nowhere else, and both routes rank with the
-   same `sortRepos()`. *Check:* one reader, one definition.
+6. **Every secret has one reader.** `GITHUB_TOKEN` is read in
+   `src/pages/lib/github.ts` and the Mailtrap configuration in
+   `src/pages/lib/mailtrap.ts`, each nowhere else, and both project routes rank
+   with the same `sortRepos()`. *Check:* one reader per secret, in no client
+   asset; one ranking definition.
 7. **Tests run on what is installed.** `npm test` (`vitest --run tests`) and
    `npm run test:e2e` (Playwright on the installed Chrome) are the whole policy,
    and the pre-commit hook runs both; a new dependency to test something needs
