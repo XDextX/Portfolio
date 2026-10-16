@@ -76,6 +76,8 @@
 		}
 	},
 	"experience": {
+		"techAria": "Technologies at {{company}}, {{period}}",
+		"cv": "View full CV",
 		"title": "*Experience*"
 	},
 	"contact": {

@@ -641,7 +641,7 @@ describe('section title gold (spec 008 RF-5)', () => {
 });
 
 describe('UI icons (spec 008)', () => {
-    it('each section, hero, step and skills glyph is a distinct, self-hosted, currentColor-only file on record', async () => {
+    it('each section, hero, step, skills and company glyph is a distinct, self-hosted, currentColor-only file on record', async () => {
         const { SECTION_TITLES } = await import('../src/data/sectionTitles');
         const UI = path.join(ROOT, 'public', 'icons', 'ui');
         const icons = Object.values(SECTION_TITLES).map((e) => e.icon);
@@ -675,7 +675,11 @@ describe('UI icons (spec 008)', () => {
         const skillIcons = mark ? [...areaIcons, mark] : areaIcons;
         if (new Set(skillIcons).size !== skillIcons.length) offenders.push(`one glyph, one meaning: skills glyphs ${skillIcons.join(', ')} repeat one`);
         for (const icon of skillIcons) if (icons.includes(icon) || heroIcons.includes(icon) || stepIcons.includes(icon)) offenders.push(`one glyph, one meaning: ${icon} is a skills glyph and another section's`);
-        for (const icon of new Set([...icons, ...heroIcons, ...stepIcons, ...skillIcons])) {
+        // Spec 013: company glyphs may repeat within Experience, never mean something elsewhere.
+        const { EXPERIENCES } = await import('../src/data/experience');
+        const companyIcons: string[] = [...new Set(EXPERIENCES.map((e: any) => e.glyph).filter(Boolean) as string[])];
+        for (const icon of companyIcons) if ([...icons, ...heroIcons, ...stepIcons, ...skillIcons].includes(icon)) offenders.push(`one glyph, one meaning: ${icon} is a company glyph and another section's`);
+        for (const icon of new Set([...icons, ...heroIcons, ...stepIcons, ...skillIcons, ...companyIcons])) {
             const file = path.join(UI, `${icon}.svg`);
             if (!fs.existsSync(file)) {
                 offenders.push(`public/icons/ui/${icon}.svg is missing`);
@@ -901,6 +905,36 @@ describe('step colour scope (spec 011)', () => {
             const n = [...css.matchAll(/var\(\s*--step-\d+-(?:tint|tone)\b/g)].length;
             if (n && path.basename(file) !== 'ValuePropositionSection.astro') {
                 offenders.push(`${path.relative(ROOT, file)} reads a step colour ${n} time(s)`);
+            }
+        }
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+});
+
+describe('experience contrast (spec 013 RF-6)', () => {
+    const STYLES = path.join(ROOT, 'public', 'styles');
+    const read = (...p: string[]) => stripComments(fs.readFileSync(path.join(STYLES, ...p), 'utf-8'));
+    const light = read('themes', 'light.css');
+    const dark = read('themes', 'dark.css');
+    const shared = read('00-tokens.css');
+    const LAYERS = { light: [light, shared], dark: [dark, light, shared] } as const;
+    // Chip text on its fill; the dot on the sheet (the glow is the e2e's); the company icon on the card.
+    const PAIRS: [string, string, number, string][] = [
+        ['var(--text-secondary)', 'var(--tag-surface)', 4.5, 'chip text on the chip fill'],
+        ['var(--accent-text)', 'var(--main-bg)', 3, 'timeline dot on the sheet'],
+        ['var(--icon-mono)', 'var(--card-background)', 3, 'company icon on the card'],
+    ];
+
+    it('chips, dots and company icons clear their floors in each theme', () => {
+        const offenders: string[] = [];
+        for (const [theme, layers] of Object.entries(LAYERS)) {
+            for (const [fg, bg, floor, what] of PAIRS) {
+                try {
+                    const ratio = contrast(resolveColour(fg, ...layers), resolveColour(bg, ...layers));
+                    if (ratio < floor) offenders.push(`RF-6: ${theme}: ${what} is ${ratio.toFixed(2)}:1, under ${floor}`);
+                } catch (err) {
+                    offenders.push(`RF-6: ${theme}: ${what} does not resolve (${detail(err)})`);
+                }
             }
         }
         expect(offenders, offenders.join('\n')).toEqual([]);

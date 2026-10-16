@@ -1,21 +1,28 @@
 ---
+import { t } from '@i18n/index';
+
 export interface Props {
 	role: string;
 	company: string;
 	period: string;
 	location?: string;
 	bullets: string[];
+	/** Company glyph in /icons/ui, decoration only (spec 013). */
+	glyph?: string;
+	/** Technologies the job used, shown as chips in this order. */
+	tech?: string[];
 	/** Disambiguates the heading id when two entries share a company. */
 	idSuffix?: string;
 }
 
-const { role, company, period, location, bullets, idSuffix } = Astro.props;
+/**
+ * One job on the experience timeline: period, role, company, location, bullets, chips.
+ * @param period read first, before the role (spec 013 RF-2); glyph and tech are optional
+ */
+const { role, company, period, location, bullets, glyph, tech, idSuffix } = Astro.props;
 
-// The heading id used to be `${company}-title`, which for a real company name
-// means spaces and dots inside an id: "SD Misiones de Costa Rica S. A.-title".
-// That is not addressable by a CSS selector or a fragment, and two entries with
-// the same company would collide on it. Slugged here so aria-labelledby points
-// at something a browser can actually resolve.
+// The heading id used to be `${company}-title`: spaces and dots inside an id, not
+// addressable by a selector or a fragment, and two entries at one company collide.
 const slug = company
 	.toLowerCase()
 	.normalize('NFD')
@@ -27,59 +34,56 @@ const headingId = `exp-${slug}${idSuffix ? `-${idSuffix}` : ''}-title`;
 
 <article class='exp-card card-frame' aria-labelledby={headingId}>
 	<header class='exp-header'>
-		<div class='exp-main'>
-			<h3 class='exp-role' id={headingId}>{role}</h3>
-			<span class='exp-company'>{company}</span>
-		</div>
-
-		<div class='exp-aside'>
-			<span class='exp-period'>{period}</span>
-			{location && (
-				<span class='exp-location'>
-					<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z'/><circle cx='12' cy='10' r='3'/></svg>
-					{location}
-				</span>
-			)}
-		</div>
+		<p class='exp-period'>{period}</p>
+		<h3 class='exp-role' id={headingId}>{role}</h3>
+		<span class='exp-company'>{glyph && <span class='exp-company__icon' aria-hidden='true' style={`--icon: url(/icons/ui/${glyph}.svg)`}></span>}{company}</span>
+		{location && (
+			<span class='exp-location'>
+				<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z'/><circle cx='12' cy='10' r='3'/></svg>
+				{location}
+			</span>
+		)}
 	</header>
 
 	<ul class='exp-bullets'>
 		{bullets.map((item) => <li>{item}</li>)}
 	</ul>
+
+	{tech && tech.length > 0 && (
+		<ul class='exp-tech' role='list' aria-label={t('experience.techAria', { company, period })}>
+			{tech.map((name) => <li class='tag'>{name}</li>)}
+		</ul>
+	)}
 </article>
 
 <style>
 	.exp-card {
+		position: relative;
 		display: flex;
 		flex-direction: column;
 		gap: 0.85rem;
-		padding-left: 1.5rem;
-		border-left: 3px solid var(--accent-color);
-		transition:
-			border-color var(--dur) var(--ease),
-			box-shadow var(--dur) var(--ease);
+		transition: border-color var(--dur) var(--ease);
 	}
 
-	/* Hover moves the border, not the box, like every other card on the page.
-	   The gold left spine stays put: it is the one structural device here, and
-	   it marks the entry rather than reacting to the pointer. */
+	/* The dot on the rail marks each job, so no gold spine; hover moves the border
+	   colour and nothing else, like every other card (AGENTS, Hover). */
 	.exp-card:hover {
-		box-shadow: var(--shadow-md);
+		border-color: var(--accent-text);
 	}
 
-	/* Header */
 	.exp-header {
-		display: flex;
-		align-items: flex-start;
-		justify-content: space-between;
-		gap: 1rem;
-		flex-wrap: wrap;
-	}
-
-	.exp-main {
 		display: flex;
 		flex-direction: column;
 		gap: 0.2rem;
+	}
+
+	/* Plain text in --text-secondary, not a lozenge: a pill in --neutral-200 sat at
+	   1.27:1 on the sheet. From 40rem the section places it left of the rail. */
+	.exp-period {
+		margin: 0;
+		font-size: var(--fs-sm);
+		font-weight: 600;
+		color: var(--text-secondary);
 	}
 
 	.exp-role {
@@ -91,30 +95,22 @@ const headingId = `exp-${slug}${idSuffix ? `-${idSuffix}` : ''}-title`;
 	}
 
 	.exp-company {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
 		font-size: var(--fs-sm);
 		font-weight: 600;
 		color: var(--text-color);
 	}
 
-	/* Aside: period + location */
-	.exp-aside {
-		display: flex;
-		flex-direction: column;
-		align-items: flex-end;
-		gap: 0.3rem;
-		flex-shrink: 0;
-	}
-
-	/* A date range is not a label, so it does not get a lozenge. The pill was
-	   also the least legible thing on the card: --neutral-200 against the sheet
-	   is 1.27:1, so the tag was a faint outline wrapped around the one piece of
-	   information nobody looks for. As plain text in --text-secondary it sits at
-	   roughly 6:1, which is both quieter and easier to read. */
-	.exp-period {
-		font-size: var(--fs-sm);
-		font-weight: 600;
-		white-space: nowrap;
-		color: var(--text-secondary);
+	/* --icon-mono, not currentColor: the name's colour is not the icon's (012 D-3). */
+	.exp-company__icon {
+		flex: none;
+		inline-size: 1em;
+		block-size: 1em;
+		background-color: var(--icon-mono);
+		mask: var(--icon) center / contain no-repeat;
+		-webkit-mask: var(--icon) center / contain no-repeat;
 	}
 
 	.exp-location {
@@ -123,10 +119,8 @@ const headingId = `exp-${slug}${idSuffix ? `-${idSuffix}` : ''}-title`;
 		gap: 0.3rem;
 		font-size: var(--fs-xs);
 		color: var(--neutral-600);
-		white-space: nowrap;
 	}
 
-	/* Bullets */
 	.exp-bullets {
 		margin: 0;
 		padding-left: 1.1rem;
@@ -141,12 +135,12 @@ const headingId = `exp-${slug}${idSuffix ? `-${idSuffix}` : ''}-title`;
 		line-height: 1.6;
 	}
 
-	@media (max-width: 520px) {
-		.exp-header {
-			flex-direction: column;
-		}
-		.exp-aside {
-			align-items: flex-start;
-		}
+	.exp-tech {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
 	}
 </style>

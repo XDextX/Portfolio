@@ -6,6 +6,10 @@ export type Experience = {
     period: Record<Lang, string>;
     location?: Record<Lang, string>;
     bullets: Record<Lang, string[]>;
+    /** Company glyph in /icons/ui; decoration, the name beside it says who (spec 013). */
+    glyph?: 'building' | 'plant';
+    /** Technologies the job used, shown as chips in this order; free strings, not skills. */
+    tech?: string[];
 };
 
 export const EXPERIENCES: Experience[] = [
@@ -15,6 +19,8 @@ export const EXPERIENCES: Experience[] = [
             en: "Full Stack Developer",
         },
         company: "SD Misiones de Costa Rica S. A.",
+        glyph: "building",
+        tech: [".NET", "Angular", "TypeScript", "SQL Server", "Azure Functions", "SSE", "CI/CD"],
         period: {
             es: "2022 - 2025",
             en: "2022 - 2025",
@@ -44,6 +50,8 @@ export const EXPERIENCES: Experience[] = [
             en: "Software Engineer",
         },
         company: "Plantas y Flores Ornamentales S.A.",
+        glyph: "plant",
+        tech: [".NET", "ASP.NET", "Java", "Kotlin", "JavaScript", "SQL Server"],
         period: {
             es: "2019 - 2020",
             en: "2019 - 2020",

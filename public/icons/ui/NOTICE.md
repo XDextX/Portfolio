@@ -25,5 +25,7 @@ outline glyphs, painted the same way; the skills row's brand logos live apart, i
 | `cloud.svg` | Tabler Icons v3.49.0, `icons/outline/cloud.svg` | `LICENSE-tabler.txt` | Skills area: Cloud & DevOps |
 | `test-pipe.svg` | Tabler Icons v3.49.0, `icons/outline/test-pipe.svg` | `LICENSE-tabler.txt` | Skills area: Testing (declared, no skill yet) |
 | `broadcast.svg` | Tabler Icons v3.49.0, `icons/outline/broadcast.svg` | `LICENSE-tabler.txt` | Generic mark for a skill with no logo of its own |
+| `building.svg` | Tabler Icons v3.49.0, `icons/outline/building.svg` | `LICENSE-tabler.txt` | Experience: SD Misiones (company glyph) |
+| `plant.svg` | Tabler Icons v3.49.0, `icons/outline/plant.svg` | `LICENSE-tabler.txt` | Experience: Plantas y Flores (company glyph) |
 
 Tabler Icons: https://github.com/tabler/tabler-icons
