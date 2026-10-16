@@ -53,6 +53,18 @@
     background: var(--card-background);
 }
 
+/* An inert label, not a control: no border, no hover. Shared by the process steps (011)
+   and the experience chips (013), on the tag radius rather than the pill. */
+.tag {
+    padding: 0.2rem 0.5rem;
+    font-size: var(--fs-xs);
+    font-weight: 500;
+    white-space: nowrap;
+    color: var(--text-secondary);
+    background: var(--tag-surface);
+    border-radius: var(--radius-xs);
+}
+
 .btn-action {
     display: inline-flex;
     align-items: center;

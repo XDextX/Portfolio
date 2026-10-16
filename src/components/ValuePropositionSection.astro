@@ -28,7 +28,7 @@ const { intro, note, steps } = PROCESS;
 				<h3 class='step__title'>{s.title[locale]}</h3>
 				<p class='step__desc'>{s.description[locale]}</p>
 				<ul class='step__tags' role='list'>
-					{s.tags[locale].map((g) => <li class='step__tag'>{g}</li>)}
+					{s.tags[locale].map((g) => <li class='step__tag tag'>{g}</li>)}
 				</ul>
 				{i < steps.length - 1 && <span class='step__arrow' aria-hidden='true'></span>}
 			</li>
@@ -115,16 +115,6 @@ const { intro, note, steps } = PROCESS;
 		margin: 0;
 		padding: 0;
 		list-style: none;
-	}
-
-	.step__tag {
-		padding: 0.2rem 0.5rem;
-		font-size: var(--fs-xs);
-		font-weight: 500;
-		white-space: nowrap;
-		color: var(--text-secondary);
-		background: var(--tag-surface);
-		border-radius: var(--radius-xs);
 	}
 
 	/* Centred in the 2rem gap; the 1px is .card-frame's border, outside the padding box
