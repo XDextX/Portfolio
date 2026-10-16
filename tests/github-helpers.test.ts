@@ -1,30 +1,11 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
+import * as github from '../src/pages/lib/github';
 import { ghListByTopic, ghRepo, ghRepoReadme, ghSearch, sortRepos } from '../src/pages/lib/github';
-import { mockGitHubSearchResponse, mockGitHubRepoResponse, mockTextResponse } from './helpers/github-mocks';
+import { buildRepo, mockGitHubSearchResponse, mockGitHubRepoResponse, mockTextResponse } from './helpers/github-mocks';
 // Same module as `@type/github`, which is what the source itself imports. One
 // spelling for one file: two paths for one type is two places to update.
 import type { GitHubRepo } from '@type/github';
 
-const defaultOwner: GitHubRepo['owner'] = {
-    login: 'XDextX',
-    avatar_url: 'https://avatars.githubusercontent.com/u/0?v=4'
-};
-
-function buildRepo(overrides: Partial<GitHubRepo> = {}): GitHubRepo {
-    const { owner, updated_at = new Date().toISOString(), ...rest } = overrides;
-    return {
-        id: 1,
-        name: 'repo',
-        full_name: 'XDextX/repo',
-        description: '',
-        html_url: 'https://github.com/XDextX/repo',
-        stargazers_count: 0,
-        forks_count: 0,
-        updated_at,
-        owner: { ...defaultOwner, ...(owner ?? {}) },
-        ...rest
-    };
-}
 
 describe('GitHub helpers', () => {
     afterEach(() => {
@@ -190,5 +171,27 @@ describe('sortRepos', () => {
 
     it('handles an empty list', () => {
         expect(sortRepos([])).toEqual([]);
+    });
+});
+
+// Spec 014: what a repository's raw fields mean to a visitor. A missing export fails by name.
+const helper = (name: string) => {
+    const fn = (github as any)[name];
+    if (typeof fn !== 'function') throw new Error(`src/pages/lib/github.ts exports no ${name}`);
+    return fn;
+};
+
+describe('repo language and demo URL (spec 014 RF-4, RF-5, RF-7, RF-8)', () => {
+    it('language: trimmed, or null when absent or blank', () => {
+        const repoLanguage = helper('repoLanguage');
+        for (const language of [undefined, null, '', '   ']) expect(repoLanguage(buildRepo({ language } as any)), String(language)).toBeNull();
+        expect(repoLanguage(buildRepo({ language: ' Go ' }))).toBe('Go');
+    });
+
+    it('demo URL: an absolute http(s) homepage, trimmed and as given, else null', () => {
+        const demoUrl = helper('demoUrl');
+        expect(demoUrl(buildRepo({ homepage: ' https://x.test ' }))).toBe('https://x.test');
+        expect(demoUrl(buildRepo({ homepage: 'HTTPS://x.test' }))).toBe('HTTPS://x.test');
+        for (const homepage of ['javascript:alert(1)', 'x.test', 'ftp://x.test', '', null]) expect(demoUrl(buildRepo({ homepage } as any)), String(homepage)).toBeNull();
     });
 });

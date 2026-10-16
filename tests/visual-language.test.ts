@@ -641,7 +641,7 @@ describe('section title gold (spec 008 RF-5)', () => {
 });
 
 describe('UI icons (spec 008)', () => {
-    it('each section, hero, step, skills and company glyph is a distinct, self-hosted, currentColor-only file on record', async () => {
+    it('each section, hero, step, skills, company and project glyph is a distinct, self-hosted, currentColor-only file on record', async () => {
         const { SECTION_TITLES } = await import('../src/data/sectionTitles');
         const UI = path.join(ROOT, 'public', 'icons', 'ui');
         const icons = Object.values(SECTION_TITLES).map((e) => e.icon);
@@ -679,7 +679,12 @@ describe('UI icons (spec 008)', () => {
         const { EXPERIENCES } = await import('../src/data/experience');
         const companyIcons: string[] = [...new Set(EXPERIENCES.map((e: any) => e.glyph).filter(Boolean) as string[])];
         for (const icon of companyIcons) if ([...icons, ...heroIcons, ...stepIcons, ...skillIcons].includes(icon)) offenders.push(`one glyph, one meaning: ${icon} is a company glyph and another section's`);
-        for (const icon of new Set([...icons, ...heroIcons, ...stepIcons, ...skillIcons, ...companyIcons])) {
+        // Spec 014: the project card's generic mark, one meaning, shared with no other section.
+        const projectMark = String(tech.PROJECT_MARK ?? '').match(/^\/icons\/ui\/([\w-]+)\.svg$/)?.[1];
+        if (!projectMark) offenders.push(`PROJECT_MARK ${tech.PROJECT_MARK} is not /icons/ui/<name>.svg`);
+        const projectIcons = projectMark ? [projectMark] : [];
+        for (const icon of projectIcons) if ([...icons, ...heroIcons, ...stepIcons, ...skillIcons, ...companyIcons].includes(icon)) offenders.push(`one glyph, one meaning: ${icon} is the project mark and another section's`);
+        for (const icon of new Set([...icons, ...heroIcons, ...stepIcons, ...skillIcons, ...companyIcons, ...projectIcons])) {
             const file = path.join(UI, `${icon}.svg`);
             if (!fs.existsSync(file)) {
                 offenders.push(`public/icons/ui/${icon}.svg is missing`);

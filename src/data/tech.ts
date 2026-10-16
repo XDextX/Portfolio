@@ -30,6 +30,15 @@ export interface TechEntry {
 /** The mark a skill with no logo of its own draws, in the monochrome icon colour. */
 export const GENERIC_MARK = '/icons/ui/broadcast.svg';
 
+/** The mark a project card draws when its language has no logo here (spec 014 RF-3). */
+export const PROJECT_MARK = '/icons/ui/file-code.svg';
+
+/**
+ * GitHub language name to the skill whose logo a project card draws. The keys equal the
+ * values today by coincidence: the table is what keeps a GitHub name and a skill apart.
+ */
+export const REPO_LANGUAGES: Readonly<Record<string, string>> = { TypeScript: 'TypeScript', Java: 'Java', Astro: 'Astro' };
+
 // Sources and licences: /tech/NOTICE.md. SSE has no product logo, so it draws GENERIC_MARK.
 export const TECH: TechEntry[] = [
 	{ name: 'TypeScript', logo: '/tech/typescript.svg', href: 'https://www.typescriptlang.org/', level: 'advanced', area: 'languages' },
@@ -76,4 +85,14 @@ export function logoFor(logo: Logo | undefined, theme: 'light' | 'dark'): string
 export function logoFiles(logo: Logo | undefined): string[] {
 	if (logo === undefined) return [];
 	return typeof logo === 'string' ? [logo] : [...new Set([logo.light, logo.dark])];
+}
+
+/**
+ * The logo a project card draws for a GitHub language, read from that skill's entry.
+ * @param language the repository's language, already trimmed
+ * @returns the skill's logo, or null when the language is unknown or absent
+ */
+export function languageLogo(language: string | null): Logo | null {
+	if (language === null || !Object.hasOwn(REPO_LANGUAGES, language)) return null;
+	return TECH.find((e) => e.name === REPO_LANGUAGES[language])?.logo ?? null;
 }

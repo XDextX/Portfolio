@@ -84,3 +84,28 @@ export function sortRepos(repos: GitHubRepo[]): GitHubRepo[] {
     });
 }
 
+/**
+ * The repository's language as a visitor reads it (spec 014).
+ * @param repo its `language` field
+ * @returns the trimmed name, or null when absent or blank
+ */
+export function repoLanguage(repo: Pick<GitHubRepo, "language">): string | null {
+    const s = (repo.language ?? "").trim();
+    return s === "" ? null : s;
+}
+
+/**
+ * The homepage as a demo link: an absolute http(s) URL only, never `javascript:` (spec 014).
+ * @param repo its `homepage` field
+ * @returns the trimmed string as given, or null
+ */
+export function demoUrl(repo: Pick<GitHubRepo, "homepage">): string | null {
+    const s = (repo.homepage ?? "").trim();
+    if (s === "") return null;
+    try {
+        const { protocol } = new URL(s);
+        return protocol === "http:" || protocol === "https:" ? s : null;
+    } catch {
+        return null;
+    }
+}

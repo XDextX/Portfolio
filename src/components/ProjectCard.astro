@@ -1,8 +1,11 @@
 ---
 import Chip from './Chip.astro';
-import LanguageBadge from './LanguageBadge.astro';
+import SkillLogo from './SkillLogo.astro';
 import type { GitHubRepo } from '../types/github';
 import { t } from '@i18n/index';
+import { repoLanguage, demoUrl } from '../pages/lib/github';
+import { languageLogo, PROJECT_MARK } from '../data/tech';
+import { projectDescription } from '../utils/seo';
 
 export interface Props {
 	repo: GitHubRepo;
@@ -12,9 +15,11 @@ export interface Props {
 const { repo, locale = 'es' } = Astro.props;
 
 const intlLocale     = locale === 'es' ? 'es-CR' : 'en-US';
-const desc           = repo.description ?? t('project.meta.noDescription');
-const lang           = repo.language ?? 'N/A';
-const hasDemo        = !!repo.homepage?.trim();
+// Spec 014: one resolution per field, shared with the detail page and the helpers' tests.
+const desc           = projectDescription(repo, t('project.meta.noDescription'));
+const lang           = repoLanguage(repo);
+const logo           = languageLogo(lang);
+const demo           = demoUrl(repo);
 const formattedDate  = new Intl.DateTimeFormat(intlLocale, { dateStyle: 'medium' }).format(new Date(repo.updated_at));
 
 function formatCount(n: number) {
@@ -33,6 +38,13 @@ function formatCount(n: number) {
 	transition:name={`p-${repo.id}`}
 	aria-labelledby={`p-${repo.id}-title`}
 >
+	<div class='card-media'>
+		{lang && <span class='card-lang'>{lang}</span>}
+		{logo
+			? <SkillLogo logo={logo} size={48} />
+			: <span class='card-mark' aria-hidden='true' style={`--mark: url(${PROJECT_MARK})`}></span>}
+	</div>
+
 	<!-- Header -->
 	<header class='card-header'>
 		<h3
@@ -42,7 +54,6 @@ function formatCount(n: number) {
 		>
 			<a href={`/proyectos/${repo.name}`}>{repo.name}</a>
 		</h3>
-		<LanguageBadge lang={lang} />
 	</header>
 
 	<!-- Description -->
@@ -57,6 +68,32 @@ function formatCount(n: number) {
 
 	<!-- Footer -->
 	<footer class='card-footer'>
+		<nav class='card-actions' aria-label={t('project.actions.section')}>
+			<a
+				class='btn-action'
+				href={repo.html_url}
+				target='_blank'
+				rel='noopener noreferrer'
+				transition:name={`p-${repo.id}-code`}
+			>
+				{t('project.actions.code')}
+				<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><line x1='7' y1='17' x2='17' y2='7'/><polyline points='7 7 17 7 17 17'/></svg>
+			</a>
+
+			{demo && (
+				<a
+					class='btn-action'
+					href={demo}
+					target='_blank'
+					rel='noopener noreferrer'
+					transition:name={`p-${repo.id}-demo`}
+				>
+					{t('project.actions.liveDemo')}
+					<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><line x1='7' y1='17' x2='17' y2='7'/><polyline points='7 7 17 7 17 17'/></svg>
+				</a>
+			)}
+		</nav>
+
 		<div class='card-meta'>
 			{
 				repo.stargazers_count > 0 && (
@@ -86,37 +123,12 @@ function formatCount(n: number) {
 			}
 			<time class='card-date' datetime={repo.updated_at}>{formattedDate}</time>
 		</div>
-
-		<nav class='card-actions' aria-label={t('project.actions.section')}>
-			<a
-				class='btn-action'
-				href={repo.html_url}
-				target='_blank'
-				rel='noopener noreferrer'
-				transition:name={`p-${repo.id}-code`}
-			>
-				{t('project.actions.code')}
-				<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><line x1='7' y1='17' x2='17' y2='7'/><polyline points='7 7 17 7 17 17'/></svg>
-			</a>
-
-			{hasDemo && (
-				<a
-					class='btn-action'
-					href={repo.homepage!}
-					target='_blank'
-					rel='noopener noreferrer'
-					transition:name={`p-${repo.id}-demo`}
-				>
-					{t('project.actions.liveDemo')}
-					<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><line x1='7' y1='17' x2='17' y2='7'/><polyline points='7 7 17 7 17 17'/></svg>
-				</a>
-			)}
-		</nav>
 	</footer>
 </article>
 
 <style>
 	.project-card {
+		overflow: clip;
 		display: flex;
 		flex-direction: column;
 		gap: 0.75rem;
@@ -132,6 +144,43 @@ function formatCount(n: number) {
 	.project-card:hover {
 		border-color: var(--accent-text);
 		box-shadow: var(--shadow-md);
+	}
+
+	/* Full bleed: -1.25rem is .card-frame's padding (AGENTS: fixed-size duplicate, flagged
+	   in plan 014 D-6); the card's radius clips the corners. */
+	.card-media {
+		position: relative;
+		display: grid;
+		place-items: center;
+		aspect-ratio: 2 / 1;
+		margin: -1.25rem -1.25rem 0;
+		background: var(--neutral-200);
+		color: var(--icon-mono);
+	}
+
+	.card-mark {
+		inline-size: 3rem;
+		block-size: 3rem;
+		background-color: currentColor;
+		mask: var(--mark) center / contain no-repeat;
+		-webkit-mask: var(--mark) center / contain no-repeat;
+	}
+
+	/* On the card fill, not --tag-surface: in light that is the placeholder's own fill (D-5). */
+	.card-lang {
+		position: absolute;
+		inset-block-start: var(--sp-3);
+		inset-inline-start: var(--sp-3);
+		max-inline-size: calc(100% - 2 * var(--sp-3));
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		padding: 0.15rem var(--sp-2);
+		border-radius: var(--radius-xs);
+		background: var(--card-background);
+		color: var(--text-secondary);
+		font-size: var(--fs-xs);
+		font-weight: 600;
 	}
 
 	/* Header */
@@ -181,8 +230,8 @@ function formatCount(n: number) {
 	/* Footer */
 	.card-footer {
 		display: flex;
-		align-items: center;
-		justify-content: space-between;
+		flex-direction: column;
+		align-items: flex-start;
 		gap: 0.75rem;
 		flex-wrap: wrap;
 		margin-top: auto;
