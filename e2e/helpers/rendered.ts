@@ -13,6 +13,12 @@ export async function openIn(page: Page, base: string, theme: Theme, route: stri
     await page.addInitScript((t) => localStorage.setItem('theme', t), theme);
     await page.emulateMedia({ colorScheme: theme });
     await page.goto(base + route);
+    // A cold dev server can answer the first request mid dependency-optimisation, and
+    // Vite's error overlay then swallows every click (three hook runs failed this way).
+    for (let i = 0; i < 2 && (await page.locator('vite-error-overlay').count()); i++) {
+        console.warn(`openIn: vite-error-overlay on ${route}, reloading`);
+        await page.reload();
+    }
 }
 
 /**
