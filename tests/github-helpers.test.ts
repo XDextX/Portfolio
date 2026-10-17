@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import * as github from '../src/pages/lib/github';
-import { ghListByTopic, ghRepo, ghRepoReadme, ghSearch, sortRepos } from '../src/pages/lib/github';
+import { ghListByTopic, ghRepo, ghRepoReadme, sortRepos } from '../src/pages/lib/github';
 import { buildRepo, mockGitHubSearchResponse, mockGitHubRepoResponse, mockTextResponse } from './helpers/github-mocks';
 // Same module as `@type/github`, which is what the source itself imports. One
 // spelling for one file: two paths for one type is two places to update.
@@ -29,52 +29,6 @@ describe('GitHub helpers', () => {
         expect(r!.name).toBe('repo2');
     });
 
-    it('ghSearch scopes queries to the default user and keeps perPage default', async () => {
-        const fake = [buildRepo({ id: 3, name: 'scoped', full_name: 'XDextX/scoped', html_url: 'https://github.com/XDextX/scoped' })];
-        const fetchStub = vi.fn(async (input: any) => mockGitHubSearchResponse(fake));
-        vi.stubGlobal('fetch', fetchStub);
-
-        const items = await ghSearch('portfolio');
-
-        expect(items).toHaveLength(1);
-        const [[requestedUrl]] = fetchStub.mock.calls;
-        const url = requestedUrl instanceof URL ? requestedUrl : new URL(String(requestedUrl));
-        expect(url.searchParams.get('q')).toBe('user:XDextX portfolio');
-        expect(url.searchParams.get('per_page')).toBe('10');
-    });
-
-    it('ghSearch allows overriding perPage and disabling user scoping', async () => {
-        const fake = [
-            buildRepo({
-                id: 4,
-                name: 'global',
-                full_name: 'someone/global',
-                html_url: 'https://github.com/someone/global',
-                owner: { login: 'someone', avatar_url: 'https://avatars.githubusercontent.com/u/123?v=4' }
-            })
-        ];
-        const fetchStub = vi.fn(async (input: any) => mockGitHubSearchResponse(fake));
-        vi.stubGlobal('fetch', fetchStub);
-
-        const items = await ghSearch('astro', { perPage: 5, restrictToUser: false });
-
-        expect(items).toHaveLength(1);
-        const [[requestedUrl]] = fetchStub.mock.calls;
-        const url = requestedUrl instanceof URL ? requestedUrl : new URL(String(requestedUrl));
-        expect(url.searchParams.get('q')).toBe('astro');
-        expect(url.searchParams.get('per_page')).toBe('5');
-    });
-
-    it('ghSearch preserves explicit user scoping in the query string', async () => {
-        const fetchStub = vi.fn(async (input: any) => mockGitHubSearchResponse([]));
-        vi.stubGlobal('fetch', fetchStub);
-
-        await ghSearch('user:someone cool-project');
-
-        const [[requestedUrl]] = fetchStub.mock.calls;
-        const url = requestedUrl instanceof URL ? requestedUrl : new URL(String(requestedUrl));
-        expect(url.searchParams.get('q')).toBe('user:someone cool-project');
-    });
 });
 
 describe('ghRepoReadme', () => {

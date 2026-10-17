@@ -6,8 +6,6 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "lint": "eslint .",
-    "format": "prettier --write .",
     "test": "vitest --run tests",
     "test:e2e": "playwright test",
     "prepare": "husky"

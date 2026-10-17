@@ -37,7 +37,7 @@ Explora mis proyectos, tecnologías, experiencia profesional y formas de contact
 ├── layouts/             → Plantillas base (BaseLayout.astro)
 ├── pages/
 │   ├── api/             → Rutas API server-side (github-list.json, v1/projects/[name].json)
-│   ├── lib/             → Helpers de GitHub (ghListByTopic, ghRepo, ghSearch)
+│   ├── lib/             → Helpers de GitHub (ghListByTopic, ghRepo, ghRepoReadme)
 │   └── proyectos/       → Páginas dinámicas de proyecto ([name].astro)
 ├── styles/              → CSS global y variables
 └── types/               → Tipos TypeScript (GitHubRepo, etc.)
@@ -83,10 +83,6 @@ npm run test
 
 # Tests E2E (Playwright)
 npm run test:e2e
-
-# Lint y formato
-npm run lint
-npm run format
 ```
 
 ---
