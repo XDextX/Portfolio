@@ -37,7 +37,12 @@ function formatCount(n: number) {
 	aria-labelledby={`p-${repo.id}-title`}
 >
 	<div class='card-media'>
-		{lang && <span class='card-lang'>{lang}</span>}
+		{lang && (
+			<span class='card-lang'>
+				{logo && <SkillLogo logo={logo} size={14} />}
+				<span class='card-lang-text'>{lang}</span>
+			</span>
+		)}
 		{logo
 			? <SkillLogo logo={logo} size={48} />
 			: <span class='card-mark' aria-hidden='true' style={`--mark: url(${PROJECT_MARK})`}></span>}
@@ -169,15 +174,29 @@ function formatCount(n: number) {
 		inset-block-start: var(--sp-3);
 		inset-inline-end: var(--sp-3);
 		max-inline-size: calc(100% - 2 * var(--sp-3));
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
 		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 		padding: 0.15rem var(--sp-2);
 		border-radius: var(--radius-xs);
 		background: var(--card-background);
 		color: var(--text-secondary);
 		font-size: var(--fs-xs);
 		font-weight: 600;
+	}
+
+	/* The language's logo before its name (spec 031): 14px sits inside the 12px text's line, so
+	   the badge keeps its height; the name ellipsises, the logo never shrinks. */
+	.card-lang :global(img) {
+		flex: none;
+	}
+
+	.card-lang-text {
+		min-inline-size: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	/* Header */

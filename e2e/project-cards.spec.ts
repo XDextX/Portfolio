@@ -30,7 +30,8 @@ const readCards = (page: Page) =>
         const badge = c.querySelector('.card-lang');
         const mark = c.querySelector('.card-mark');
         const imgs = [...c.querySelectorAll('img')];
-        const shown = imgs.filter((i) => i.checkVisibility());
+        // Spec 031: the badge carries the language's logo too; the placeholder's picture is the one outside it.
+        const shown = imgs.filter((i) => i.checkVisibility() && !i.closest('.card-lang'));
         const bgImages = media ? [media, ...media.querySelectorAll('*')].map((e) => getComputedStyle(e).backgroundImage).filter((b) => b !== 'none') : [];
         return {
             name: c.querySelector('.card-title a')?.textContent?.trim() ?? '',
@@ -96,7 +97,8 @@ test.describe('project cards (spec 014)', () => {
                     else {
                         if (!inside(c.badge.box, c.media)) offenders.push(`RF-4: ${where} badge sits outside the placeholder`);
                         const pic = c.shown[0]?.box ?? c.mark?.box;
-                        if (overlap(c.badge.box, pic)) offenders.push(`RF-4: ${where} badge covers the logo or mark`);
+                        // Owner, 2026-10-17 (spec 031): the wider badge may overlap the picture's edge, never its centre.
+                        if (pic && overlap(c.badge.box, pic) && c.badge.box.l < (pic.l + pic.r) / 2) offenders.push(`RF-4: ${where} badge covers the logo or mark past its centre`);
                         const ratio = contrast(c.badge.fg, c.badge.bg);
                         if (ratio < 4.5) offenders.push(`NFR: ${where} badge ${c.badge.fg} on ${c.badge.bg} is ${ratio.toFixed(2)}:1`);
                     }

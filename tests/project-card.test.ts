@@ -77,6 +77,17 @@ describe('project card, rendered (spec 014 RF-3, RF-5, RF-6, RF-7, RF-8)', () =>
         expect((html.match(/\bcard-mark\b/g) ?? []).length, 'RF-3: project mark').toBe(1);
     });
 
+    it('badge logo: a known language draws it in the badge, an unknown one text alone (spec 031 RF-1, RF-3)', async () => {
+        // The badge's markup up to its first closing span: the logo or a mark would sit in it.
+        const badge = (html: string) => { const i = html.search(/class="[^"]*\bcard-lang\b/); return i < 0 ? '' : html.slice(i, html.indexOf('</span>', i)); };
+        const offenders: string[] = [];
+        const unknown = badge(await card({ language: 'Cobol' }));
+        if (!unknown) offenders.push('RF-3: the Cobol card has no badge');
+        if (/<img\b/.test(unknown) || /\bmark\b/.test(unknown)) offenders.push('RF-3: the Cobol badge draws a logo or a mark');
+        if (!/<img\b/.test(badge(await card({ language: 'TypeScript' })))) offenders.push('RF-1: the TypeScript badge draws no logo');
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+
     it('description: the card shows what the detail page resolves, both locales', async () => {
         const offenders: string[] = [];
         for (const locale of LOCALES) {
