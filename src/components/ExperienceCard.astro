@@ -16,7 +16,8 @@ export interface Props {
 }
 
 /**
- * One job on the experience timeline: period, role, company, location, bullets, chips.
+ * One job on the experience timeline, arranged like the proposal (spec 028): icon tile, role and
+ * company, location at the end; bullets with the chips beside them when the card has room.
  * @param period read first, before the role (spec 013 RF-2); glyph and tech are optional
  */
 const { role, company, period, location, bullets, glyph, tech, idSuffix } = Astro.props;
@@ -35,8 +36,15 @@ const headingId = `exp-${slug}${idSuffix ? `-${idSuffix}` : ''}-title`;
 <article class='exp-card card-frame' aria-labelledby={headingId}>
 	<header class='exp-header'>
 		<p class='exp-period'>{period}</p>
-		<h3 class='exp-role' id={headingId}>{role}</h3>
-		<span class='exp-company'>{glyph && <span class='exp-company__icon' aria-hidden='true' style={`--icon: url(/icons/ui/${glyph}.svg)`}></span>}{company}</span>
+		{glyph && (
+			<span class='exp-tile' aria-hidden='true'>
+				<span class='exp-company__icon' style={`--icon: url(/icons/ui/${glyph}.svg)`}></span>
+			</span>
+		)}
+		<div class='exp-title'>
+			<h3 class='exp-role' id={headingId}>{role}</h3>
+			<span class='exp-company'>{company}</span>
+		</div>
 		{location && (
 			<span class='exp-location'>
 				<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z'/><circle cx='12' cy='10' r='3'/></svg>
@@ -45,19 +53,24 @@ const headingId = `exp-${slug}${idSuffix ? `-${idSuffix}` : ''}-title`;
 		)}
 	</header>
 
-	<ul class='exp-bullets'>
-		{bullets.map((item) => <li>{item}</li>)}
-	</ul>
-
-	{tech && tech.length > 0 && (
-		<ul class='exp-tech' role='list' aria-label={t('experience.techAria', { company, period })}>
-			{tech.map((name) => <li class='tag'>{name}</li>)}
+	<div class='exp-body'>
+		<ul class='exp-bullets'>
+			{bullets.map((item) => <li>{item}</li>)}
 		</ul>
-	)}
+
+		{tech && tech.length > 0 && (
+			<ul class='exp-tech' role='list' aria-label={t('experience.techAria', { company, period })}>
+				{tech.map((name) => <li class='tag'>{name}</li>)}
+			</ul>
+		)}
+	</div>
 </article>
 
 <style>
+	/* A container: the card's own width, not the viewport's, decides its layout (spec 028),
+	   since the rail and period columns (spec 027) take a varying share of the row. */
 	.exp-card {
+		container: card / inline-size;
 		position: relative;
 		display: flex;
 		flex-direction: column;
@@ -72,9 +85,47 @@ const headingId = `exp-${slug}${idSuffix ? `-${idSuffix}` : ''}-title`;
 	}
 
 	.exp-header {
+		display: grid;
+		grid-template-columns: 3rem 1fr;
+		grid-template-areas: 'period period' 'tile title' '. location';
+		column-gap: 0.85rem;
+		row-gap: 0.2rem;
+		align-items: center;
+	}
+
+	.exp-period {
+		grid-area: period;
+	}
+
+	.exp-title {
+		grid-area: title;
 		display: flex;
 		flex-direction: column;
 		gap: 0.2rem;
+		min-width: 0;
+	}
+
+	/* The company's icon on a soft tile, as in the proposal: --neutral-200, the fill
+	   for inside the sheet; the icon on it measured 4.74:1 light, 3.49:1 dark. */
+	.exp-tile {
+		grid-area: tile;
+		inline-size: 3rem;
+		block-size: 3rem;
+		border-radius: var(--radius-md);
+		background: var(--neutral-200);
+		display: grid;
+		place-items: center;
+	}
+
+	@container card (min-width: 36rem) {
+		.exp-header {
+			grid-template-columns: 3rem 1fr auto;
+			grid-template-areas: 'period period period' 'tile title location';
+		}
+
+		.exp-location {
+			align-self: start;
+		}
 	}
 
 	/* Plain text in --text-secondary, not a lozenge: a pill in --neutral-200 sat at
@@ -95,9 +146,6 @@ const headingId = `exp-${slug}${idSuffix ? `-${idSuffix}` : ''}-title`;
 	}
 
 	.exp-company {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.4rem;
 		font-size: var(--fs-sm);
 		font-weight: 600;
 		color: var(--text-color);
@@ -106,19 +154,36 @@ const headingId = `exp-${slug}${idSuffix ? `-${idSuffix}` : ''}-title`;
 	/* --icon-mono, not currentColor: the name's colour is not the icon's (012 D-3). */
 	.exp-company__icon {
 		flex: none;
-		inline-size: 1em;
-		block-size: 1em;
+		inline-size: 1.5rem;
+		block-size: 1.5rem;
 		background-color: var(--icon-mono);
 		mask: var(--icon) center / contain no-repeat;
 		-webkit-mask: var(--icon) center / contain no-repeat;
 	}
 
 	.exp-location {
+		grid-area: location;
 		display: inline-flex;
 		align-items: center;
 		gap: 0.3rem;
 		font-size: var(--fs-xs);
 		color: var(--neutral-600);
+	}
+
+	.exp-body {
+		display: flex;
+		flex-direction: column;
+		gap: 0.85rem;
+	}
+
+	/* Bullets left, chips in their own column right, once the card has room for both. */
+	@container card (min-width: 44rem) {
+		.exp-body {
+			display: grid;
+			grid-template-columns: 1fr minmax(12rem, 18rem);
+			gap: 1.5rem;
+			align-items: start;
+		}
 	}
 
 	.exp-bullets {

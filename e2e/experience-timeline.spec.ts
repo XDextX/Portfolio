@@ -92,7 +92,8 @@ test.describe('experience timeline (spec 013)', () => {
                     period: card.querySelector('.exp-period')?.textContent?.trim(),
                     text: card.textContent ?? '',
                     icons: card.querySelectorAll('.exp-company__icon').length,
-                    iconHidden: icon?.getAttribute('aria-hidden') === 'true',
+                    // Hidden itself or inside a hidden subtree (spec 028's tile): no accessible name either way.
+                    iconHidden: !!icon?.closest('[aria-hidden="true"]'),
                     mask: icon ? getComputedStyle(icon).maskImage || getComputedStyle(icon).webkitMaskImage : '',
                     iconRight: icon ? icon.getBoundingClientRect().right : 0, nameLeft,
                     chips: list ? [...list.querySelectorAll(':scope > li')].map((c) => c.textContent?.trim()) : null,
@@ -138,7 +139,8 @@ test.describe('experience timeline (spec 013)', () => {
                 const bg = (e: Element) => w.__toHex(getComputedStyle(e).backgroundColor);
                 return {
                     chips: [...s.querySelectorAll('.exp-tech > li')].map((c) => ({ fg: w.__toHex(getComputedStyle(c).color), bg: bg(c) })),
-                    icons: [...s.querySelectorAll('.exp-company__icon')].map((i) => ({ fg: bg(i), bg: bg(i.closest('.exp-card')!) })),
+                    // Spec 028: the icon sits on its tile, so the tile is its ground (same 3:1 floor).
+                    icons: [...s.querySelectorAll('.exp-company__icon')].map((i) => ({ fg: bg(i), bg: bg(i.closest('.exp-tile') ?? i.closest('.exp-card')!) })),
                     dots: [...s.querySelectorAll('.exp-dot')].map((d) => ({ fg: bg(d), ground: w.__groundOf(d.parentElement!, 'main > section.section') })),
                     image: getComputedStyle(s).backgroundImage,
                     sheet: getComputedStyle(document.querySelector('main')!).backgroundColor,
@@ -241,6 +243,70 @@ test.describe('timeline rail on the left (spec 027)', () => {
                 if (cy < period.t || cy > period.b) offenders.push(`RF-2: job ${i + 1}: the dot's centre ${cy.toFixed(0)} is outside the period ${period.t.toFixed(0)}–${period.b.toFixed(0)}`);
             });
             if (!items.length) offenders.push('RF-1: no timeline items found');
+            expect(offenders, offenders.join('\n')).toEqual([]);
+        });
+    }
+});
+
+// Spec 028: the card arranged like the proposal — the company icon in a square tile before role
+// and company, the location at the header's end, the chips in a column right of the bullets.
+test.describe('experience card layout (spec 028)', () => {
+    const measure = (page: Page) => page.locator('#Experience .exp-card').evaluateAll((cards) => cards.map((c) => {
+        const b = (s: string) => { const e = c.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return { l: r.left, r: r.right, t: r.top, b: r.bottom, w: r.width, h: r.height }; };
+        const cs = getComputedStyle(c);
+        const content = c.getBoundingClientRect().right - parseFloat(cs.paddingRight) - parseFloat(cs.borderRightWidth);
+        const tile = c.querySelector('.exp-tile');
+        return {
+            tile: b('.exp-tile'), tiles: c.querySelectorAll('.exp-tile').length,
+            tileHoldsIcon: !!tile?.querySelector('.exp-company__icon'), tileHidden: tile?.getAttribute('aria-hidden') === 'true',
+            role: b('.exp-role'), company: b('.exp-company'), location: b('.exp-location'),
+            bullets: b('.exp-bullets'), chips: b('.exp-tech'), content,
+        };
+    }));
+
+    for (const width of [1280, 390]) {
+        test(`tile, location and chips placed as in the proposal — ${width}px (RF-1, RF-3, RF-4)`, async ({ page }) => {
+            await page.setViewportSize({ width, height: 900 });
+            await openIn(page, DEV_URL, 'light', '/?lang=es');
+            await page.locator('#Experience').scrollIntoViewIfNeeded();
+            const cards = await measure(page);
+            const offenders: string[] = [];
+            cards.forEach((c, i) => {
+                const job = `job ${i + 1}`;
+                if (c.tiles !== 1 || !c.tile) offenders.push(`RF-1: ${job} has ${c.tiles} icon tiles, not 1`);
+                else if (Math.abs(c.tile.w - c.tile.h) > 1 || c.tile.w < 40) offenders.push(`RF-1: ${job} tile is ${c.tile.w.toFixed(0)}×${c.tile.h.toFixed(0)}, not a square of 40px or more`);
+                if (c.tile && !c.tileHoldsIcon) offenders.push(`RF-1: ${job} tile holds no company icon`);
+                if (c.tile && !c.tileHidden) offenders.push(`RF-1: ${job} tile is not aria-hidden`);
+                if (c.tile && (c.tile.r > c.role!.l || c.tile.r > c.company!.l)) offenders.push(`RF-1: ${job} tile does not end before the role and the company`);
+                if (width === 1280) {
+                    if (c.location && Math.abs(c.location.r - c.content) > 1) offenders.push(`RF-3: ${job} location ends at ${c.location.r.toFixed(0)}, not the content edge ${c.content.toFixed(0)}`);
+                    if (c.location && (c.location.t >= c.role!.b || c.location.b <= c.role!.t)) offenders.push(`RF-3: ${job} location is not level with the role`);
+                    if (c.chips!.l < c.bullets!.r) offenders.push(`RF-4: ${job} chips start at ${c.chips!.l.toFixed(0)}, inside the bullets (end ${c.bullets!.r.toFixed(0)})`);
+                    if (c.chips!.t >= c.bullets!.b || c.chips!.b <= c.bullets!.t) offenders.push(`RF-4: ${job} chips are not beside the bullets`);
+                } else {
+                    if (c.location && c.location.t < c.company!.b - 0.5) offenders.push(`RF-3: ${job} location is not below the company at ${width}px`);
+                    if (c.chips!.t < c.bullets!.b - 0.5) offenders.push(`RF-4: ${job} chips are not below the bullets at ${width}px`);
+                }
+            });
+            expect(offenders, offenders.join('\n')).toEqual([]);
+        });
+    }
+
+    for (const width of [800, 1024]) {
+        test(`nothing in a card overlaps — ${width}px (NFR)`, async ({ page }) => {
+            await page.setViewportSize({ width, height: 900 });
+            await openIn(page, DEV_URL, 'light', '/?lang=es');
+            await page.locator('#Experience').scrollIntoViewIfNeeded();
+            const cards = await measure(page);
+            const offenders: string[] = [];
+            cards.forEach((c, i) => {
+                const parts = Object.entries({ tile: c.tile, role: c.role, company: c.company, location: c.location, bullets: c.bullets, chips: c.chips })
+                    .filter(([, v]) => v) as [string, { l: number; r: number; t: number; b: number }][];
+                for (let a = 0; a < parts.length; a++) for (let z = a + 1; z < parts.length; z++) {
+                    const [na, A] = parts[a]; const [nz, Z] = parts[z];
+                    if (A.l < Z.r - 0.5 && Z.l < A.r - 0.5 && A.t < Z.b - 0.5 && Z.t < A.b - 0.5) offenders.push(`NFR: job ${i + 1}: ${na} overlaps ${nz}`);
+                }
+            });
             expect(offenders, offenders.join('\n')).toEqual([]);
         });
     }
