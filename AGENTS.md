@@ -251,11 +251,13 @@ call.
   instead of failing the run.
 - **The generator imports `ABOUT` from `src/data/about.ts` and spells out none of its values** — a
   literal name on the card is a second source for the identity.
-- **The card is a static file in `public/`, and nothing renders it**: no HTML, CSS or JS beside the
-  PNG, and no route matching `og-cover`. A renderer is a second copy that drifts from the site's
+- **One card per locale, each a static file in `public/`, and nothing renders them**: no HTML, CSS
+  or JS beside the PNGs, and no route matching `og-cover`. A renderer is a second copy that drifts from the site's
   own CSS and fonts.
-- **`og:image` and `twitter:image` bind the same expression**, composing `${site}/og-cover.png`, and
-  that file exists — the two platforms must not resolve different images.
+- **`og:image` and `twitter:image` bind the same expression**, composing
+  `${site}/og-cover-${locale}.png` for the page's locale, and that file exists for every locale —
+  the two platforms must not resolve different images, and a page must not share the other
+  language's card (spec 033).
 - **The artifact is 1200×630 and under 5 MB**, read from the PNG's own header rather than from a
   constant repeated in the guard.
 - **The accent on the card's ground clears 4.5:1**, and the function that computes it reproduces the
