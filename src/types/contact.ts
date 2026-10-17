@@ -8,7 +8,8 @@ export type ContactItem = {
     value: string;          // visible text (e.g. an email address or a profile handle)
     href: string;           // "mailto:...", "https://...", "tel:+506..."
     kind: ContactKind;
-    icon: string | { light: string; dark: string };  // colour logo in /public/icons, or one per theme
+    icon?: string | { light: string; dark: string };  // a brand logo in /public/icons, or one per theme
+    glyph?: string;         // or a site glyph: root-absolute mask in /public/icons/ui (spec 029); one of the two
     sameAs?: boolean;       // publishable profile: feeds JSON-LD sameAs / rel=me
 };
 

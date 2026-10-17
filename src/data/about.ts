@@ -10,12 +10,14 @@ export type Lang = "es" | "en";
 const SOCIAL_ORDER = [
     { id: "github", labelKey: "about.social.github", glyph: "/icons/ui/brand-github.svg" },
     { id: "linkedin", labelKey: "about.social.linkedin", glyph: "/icons/ui/brand-linkedin.svg" },
-    { id: "email", labelKey: "about.social.email", glyph: "/icons/ui/mail.svg" },
+    // The email glyph is the contact card's own (spec 029): one source for it.
+    { id: "email", labelKey: "about.social.email" },
 ] as const;
 
-const socials: HeroSocial[] = SOCIAL_ORDER.flatMap(({ id, labelKey, glyph }) => {
-    const contact = CONTACTS.find((c) => c.id === id);
-    return contact ? [{ ...contact, labelKey, glyph }] : [];
+const socials: HeroSocial[] = SOCIAL_ORDER.flatMap((entry) => {
+    const contact = CONTACTS.find((c) => c.id === entry.id);
+    const glyph = "glyph" in entry ? entry.glyph : contact?.glyph;
+    return contact && glyph ? [{ ...contact, labelKey: entry.labelKey, glyph }] : [];
 });
 
 /** The hero's four phrases, in reading order; the words live in the locale files. */

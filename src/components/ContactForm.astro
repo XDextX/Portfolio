@@ -22,17 +22,18 @@ const bad = (f: Field) => !!state?.fields.includes(f);
 const value = (f: Field) => state?.values?.[f] ?? '';
 ---
 
+<div class='contact-form-card card-frame'>
 <form method='post' action='#Contact' class='contact-form' data-contact-form>
 	{
 		FIELDS.map((f) => (
-			<div class='contact-form__field'>
+			<div class:list={['contact-form__field', { 'contact-form__field--half': f === 'name' || f === 'email' }]}>
 				<label class='contact-form__label'>
 					<span>{t(LABEL_KEYS[f])}</span>
 					{f === 'message' ? (
 						<textarea
 							class='contact-form__control contact-form__control--area'
 							name={f}
-							rows='6'
+							rows='4'
 							required
 							maxlength={FIELD_LIMITS[f]}
 							aria-invalid={bad(f) ? 'true' : undefined}
@@ -64,7 +65,10 @@ const value = (f: Field) => state?.values?.[f] ?? '';
 			<input name='website' type='text' tabindex='-1' autocomplete='off' />
 		</label>
 	</div>
-	<button type='submit' class='btn btn--primary contact-form__submit'>{t('contact.form.submit')}</button>
+	<button type='submit' class='btn btn--primary contact-form__submit'>
+		<span class='contact-form__icon' aria-hidden='true'></span>
+		{t('contact.form.submit')}
+	</button>
 	<p class='contact-form__privacy' data-contact-privacy>{t('contact.form.privacy')}</p>
 	<p
 		class='contact-form__status'
@@ -79,6 +83,7 @@ const value = (f: Field) => state?.values?.[f] ?? '';
 		{state ? t(`contact.form.outcome.${state.outcome}`) : ''}
 	</p>
 </form>
+</div>
 
 <script>
 	type Outcome = 'sent' | 'invalid' | 'limited' | 'failed';
@@ -141,49 +146,74 @@ const value = (f: Field) => state?.values?.[f] ?? '';
 </script>
 
 <style>
-	.contact-form {
-		display: grid;
-		gap: var(--sp-4);
-		max-width: var(--measure);
-		margin-top: var(--sp-6);
+	/* The form in its own card, as the proposal draws it (spec 029); a container, so the
+	   form's own width decides when Name and Email share a row. */
+	.contact-form-card {
+		container: form / inline-size;
 	}
 
+	.contact-form {
+		display: grid;
+		gap: var(--sp-3);
+	}
+
+	@container form (min-width: 20rem) {
+		.contact-form {
+			grid-template-columns: 1fr 1fr;
+		}
+
+		.contact-form > :not(.contact-form__field--half) {
+			grid-column: 1 / -1;
+		}
+	}
+
+	/* The label is the field's box: its name small at the top, always visible while the
+	   field holds text (spec 029, owner's choice over a placeholder). The box rests in the
+	   control border and turns gold on hover; the input inside keeps its own focus ring. */
 	.contact-form__label {
 		display: grid;
-		gap: var(--sp-2);
+		gap: 0.1rem;
+		padding: 0.4rem 0.75rem;
+		border: 1px solid var(--control-border);
+		border-radius: var(--radius-sm);
+		background: var(--card-background);
+		transition: border-color 0.15s ease;
+	}
+
+	.contact-form__label:hover {
+		border-color: var(--accent-text);
+	}
+
+	.contact-form__label:has([aria-invalid='true']) {
+		border: 2px solid var(--fg);
+	}
+
+	.contact-form__label > span {
+		font-size: var(--fs-xs);
 		font-weight: 600;
-		color: var(--text-color);
+		color: var(--text-secondary);
+	}
+
+	/* Name and Email sit side by side, so their boxes state the height (AGENTS). */
+	.contact-form__field--half .contact-form__label {
+		box-sizing: border-box;
+		block-size: 3.6rem;
 	}
 
 	.contact-form__control {
 		box-sizing: border-box;
 		inline-size: 100%;
-		padding: 0.55rem 0.75rem;
+		padding: 0;
 		font: inherit;
 		font-weight: 400;
 		color: var(--text-color);
-		background: var(--card-background);
-		border: 1px solid var(--control-border);
-		border-radius: var(--radius-sm);
-		transition: border-color 0.15s ease;
+		background: transparent;
+		border: 0;
 	}
 
 	.contact-form__control--area {
 		resize: vertical;
-		min-block-size: 8rem;
-	}
-
-	.contact-form__control:hover {
-		border-color: var(--accent-text);
-	}
-
-	.contact-form__control:focus-visible {
-		outline: 2px solid var(--focus-ring);
-		outline-offset: 2px;
-	}
-
-	.contact-form__control[aria-invalid='true'] {
-		border: 2px solid var(--fg);
+		min-block-size: 5rem;
 	}
 
 	.contact-form__error {
@@ -211,8 +241,27 @@ const value = (f: Field) => state?.values?.[f] ?? '';
 	/* .btn transitions every property, the outline included: on Tab the ring started at its
 	   initial 3px in the navy ink and read 1.00:1 on the dark glow (spec 009 RF-6). */
 	.contact-form__submit {
-		justify-self: start;
+		justify-self: stretch;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
 		transition-property: transform, box-shadow, background-color, border-color, color;
+	}
+
+	/* Nothing lifts on hover (AGENTS): the base .btn lift, on a full-width button, moved it
+	   1px out from under a resting pointer and back, so it never held still for a click. */
+	.contact-form__submit:hover {
+		transform: none;
+	}
+
+	/* The proposal's paper plane, a mask in the button's own ink. */
+	.contact-form__icon {
+		inline-size: 1rem;
+		block-size: 1rem;
+		background-color: currentColor;
+		mask: url(/icons/ui/send.svg) center / contain no-repeat;
+		-webkit-mask: url(/icons/ui/send.svg) center / contain no-repeat;
 	}
 
 	.contact-form__privacy {

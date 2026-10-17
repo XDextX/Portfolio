@@ -107,9 +107,11 @@ describe('CONTACTS icons', () => {
         // the current route, so "icons/x.svg" 404s on any nested page.
         // NOTE: path.join, not path.resolve — a leading "/" makes resolve()
         // treat the path as absolute against the drive root.
-        // Spec 018: one colour logo, or one per theme.
+        // Spec 018: one colour logo, or one per theme; spec 029: or a site glyph, same rule.
         for (const contact of CONTACTS) {
-            const pictures: string[] = typeof contact.icon === 'object' ? [contact.icon.light, contact.icon.dark] : [contact.icon];
+            const pictures: string[] = contact.glyph
+                ? [contact.glyph]
+                : typeof contact.icon === 'object' ? [contact.icon.light, contact.icon.dark] : [contact.icon as string];
             for (const picture of pictures) {
                 expect(picture, contact.id).toMatch(/^\//);
                 const stat = await fsp.stat(path.join(process.cwd(), 'public', picture));
@@ -141,5 +143,18 @@ describe('contact helpers (spec 018 RF-1, RF-4)', () => {
 
     it('feedback lasts 1.5 s', () => {
         expect(util('FEEDBACK_MS')).toBe(1500);
+    });
+});
+
+describe('contact marks (spec 029)', () => {
+    it('every contact carries exactly one mark: a brand logo or a site glyph that exists', () => {
+        const offenders: string[] = [];
+        for (const c of CONTACTS as any[]) {
+            if (!!c.icon === !!c.glyph) offenders.push(`${c.id} carries ${c.icon ? 'both a logo and a glyph' : 'no mark'}`);
+            if (c.glyph && (!c.glyph.startsWith('/icons/ui/') || !fs.existsSync(path.join(process.cwd(), 'public', c.glyph)))) offenders.push(`${c.id}: the glyph ${c.glyph} is no file in public/icons/ui`);
+        }
+        const email = (CONTACTS as any[]).find((c) => c.kind === 'email');
+        if (email?.glyph !== '/icons/ui/mail.svg') offenders.push(`the email card's mark is ${email?.glyph ?? email?.icon}, not the mail glyph`);
+        expect(offenders, offenders.join('\n')).toEqual([]);
     });
 });

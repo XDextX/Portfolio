@@ -28,5 +28,6 @@ outline glyphs, painted the same way; the skills row's brand logos live apart, i
 | `building.svg` | Tabler Icons v3.49.0, `icons/outline/building.svg` | `LICENSE-tabler.txt` | Experience: SD Misiones (company glyph) |
 | `plant.svg` | Tabler Icons v3.49.0, `icons/outline/plant.svg` | `LICENSE-tabler.txt` | Experience: Plantas y Flores (company glyph) |
 | `file-code.svg` | Tabler Icons v3.49.0, `icons/outline/file-code.svg` | `LICENSE-tabler.txt` | Project card: no known language |
+| `send.svg` | Tabler Icons v3.49.0, `icons/outline/send.svg` | `LICENSE-tabler.txt` | Contact form: the send button (spec 029) |
 
 Tabler Icons: https://github.com/tabler/tabler-icons

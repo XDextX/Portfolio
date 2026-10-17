@@ -21,6 +21,9 @@ const tagline = t('contact.tagline');
 	id='Contact'
 	class='section'
 >
+	<div class='contact-body'>
+	<div class='contact-layout'>
+	<div class='contact-main'>
 	<div class='contact-header'>
 		<SectionTitle section='contact' />
 		<p class='tagline'>{tagline}</p>
@@ -35,8 +38,11 @@ const tagline = t('contact.tagline');
 			))
 		}
 	</ul>
+	</div>
 
 	<ContactForm />
+	</div>
+	</div>
 </section>
 
 <style>
@@ -50,16 +56,32 @@ const tagline = t('contact.tagline');
 		font-size: var(--fs-base);
 	}
 
+	/* Title, text and cards left, the form card right from the top, as the proposal draws
+	   it (spec 029): with the title above both, the cards column ended far short of the form. */
+	.contact-body {
+		container: contact / inline-size;
+	}
+
+	.contact-layout {
+		display: grid;
+		gap: var(--sp-6);
+	}
+
+	@container contact (min-width: 60rem) {
+		.contact-layout {
+			grid-template-columns: 1fr minmax(20rem, 26rem);
+			align-items: start;
+		}
+	}
+
 	.contact-list {
+		align-content: start;
 		list-style: none;
 		margin: 0;
 		padding: 0;
-		display: flex;
-		flex-direction: row;
-		flex-wrap: wrap;
-		/* Without a gap the wrapped cards shared an edge: measured as
-		   `gap: normal` on the list, which is how EMAIL and GITHUB ended up
-		   touching in the render. */
+		/* One card per row across the cards column (spec 029, owner): at half width, with
+		   copy and open beside it, every value was cut at 1280px ("germonr…"). */
+		display: grid;
 		gap: var(--sp-3);
 		max-width: unset;
 	}

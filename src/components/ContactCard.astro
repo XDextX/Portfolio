@@ -33,7 +33,11 @@ const errorLive  = t('contact.actions.errorLive', { label });
 	aria-label={`${label}: ${item.value}`}
 >
 	<!-- Icon -->
-	<span class='contact-icon'><SkillLogo logo={item.icon} size={28} /></span>
+	<span class='contact-icon'>
+		{item.glyph
+			? <span class='contact-glyph' aria-hidden='true' style={`--icon: url(${item.glyph})`}></span>
+			: <SkillLogo logo={item.icon} size={28} />}
+	</span>
 
 	<!-- Info -->
 	<div class='contact-info'>
@@ -118,6 +122,17 @@ const errorLive  = t('contact.actions.errorLive', { label });
 		opacity: 0.9;
 	}
 
+	/* A site glyph in the gold accent, as the proposal's envelope (spec 029); a mask, so it
+	   follows the theme. 28px, the logos' size. */
+	.contact-glyph {
+		display: block;
+		inline-size: 28px;
+		block-size: 28px;
+		background-color: var(--accent-text);
+		mask: var(--icon) center / contain no-repeat;
+		-webkit-mask: var(--icon) center / contain no-repeat;
+	}
+
 	.contact-info {
 		display: flex;
 		flex-direction: column;
@@ -128,9 +143,7 @@ const errorLive  = t('contact.actions.errorLive', { label });
 
 	.contact-label {
 		font-size: var(--fs-xs);
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
+		font-weight: 600;
 		color: var(--neutral-600);
 	}
 

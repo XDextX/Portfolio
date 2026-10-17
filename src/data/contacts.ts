@@ -7,9 +7,9 @@ export const CONTACTS: ContactItem[] = [
         value: "germonram@gmail.com",
         href: "mailto:germonram@gmail.com",
         kind: "email",
-        // Root-absolute: a relative path resolves against the current route,
-        // so it 404s on any nested page such as /proyectos/<name>.
-        icon: "/icons/gmail.svg"
+        // The site's own mail glyph in gold, as the proposal draws it (spec 029); root-absolute,
+        // since a relative path 404s on nested routes. The hero's email button reads it too.
+        glyph: "/icons/ui/mail.svg"
     },
     {
         id: "github",
