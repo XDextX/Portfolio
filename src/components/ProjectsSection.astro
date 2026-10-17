@@ -1,6 +1,5 @@
 ---
 import ProjectCard from './ProjectCard.astro';
-import ProjectsFooter from './ProjectsFooter.astro';
 import type { GitHubRepo } from '../types/github';
 import { t } from '@i18n/index';
 import SectionTitle from './SectionTitle.astro';
@@ -38,22 +37,27 @@ const labelAttrs = hideTitle
 const topic = import.meta.env.GITHUB_TOPIC;
 const topicValue = topic?.trim() || t('projects.topicLabel');
 
+// Spec 030: the home shows one row and links to the rest; no toggle, so nothing more is rendered.
 const visible = preview ? repos.slice(0, preview) : repos;
-const extra = preview ? repos.slice(preview) : [];
-
-const showMore = t('projects.showMore');
-const showLess = t('projects.showLess');
 const viewAll = t('projects.viewAll');
 ---
 
 <section
 	class='section'
-	data-projects-root
 	{...labelAttrs}
 	transition:name={`p-${headingId}`}
 >
 	{
-		!hideTitle && <SectionTitle section='projects' />
+		!hideTitle && (preview ? (
+			<header class='projects-head'>
+				<SectionTitle section='projects' />
+				<p class='projects-lead'>{t('projects.lead')}</p>
+				<a class='btn-action projects-all' href='/proyectos'>
+					{viewAll}
+					<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M5 12h14' /><path d='M13 6l6 6l-6 6' /></svg>
+				</a>
+			</header>
+		) : <SectionTitle section='projects' />)
 	}
 
 	{
@@ -63,126 +67,52 @@ const viewAll = t('projects.viewAll');
 			<p class='empty'>{t('projects.empty.message', { topic: topicValue })}</p>
 		) : (
 			<>
-				<div class='projects-grid' data-projects-grid>
-					{repos.map((r, i) => (
-						<div
-							class={`project-item${preview && i >= preview ? ' project-item--hidden' : ''}`}
-							aria-hidden={preview && i >= preview ? 'true' : 'false'}
-						>
+				<div class='projects-grid'>
+					{visible.map((r) => (
+						<div class='project-item'>
 							<ProjectCard repo={r} locale={locale} />
 						</div>
 					))}
 				</div>
-
-				{(extra.length > 0 || preview) && (
-					<ProjectsFooter
-						showToggle={extra.length > 0}
-						showMore={showMore}
-						showLess={showLess}
-						viewAll={viewAll}
-					/>
-				)}
 			</>
 		)
 	}
 </section>
 
-<script>
-	// Re-bound on every navigation (ClientRouter replaces the DOM).
-	// Everything resolves relative to the section: no global ids, so several
-	// instances on the same page work independently.
-	document.addEventListener('astro:page-load', () => {
-		document
-			.querySelectorAll<HTMLElement>('[data-projects-root]')
-			.forEach((root) => {
-				const toggle = root.querySelector<HTMLButtonElement>(
-					'[data-projects-toggle]',
-				);
-				const grid = root.querySelector<HTMLElement>('[data-projects-grid]');
-				// Both labels live in the DOM and CSS reveals one, so the width
-				// never changes with state. aria-expanded carries it for screen
-				// readers, so no label text is rewritten — childNodes[0] was the
-				// previous approach and depended on the first child being text.
-				if (!toggle || !grid) return;
-
-				const hiddenItems = Array.from(
-					grid.querySelectorAll<HTMLElement>('.project-item--hidden'),
-				);
-
-				toggle.addEventListener('click', () => {
-					const expanded = toggle.getAttribute('aria-expanded') === 'true';
-					const willExpand = !expanded;
-
-					toggle.setAttribute('aria-expanded', String(willExpand));
-					toggle.classList.toggle('open', willExpand);
-
-					hiddenItems.forEach((item, i) => {
-						if (willExpand) {
-							item.classList.remove('project-item--hidden');
-							item.classList.remove('project-item--closing');
-							item.style.animationDelay = `${i * 60}ms`;
-							item.classList.add('project-item--opening');
-							item.removeAttribute('aria-hidden');
-						} else {
-							item.classList.remove('project-item--opening');
-							item.style.animationDelay = `${(hiddenItems.length - 1 - i) * 40}ms`;
-							item.classList.add('project-item--closing');
-							item.setAttribute('aria-hidden', 'true');
-							item.addEventListener(
-								'animationend',
-								() => {
-									item.classList.add('project-item--hidden');
-									item.classList.remove('project-item--closing');
-								},
-								{ once: true },
-							);
-						}
-					});
-				});
-			});
-	});
-</script>
 
 <style>
+	/* The proposal's header: title, line and the way to every project on one row (spec 030). */
+	.projects-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--sp-3) var(--sp-6);
+		margin-bottom: var(--sp-4);
+	}
+
+	.projects-lead {
+		flex: 1 1 18rem;
+		margin: 0;
+		max-width: var(--measure);
+		font-size: var(--fs-sm);
+		color: var(--text-secondary);
+	}
+
+	.projects-all {
+		margin-inline-start: auto;
+	}
+
+	/* Four cards per row at 1280 (spec 030), stretched to the row's height by the grid. */
 	.projects-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(min(14rem, 100%), 1fr));
 		gap: 1rem;
 	}
 
-	.project-item--hidden {
-		display: none;
+	.project-item {
+		display: grid;
 	}
 
-	@keyframes fadeSlideIn {
-		from {
-			opacity: 0;
-			transform: translateY(12px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-
-	@keyframes fadeSlideOut {
-		from {
-			opacity: 1;
-			transform: translateY(0);
-		}
-		to {
-			opacity: 0;
-			transform: translateY(12px);
-		}
-	}
-
-	.project-item--opening {
-		animation: fadeSlideIn 0.3s ease both;
-	}
-
-	.project-item--closing {
-		animation: fadeSlideOut 0.2s ease both;
-	}
 
 	.empty {
 		color: var(--neutral-600);
@@ -193,9 +123,4 @@ const viewAll = t('projects.viewAll');
 		color: var(--danger-color);
 	}
 
-	@media (max-width: 600px) {
-		.projects-grid {
-			grid-template-columns: 1fr;
-		}
-	}
 </style>

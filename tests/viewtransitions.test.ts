@@ -71,16 +71,9 @@ describe('view transitions: no global IDs for JS hooks', () => {
     it('ProjectsSection uses data attributes instead of document.getElementById', () => {
         const src = read('src', 'components', 'ProjectsSection.astro');
 
+        // Spec 030 removed the show-more toggle and its script, and with them the data-* hooks
+        // only that script read; the rule this guards, no global ids, still holds.
         expect(src).not.toContain('getElementById');
-        expect(src).toContain('data-projects-root');
-        expect(src).toContain('data-projects-grid');
-        expect(src).toContain('data-projects-toggle');
-    });
-
-    it('ProjectsFooter marks its toggle with data-projects-toggle', () => {
-        const src = read('src', 'components', 'ProjectsFooter.astro');
-        expect(src).toContain('data-projects-toggle');
-        expect(src).not.toMatch(/id='projects-toggle'/);
     });
 
     it('ThemeSwitch finds its button by data attribute, not a global id', () => {

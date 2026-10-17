@@ -11,7 +11,8 @@ const CONTROLS: { name: string; selector: string; needs?: string }[] = [
     { name: 'hero social button', selector: '.btn-social' },
     { name: 'view-toggle group', selector: '.view-toggle' },
     { name: 'skill chip', selector: '.chip', needs: 'the list view' },
-    { name: 'show-more toggle', selector: '.projects-footer__toggle', needs: 'repos from the GitHub fetch' },
+    // Spec 030 replaced the show-more toggle with this header link, the projects section's control.
+    { name: '"Ver todos" link', selector: '.projects-all', needs: 'repos from the GitHub fetch' },
     { name: 'card action', selector: '.project-card .btn-action', needs: 'repos from the GitHub fetch' },
     { name: 'contact button', selector: '.icon-btn' },
 ];

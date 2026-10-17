@@ -26,11 +26,11 @@ const TEMPLATE_FILES = [
 ];
 
 /** Source with CSS and JS comments blanked, so a note is not read as code. */
-const code = (file: string) =>
-    fs
-        .readFileSync(file, 'utf-8')
+const stripCode = (src: string) =>
+    src
         .replace(/\/\*[\s\S]*?\*\//g, ' ')
         .replace(/^\s*\/\/.*$/gm, ' ');
+const code = (file: string) => stripCode(fs.readFileSync(file, 'utf-8'));
 
 /** Every `<script …>` opening tag, with the file it came from. */
 function scriptTags(): { where: string; tag: string; file: string }[] {
@@ -68,9 +68,12 @@ describe('the scanner reads the code', () => {
         const stripped = TEMPLATE_FILES.map(code).join('\n');
 
         expect(raw).toMatch(/itemscope/);
-        expect(raw).toMatch(/childNodes/);
         expect(stripped).not.toMatch(/itemscope/);
-        expect(stripped).not.toMatch(/childNodes/);
+        // The real note naming childNodes left with spec 030's toggle script; a fixture holds the
+        // token in both comment forms, so the stripping is proven whatever the notes say.
+        const fixture = '---\n// childNodes, a frontmatter note\n---\n<script>\n/* childNodes,\n   a block note */\n</script>';
+        expect(fixture).toMatch(/childNodes/);
+        expect(stripCode(fixture)).not.toMatch(/childNodes/);
     });
 });
 

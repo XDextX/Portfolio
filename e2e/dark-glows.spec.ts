@@ -211,7 +211,7 @@ test.describe('dark glows (spec 009)', () => {
             return items.map((i) => i.what).join(' ');
         };
         const found = await measure('at rest');
-        for (const need of ['btn-social', 'view-toggle', 'projects-footer__toggle']) if (!found.includes(need)) offenders.push(`RF-6: ${need} not measured on a glow`);
+        for (const need of ['btn-social', 'view-toggle', 'projects-all']) if (!found.includes(need)) offenders.push(`RF-6: ${need} not measured on a glow`);
         const focusables = page.locator(`${SURFACES} a, ${SURFACES} button`);
         const n = Math.min(await focusables.count(), 40);
         for (let i = 0; i < n; i++) {

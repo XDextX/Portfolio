@@ -19,11 +19,6 @@ const need = (m: any, name: string) => { if (typeof m[name] === 'undefined') thr
 async function openCards(page: Page, theme: Theme, route: string) {
     await openIn(page, DEV_URL, theme, route);
     await installHelpers(page);
-    const toggle = page.locator('.projects-footer__toggle');
-    if (route === '/' && (await toggle.count())) {
-        await toggle.click();
-        await settled(() => page.locator('.project-item--hidden').count());
-    }
 }
 
 // Every card, read in the page: boxes, images, mark, badge and colours.
@@ -69,7 +64,9 @@ test.describe('project cards (spec 014)', () => {
             await openCards(page, theme, route);
             const neutral = await page.evaluate(() => { const s = document.createElement('span'); s.style.color = 'var(--neutral-200)'; document.body.append(s); const c = (window as any).__toHex(getComputedStyle(s).color); s.remove(); return c; });
             const cards = await readCards(page);
-            if (cards.length !== REPOS.length) offenders.push(`${route}: ${cards.length} cards for ${REPOS.length} repositories`);
+            // Spec 030: the home shows one row of four; /proyectos shows every repository.
+            const expected = route === '/' ? Math.min(4, REPOS.length) : REPOS.length;
+            if (cards.length !== expected) offenders.push(`${route}: ${cards.length} cards, not ${expected} for ${REPOS.length} repositories`);
             for (const c of cards) {
                 const repo = REPOS.find((r) => r.name === c.name);
                 if (!repo) { offenders.push(`${c.name}: not in the list`); continue; }

@@ -108,13 +108,3 @@
     text-decoration: none;
 }
 
-.btn-action.primary {
-    background: var(--accent-surface);
-    border-color: var(--accent-surface);
-    color: var(--accent-surface-text);
-}
-
-.btn-action.primary:hover {
-    opacity: 0.88;
-    color: var(--accent-surface-text);
-}

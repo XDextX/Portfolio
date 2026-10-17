@@ -43,9 +43,8 @@
 		"empty": {
 			"message": "No hay proyectos para mostrar. Agrega el topic {{topic}} a tus repos en GitHub."
 		},
-		"showMore": "Ver más proyectos",
-		"showLess": "Ver menos proyectos",
-		"viewAll": "Ver todos"
+		"viewAll": "Ver todos",
+		"lead": "Una selección de proyectos personales donde aplico diferentes tecnologías y exploro nuevas ideas."
 	},
 	"skills": {
 		"title": "*Habilidades*",

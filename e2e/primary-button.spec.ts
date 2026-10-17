@@ -44,7 +44,6 @@ async function firstProjectRoute(page: Page): Promise<string> {
 
 const PRIMARIES: { route: 'home' | '404' | 'project'; selector: string; name: string }[] = [
     { route: 'home', selector: '.btn-cv', name: 'CV button' },
-    { route: 'home', selector: '.btn-action.primary', name: '"Ver todos"' },
     { route: '404', selector: '.btn--primary', name: '404 home button' },
     { route: 'project', selector: '.btn--primary', name: '"Demo"' },
 ];
