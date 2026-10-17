@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
-import { startDevServer, waitForServer } from './helpers/dev-server';
+import { E2E_URL as DEV_URL } from './helpers/server';
 import { THEMES, openIn, installHelpers, settled, axQuery } from './helpers/rendered';
 import { parseColour, parseGradients, composites, worstPoint, contrast } from '../tests/helpers/colour';
 import { ABOUT } from '../src/data/about';
@@ -9,7 +9,6 @@ import { ABOUT } from '../src/data/about';
 // Spec 010: the hero. RF-1 images, RF-2 phrases, RF-3 italic, RF-4/5 name colours,
 // RF-6 family contrast, RF-7 heading name, RF-8 social buttons, NFR equal height.
 
-let DEV_URL = '';
 const HERO = 'section.section--hero';
 const LOCALES = ['es', 'en'] as const;
 const MIN_FAMILY = 4.5;
@@ -33,15 +32,6 @@ const probe = (page: Page, token: string) =>
 
 test.describe('hero (spec 010)', () => {
     test.describe.configure({ mode: 'default' });
-    let proc: any;
-
-    test.beforeAll(async () => {
-        const started = startDevServer();
-        proc = started.proc;
-        DEV_URL = await started.readyPromise;
-        await waitForServer(DEV_URL, 30000);
-    });
-    test.afterAll(() => { if (proc && !proc.killed) proc.kill(); });
 
     for (const theme of THEMES) {
         test(`hero images: the avatar is the only picture — ${theme} (RF-1)`, async ({ page }) => {

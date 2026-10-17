@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { startDevServer, waitForServer } from './helpers/dev-server';
+import { E2E_URL as DEV_URL } from './helpers/server';
 import { contrast } from '../tests/helpers/colour';
 import { THEMES, openIn as open, installHelpers, settled, composite, type Theme } from './helpers/rendered';
 
@@ -7,7 +7,6 @@ import { THEMES, openIn as open, installHelpers, settled, composite, type Theme 
 // ink token), RF-4 (hover keeps 4.5:1 as composited over its ground) and the light
 // NFR (light renders white on #7A5D10, unchanged).
 
-let DEV_URL = '';
 const openIn = (page: Page, theme: Theme, route: string) => open(page, DEV_URL, theme, route);
 
 async function installProbe(page: Page) {
@@ -53,21 +52,12 @@ const PRIMARIES: { route: 'home' | '404' | 'project'; selector: string; name: st
 test.describe('primary button ink (spec 007)', () => {
     // Every check runs and reports, even after another fails.
     test.describe.configure({ mode: 'default' });
-    let proc: any;
     let projectRoute = '';
 
     test.beforeAll(async ({ browser }) => {
-        const started = startDevServer();
-        proc = started.proc;
-        DEV_URL = await started.readyPromise;
-        await waitForServer(DEV_URL, 30000);
         const page = await browser.newPage();
         projectRoute = await firstProjectRoute(page);
         await page.close();
-    });
-
-    test.afterAll(() => {
-        if (proc && !proc.killed) proc.kill();
     });
 
     const routeOf = (r: 'home' | '404' | 'project') => (r === 'home' ? '/' : r === '404' ? '/no-existe' : projectRoute);

@@ -1,3 +1,4 @@
+import { E2E_URL as BASE } from './helpers/server';
 import { test, expect } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
@@ -7,7 +8,6 @@ import { randomUUID } from 'crypto';
 // entirely in their own locale. Measured before the fix: 20/40 pages per round carried the
 // other locale's strings. Runs on the e2e server (playwright.config.ts webServer, spec 015).
 
-const BASE = 'http://localhost:4329';
 const ROUNDS = 3;
 const PER_ROUND = 40;
 const LOCALES = ['es', 'en'] as const;

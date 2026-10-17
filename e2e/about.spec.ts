@@ -1,8 +1,5 @@
 import { test, expect } from '@playwright/test';
-import fetch from 'node-fetch';
-import { startDevServer, waitForServer } from './helpers/dev-server';
-
-let DEV_URL = '';
+import { E2E_URL as DEV_URL } from './helpers/server';
 
 // Captured 2026-10-11 by loading `/` from `npm run dev` and recording every
 // request host (listener attached before goto, two runs, same set). `localhost`
@@ -11,19 +8,6 @@ let DEV_URL = '';
 const HOME_HOSTS = new Set(['avatars.githubusercontent.com', 'github.com']);
 
 test.describe.serial('About section e2e', () => {
-    let proc: any;
-
-    test.beforeAll("Before all", async () => {
-        const started = startDevServer();
-        proc = started.proc;
-        DEV_URL = await started.readyPromise;
-        // after stdout indicates ready, also poll the url
-        await waitForServer(DEV_URL, 30000);
-    });
-
-    test.afterAll(() => {
-        if (proc && !proc.killed) proc.kill();
-    });
 
     test('home requests no host beyond the captured baseline', async ({ page }) => {
         const hosts = new Set<string>();

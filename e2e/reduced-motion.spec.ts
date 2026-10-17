@@ -1,3 +1,4 @@
+import { E2E_URL as BASE } from './helpers/server';
 import { test, expect, type Page } from '@playwright/test';
 import { THEMES, openIn } from './helpers/rendered';
 
@@ -5,7 +6,6 @@ import { THEMES, openIn } from './helpers/rendered';
 // preference it keeps today's smooth scroll once focus is inside (RF-2). Measured before the
 // fix: `smooth` with a field focused under both preferences.
 
-const BASE = 'http://localhost:4329';
 const FIELD = '#Contact form[data-contact-form] [name="name"]';
 const scroll = (page: Page) => page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior);
 // AGENTS: confirm the rule is in document.styleSheets before trusting a computed value.

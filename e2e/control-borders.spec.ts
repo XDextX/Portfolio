@@ -1,11 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { startDevServer, waitForServer } from './helpers/dev-server';
+import { E2E_URL as DEV_URL } from './helpers/server';
 import { THEMES, openIn, installHelpers, settled } from './helpers/rendered';
 
 // Spec 017 RF-3: every bordered control turns its border gold on hover. The
 // view-toggle is read on the group, never a button: the active button is 012's.
 
-let DEV_URL = '';
 const CONTROLS: { name: string; selector: string; needs?: string }[] = [
     { name: 'language selector', selector: '.language-switcher' },
     { name: 'theme toggle', selector: '.theme-btn' },
@@ -19,15 +18,6 @@ const CONTROLS: { name: string; selector: string; needs?: string }[] = [
 
 test.describe('control borders (spec 017)', () => {
     test.describe.configure({ mode: 'default' });
-    let proc: any;
-
-    test.beforeAll(async () => {
-        const started = startDevServer();
-        proc = started.proc;
-        DEV_URL = await started.readyPromise;
-        await waitForServer(DEV_URL, 30000);
-    });
-    test.afterAll(() => { if (proc && !proc.killed) proc.kill(); });
 
     for (const theme of THEMES) {
         test(`every bordered control turns gold on hover, ${theme} (RF-3)`, async ({ page }) => {

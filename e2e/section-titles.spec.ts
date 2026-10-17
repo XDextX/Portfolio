@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
-import { startDevServer, waitForServer } from './helpers/dev-server';
+import { E2E_URL as DEV_URL } from './helpers/server';
 import { THEMES, openIn, installHelpers, settled, axTree } from './helpers/rendered';
 import { titleWords, plainText } from '../i18n/i18n';
 import { SECTION_TITLES } from '../src/data/sectionTitles';
@@ -9,7 +9,6 @@ import { SECTION_TITLES } from '../src/data/sectionTitles';
 // Spec 008: one section-title treatment, rendered. RF-1 one treatment, RF-2 icon,
 // RF-3 dash, RF-4 gold runs, RF-6 names, RF-8 wrap, and no hover state.
 
-let DEV_URL = '';
 const LOCALES = ['es', 'en'] as const;
 const raw = (locale: string, key: string): string => {
     const json = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'i18n', 'locales', `${locale}.json`), 'utf-8'));
@@ -56,15 +55,6 @@ const sameLine = (a: DOMRect | null, b: DOMRect | null) => !!a && !!b && a.top <
 
 test.describe('section titles (spec 008)', () => {
     test.describe.configure({ mode: 'default' });
-    let proc: any;
-
-    test.beforeAll(async () => {
-        const started = startDevServer();
-        proc = started.proc;
-        DEV_URL = await started.readyPromise;
-        await waitForServer(DEV_URL, 30000);
-    });
-    test.afterAll(() => { if (proc && !proc.killed) proc.kill(); });
 
     for (const locale of LOCALES) {
         for (const theme of THEMES) {

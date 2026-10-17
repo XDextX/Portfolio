@@ -1,7 +1,7 @@
 import { test, expect, type Page, type BrowserContext } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
-import { startDevServer, waitForServer } from './helpers/dev-server';
+import { E2E_URL as DEV_URL } from './helpers/server';
 import { THEMES, openIn, installHelpers, type Theme } from './helpers/rendered';
 import { contrast } from '../tests/helpers/colour';
 import { CONTACTS } from '../src/data/contacts';
@@ -10,7 +10,6 @@ import { contactLabel, copyValue, FEEDBACK_MS } from '../src/utils/contact';
 // Spec 018: contact cards. RF-1 three cards and visible logos, RF-2 one location datum, RF-4
 // clipboard, RF-5 feedback box, RF-6 announcement; 360px, a second click.
 
-let DEV_URL = '';
 const SECTION = '#Contact';
 const LOCALES = ['es', 'en'] as const;
 const contacts = CONTACTS as any[];
@@ -60,15 +59,6 @@ const buttonState = (page: Page, i: number) =>
 
 test.describe('contact cards (spec 018)', () => {
     test.describe.configure({ mode: 'default' });
-    let proc: any;
-
-    test.beforeAll(async () => {
-        const started = startDevServer();
-        proc = started.proc;
-        DEV_URL = await started.readyPromise;
-        await waitForServer(DEV_URL, 30000);
-    });
-    test.afterAll(() => { if (proc && !proc.killed) proc.kill(); });
 
     for (const theme of THEMES) for (const locale of LOCALES) {
         test(`three cards, each logo its theme's; one location datum — ${theme}, ${locale} (RF-1, RF-2)`, async ({ page }) => {

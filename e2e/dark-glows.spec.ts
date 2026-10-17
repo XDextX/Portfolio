@@ -1,12 +1,11 @@
 import { test, expect, type Page } from '@playwright/test';
-import { startDevServer, waitForServer } from './helpers/dev-server';
+import { E2E_URL as DEV_URL } from './helpers/server';
 import { openIn, installHelpers, settled } from './helpers/rendered';
 import { parseColour, parseGradients, composites, worstPoint, onRamp, luminance, type Rgba } from '../tests/helpers/colour';
 
 // Spec 009: dark glows on the home sections. RF-1 placement, RF-2 light unchanged,
 // RF-3 forced colours, RF-4 palette, RF-5/6 worst point, RF-7 ramp bound, RF-8 static.
 
-let DEV_URL = '';
 let PROJECT = '';
 const WIDTHS = [390, 800, 1280];
 const SURFACES = 'main > section.section';
@@ -49,19 +48,13 @@ const readRamp = (page: Page) =>
 
 test.describe('dark glows (spec 009)', () => {
     test.describe.configure({ mode: 'default' });
-    let proc: any;
 
     test.beforeAll(async ({ browser }) => {
-        const started = startDevServer();
-        proc = started.proc;
-        DEV_URL = await started.readyPromise;
-        await waitForServer(DEV_URL, 30000);
         const page = await browser.newPage();
         await page.goto(DEV_URL + '/');
         PROJECT = (await page.locator('a[href^="/proyectos/"]').first().getAttribute('href')) ?? '';
         await page.close();
     });
-    test.afterAll(() => { if (proc && !proc.killed) proc.kill(); });
 
     test('light renders every section as before (RF-2)', async ({ page }) => {
         test.setTimeout(90000);

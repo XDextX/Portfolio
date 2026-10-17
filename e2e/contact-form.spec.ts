@@ -1,3 +1,4 @@
+import { E2E_URL as BASE } from './helpers/server';
 import { test, expect, type Page, type Browser } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
@@ -7,10 +8,8 @@ import { contrast, parseColour, parseGradients, composites, worstPoint } from '.
 import { FIELD_LIMITS } from '../src/pages/lib/contact';
 import { STUB_FAIL_SUBJECT } from './helpers/stub-sender';
 
-// Spec 015: the contact form, on the e2e server (playwright.config.ts webServer, port 4329,
-// stub sender). RF-1–3 rendering, RF-13 client assets, RF-15–17 plain, RF-18–24 enhanced.
+// Spec 015: the contact form, on the e2e server (playwright.config.ts webServer, stub sender). RF-1–3 rendering, RF-13 client assets, RF-15–17 plain, RF-18–24 enhanced.
 
-const BASE = 'http://localhost:4329';
 const SECTION = '#Contact';
 const FORM = `${SECTION} form[data-contact-form]`;
 const LOCALES = ['es', 'en'] as const;

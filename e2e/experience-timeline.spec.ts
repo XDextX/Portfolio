@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { startDevServer, waitForServer } from './helpers/dev-server';
+import { E2E_URL as DEV_URL } from './helpers/server';
 import { THEMES, openIn, gotoPastOverlay, installHelpers, settled, axQuery, type Theme } from './helpers/rendered';
 import { contrast, parseColour, parseGradients, composites, worstPoint } from '../tests/helpers/colour';
 import { EXPERIENCES } from '../src/data/experience';
@@ -7,7 +7,6 @@ import { EXPERIENCES } from '../src/data/experience';
 // Spec 013: Experience as a vertical timeline. RF-1 dots and rail, RF-2 period, RF-3 company
 // icon, RF-4/5 chips, RF-6 contrast, RF-7 CV link, RF-8 at 390px; no spine, hover gold.
 
-let DEV_URL = '';
 const SECTION = '#Experience';
 const LOCALES = ['es', 'en'] as const;
 const ITEMS = `${SECTION} .exp-list > li`;
@@ -38,15 +37,6 @@ const geometry = (page: Page) =>
 
 test.describe('experience timeline (spec 013)', () => {
     test.describe.configure({ mode: 'default' });
-    let proc: any;
-
-    test.beforeAll(async () => {
-        const started = startDevServer();
-        proc = started.proc;
-        DEV_URL = await started.readyPromise;
-        await waitForServer(DEV_URL, 30000);
-    });
-    test.afterAll(() => { if (proc && !proc.killed) proc.kill(); });
 
     for (const [w, h] of [[1280, 800], [390, 844]] as const) {
         for (const js of [true, false]) {

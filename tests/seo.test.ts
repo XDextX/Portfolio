@@ -834,9 +834,7 @@ describe('the package.json dependency sets (T-S3, RF-3)', () => {
             '@astrojs/vercel': '^8.2.8',
             '@playwright/test': '^1.56.0',
             '@types/node': '^20.4.2',
-            '@types/node-fetch': '^2.6.13',
             husky: '^9.1.7',
-            'node-fetch': '^3.3.2',
             playwright: '^1.56.0',
             // ^3.2: Vite 6, the one Astro 5 runs on, so .astro compiles in vitest (spec 014 D-1, owner OK).
             vitest: '^3.2.7',

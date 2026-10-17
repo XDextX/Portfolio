@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
-import { startDevServer, waitForServer } from './helpers/dev-server';
+import { E2E_URL as DEV_URL } from './helpers/server';
 import { THEMES, openIn, installHelpers, settled, axQuery } from './helpers/rendered';
 import * as tech from '../src/data/tech';
 import { contrast, parseColour, parseGradients, composites, worstPoint } from '../tests/helpers/colour';
@@ -9,7 +9,6 @@ import { contrast, parseColour, parseGradients, composites, worstPoint } from '.
 // Spec 012: the Skills section. RF-2/3 areas, RF-5 compact headings, RF-6/7/8 logos,
 // RF-10/11 heading icons, RF-12/13/14 the toggle's active indicator.
 
-let DEV_URL = '';
 const LOCALES = ['es', 'en'] as const;
 const SECTION = '.tech-grid';
 const data = tech as any;
@@ -37,15 +36,6 @@ async function showList(page: Page) {
 
 test.describe('skills (spec 012)', () => {
     test.describe.configure({ mode: 'default' });
-    let proc: any;
-
-    test.beforeAll(async () => {
-        const started = startDevServer();
-        proc = started.proc;
-        DEV_URL = await started.readyPromise;
-        await waitForServer(DEV_URL, 30000);
-    });
-    test.afterAll(() => { if (proc && !proc.killed) proc.kill(); });
 
     for (const locale of LOCALES) {
         test(`area order: populated areas in declared order, both views — ${locale} (RF-2)`, async ({ page }) => {

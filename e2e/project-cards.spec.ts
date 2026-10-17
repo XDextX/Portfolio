@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { startDevServer, waitForServer } from './helpers/dev-server';
+import { E2E_URL as DEV_URL } from './helpers/server';
 import { THEMES, openIn, installHelpers, settled, type Theme } from './helpers/rendered';
 import { contrast } from '../tests/helpers/colour';
 import * as tech from '../src/data/tech';
@@ -7,7 +7,6 @@ import * as tech from '../src/data/tech';
 // Spec 014: project cards. RF-1 placeholder, RF-2 logo, RF-3 mark, RF-4 badge; fill, badge
 // contrast, no project image, the home preview of four. Expectations from the live list (D-8).
 
-let DEV_URL = '';
 let REPOS: any[] = [];
 // github.ts reads import.meta.env at load, which Playwright has none of; the spec's rule is
 // derived here instead, an oracle that does not call the helper under test.
@@ -55,16 +54,10 @@ const inside = (a: any, b: any) => !!a && !!b && a.l >= b.l - 0.5 && a.r <= b.r 
 
 test.describe('project cards (spec 014)', () => {
     test.describe.configure({ mode: 'default' });
-    let proc: any;
 
     test.beforeAll(async ({ request }) => {
-        const started = startDevServer();
-        proc = started.proc;
-        DEV_URL = await started.readyPromise;
-        await waitForServer(DEV_URL, 30000);
         REPOS = await (await request.get(DEV_URL + '/api/github-list.json')).json();
     });
-    test.afterAll(() => { if (proc && !proc.killed) proc.kill(); });
 
     for (const theme of THEMES) for (const route of ROUTES) {
         test(`cards: placeholder, logo or mark, badge, fill, no project image — ${route}, ${theme} (RF-1–RF-4)`, async ({ page }) => {

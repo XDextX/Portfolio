@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { startDevServer, waitForServer } from './helpers/dev-server';
+import { E2E_URL as DEV_URL } from './helpers/server';
 import { THEMES, openIn, installHelpers, settled, axQuery, type Theme } from './helpers/rendered';
 import { parseColour, parseGradients, composites, worstPoint, contrast, floorFor } from '../tests/helpers/colour';
 import { PROCESS } from '../src/data/process';
@@ -7,7 +7,6 @@ import { PROCESS } from '../src/data/process';
 // Spec 011: "Lo que construyo" as four steps. RF-2 order, RF-4/5 tint and tone,
 // RF-6 floors, RF-7 rows, RF-8 arrows; card edge, inert, silent and exception scope.
 
-let DEV_URL = '';
 let PROJECT = '';
 const SECTION = '#ValueProposition';
 const LOCALES = ['es', 'en'] as const;
@@ -64,19 +63,13 @@ const readColours = (page: Page) =>
 
 test.describe('process steps (spec 011)', () => {
     test.describe.configure({ mode: 'default' });
-    let proc: any;
 
     test.beforeAll(async ({ browser }) => {
-        const started = startDevServer();
-        proc = started.proc;
-        DEV_URL = await started.readyPromise;
-        await waitForServer(DEV_URL, 30000);
         const page = await browser.newPage();
         await page.goto(DEV_URL + '/');
         PROJECT = (await page.locator('a[href^="/proyectos/"]').first().getAttribute('href')) ?? '';
         await page.close();
     });
-    test.afterAll(() => { if (proc && !proc.killed) proc.kill(); });
 
     for (const locale of LOCALES) {
         test(`document order: intro, note, four steps — ${locale} (RF-2)`, async ({ page }) => {
