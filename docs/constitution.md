@@ -4,8 +4,9 @@ Ten rules. Each names where it is decided: a test, a command, or a file to read.
 Breaking one is a bug — the fix is the rule or an amendment, never a workaround
 in the code. `AGENTS.md` elaborates these and yields to them on any conflict.
 
-1. **Two runtime dependencies.** `astro` and `@astrojs/node`, nothing else: no UI
-   framework, no CSS or icon library. *Check:* `package.json` `dependencies`.
+1. **Two runtime dependencies.** `astro` and `@astrojs/vercel`, the adapter the build uses,
+   nothing else: no UI framework, no CSS or icon library. *Check:* `package.json`
+   `dependencies`.
 2. **No third-party subresource.** Two font families self-hosted in
    `public/fonts`. The one remote asset a page loads is the GitHub avatar.
    *Check:* the only host in `src/` a browser **fetches** is
