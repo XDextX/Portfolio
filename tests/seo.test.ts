@@ -1065,11 +1065,34 @@ describe('the og-cover generator spells out no colour (spec 033 RF-6)', () => {
     });
 });
 
-// ── Spec 034: one source for the production origin ──
+// ── Spec 034: the social tags follow the serving origin, search engines keep production ──
 
 const CONFIGURED_SITE = new URL(stripComments(fs.readFileSync(path.join(ROOT, 'astro.config.mjs'), 'utf-8')).match(/site:\s*['"]([^'"]+)['"]/)![1]).origin;
+const PREVIEW = 'https://preview.example.test';
+
+/** Every `<meta>`/`<link>` the head carries, as attribute maps. */
+function headTags(html: string): Record<string, string>[] {
+    return [...html.matchAll(/<(?:meta|link)\b([^>]*)>/g)].map((m) => Object.fromEntries([...m[1].matchAll(/([\w:-]+)=["']([^"']*)["']/g)].map((a) => [a[1], a[2]])));
+}
 
 describe('the head origins (spec 034)', () => {
+    // RF-2 (canonical and hreflang on the configured site) is e2e/og-cover-layout.spec.ts's: the
+    // Container types a `site` option but never applies it, so Astro.site is empty here.
+    it('composes the social tags from the serving origin', async () => {
+        const { experimental_AstroContainer: AstroContainer } = await import('astro/container');
+        const container = await AstroContainer.create();
+        const BaseLayout = (await import('../src/layouts/BaseLayout.astro')).default;
+        setLocale('es');
+        const html = await container.renderToString(BaseLayout, { props: { title: 't', description: 'd', locale: 'es' }, request: new Request(`${PREVIEW}/proyectos?lang=es`) });
+        const tags = headTags(html);
+        const meta = (k: string, v: string) => tags.find((t) => t[k] === v)?.content;
+        const offenders: string[] = [];
+        if (meta('property', 'og:image') !== `${PREVIEW}/og-cover-es.png`) offenders.push(`RF-1: og:image is ${meta('property', 'og:image')}`);
+        if (meta('name', 'twitter:image') !== `${PREVIEW}/og-cover-es.png`) offenders.push(`RF-1: twitter:image is ${meta('name', 'twitter:image')}`);
+        if (meta('property', 'og:url') !== `${PREVIEW}/proyectos`) offenders.push(`RF-1: og:url is ${meta('property', 'og:url')}`);
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+
     // A source check on purpose (constitution 8): the rule is about a second copy of a datum.
     it('spells the configured site nowhere in the layout', () => {
         const src = stripComments(fs.readFileSync(BASE_LAYOUT, 'utf-8'));

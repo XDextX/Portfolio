@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import fs from 'fs';
 import path from 'path';
 import { E2E_URL } from './helpers/server';
 import { readTokens, cardHtml, phrasesFor, cardLocales } from '../scripts/og-cover.ts';
@@ -10,6 +11,8 @@ const ROOT = process.cwd();
 const PUBLIC = path.join(ROOT, 'public');
 const LOCALES_DIR = path.join(ROOT, 'i18n', 'locales');
 const readings = readTokens(path.join(PUBLIC, 'styles'));
+// Spec 034: canonical and hreflang stay on the site astro.config.mjs declares.
+const CONFIGURED_SITE = new URL(fs.readFileSync(path.join(ROOT, 'astro.config.mjs'), 'utf-8').match(/site:\s*['"]([^'"]+)['"]/)![1]).origin;
 
 for (const locale of cardLocales(LOCALES_DIR)) {
     test(`card layout: avatar left, name on one line in ink and gold, italic phrases — ${locale} (RF-1, RF-2, RF-4)`, async ({ page }) => {
@@ -58,6 +61,12 @@ for (const locale of cardLocales(LOCALES_DIR)) {
         const offenders: string[] = [];
         if (og !== tw) offenders.push(`RF-9: og:image ${og} and twitter:image ${tw} differ`);
         if (!og?.endsWith(`/og-cover-${locale}.png`)) offenders.push(`RF-9: og:image is ${og}`);
+        // Spec 034: the social tags on the serving origin, search engines on production.
+        const served = new URL(E2E_URL).origin;
+        const ogUrl = await page.locator('meta[property="og:url"]').getAttribute('content');
+        if (!og?.startsWith(`${served}/`) || !ogUrl?.startsWith(`${served}/`)) offenders.push(`spec 034 RF-1: og:image ${og}, og:url ${ogUrl} not on ${served}`);
+        const seo = await page.locator('link[rel="canonical"], link[rel="alternate"][hreflang]').evaluateAll((ls) => ls.map((l) => l.getAttribute('href')));
+        if (seo.length !== 4 || seo.some((h) => !h?.startsWith(`${CONFIGURED_SITE}/`))) offenders.push(`spec 034 RF-2: ${seo.join(', ')}`);
         const res = await request.get(`${E2E_URL}/og-cover-${locale}.png`);
         if (res.status() !== 200) offenders.push(`RF-9: /og-cover-${locale}.png answers ${res.status()}`);
         expect(offenders, offenders.join('\n')).toEqual([]);
