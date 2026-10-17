@@ -110,11 +110,6 @@
     border-color: var(--neutral-200);
 }
 
-:root[data-theme="dark"] .btn.ghost {
-    color: var(--brand-text);
-    border-color: var(--brand-text);
-}
-
 :root[data-theme="dark"] .theme-btn {
     background: var(--neutral-100);
     color: var(--neutral-800);

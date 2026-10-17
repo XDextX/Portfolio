@@ -36,6 +36,20 @@
     color: var(--accent-surface-text);
 }
 
+/* The outline button (spec 025): the base fill left the back link navy on navy, 1.00:1 in
+   light. Rests in the control border, turns the accent on hover, and nothing lifts. */
+.btn--ghost {
+    background: transparent;
+    border: 1px solid var(--control-border);
+    color: var(--brand-text);
+}
+
+.btn--ghost:hover {
+    border-color: var(--accent-text);
+    transform: none;
+    box-shadow: none;
+}
+
 .card {
     border-radius: var(--radius-lg);
     padding: var(--sp-4);

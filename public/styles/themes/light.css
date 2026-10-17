@@ -113,12 +113,6 @@
     box-shadow: var(--shadow-sm);
 }
 
-/* ── Ghost button ── */
-:root .btn.ghost {
-    color: var(--brand-text);
-    border-color: var(--brand-text);
-}
-
 /* ── Theme toggle ── */
 :root .theme-btn {
     background: var(--neutral-0);
