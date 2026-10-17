@@ -24,7 +24,8 @@ const {
 	locale = 'es',
 } = Astro.props as Props;
 
-const site       = 'https://portfolio-dext.vercel.app';
+// The production site, as astro.config.mjs declares it: one source for the origin (spec 034).
+const site       = new URL(Astro.site ?? Astro.url).origin;
 const image      = `${site}/og-cover-${locale}.png`;
 const canonical  = `${site}${Astro.url.pathname}`;
 const htmlLang   = locale === 'es' ? 'es-CR' : 'en-US';

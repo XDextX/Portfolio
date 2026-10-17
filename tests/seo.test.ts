@@ -1064,3 +1064,15 @@ describe('the og-cover generator spells out no colour (spec 033 RF-6)', () => {
         expect(literals).toEqual([]);
     });
 });
+
+// ── Spec 034: one source for the production origin ──
+
+const CONFIGURED_SITE = new URL(stripComments(fs.readFileSync(path.join(ROOT, 'astro.config.mjs'), 'utf-8')).match(/site:\s*['"]([^'"]+)['"]/)![1]).origin;
+
+describe('the head origins (spec 034)', () => {
+    // A source check on purpose (constitution 8): the rule is about a second copy of a datum.
+    it('spells the configured site nowhere in the layout', () => {
+        const src = stripComments(fs.readFileSync(BASE_LAYOUT, 'utf-8'));
+        expect(src).not.toContain(new URL(CONFIGURED_SITE).host);
+    });
+});
