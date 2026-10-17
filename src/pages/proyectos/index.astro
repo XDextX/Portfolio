@@ -6,7 +6,7 @@ import { t } from '@i18n/index';
 import { SECTION_TITLES } from '../../data/sectionTitles';
 import type { GitHubRepo } from '@type/github';
 import { applyLocale } from '@utils/locale';
-import { listRepos, sortRepos } from '@lib/github';
+import { listRepos, listPreviewNames, sortRepos } from '@lib/github';
 
 const locale = applyLocale(Astro);
 const topic = (import.meta.env.GITHUB_TOPIC ?? '').trim();
@@ -29,6 +29,8 @@ try {
 	fetchError = error instanceof Error ? error.message : 'Unknown error';
 	repos = [];
 }
+
+const previews = await listPreviewNames();
 
 const pageTitle = `${t('projects.title')} - Portfolio`;
 const pageDescription = topic
@@ -88,6 +90,7 @@ const jsonLd = {
 					title={t('projects.title')}
 					hideTitle={true}
 					locale={locale}
+					previews={previews}
 				/>
 			)
 		}

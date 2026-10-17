@@ -42,6 +42,7 @@ const readCards = (page: Page) =>
             mark: mark ? { mask: getComputedStyle(mark).maskImage || getComputedStyle(mark).webkitMaskImage, hidden: mark.getAttribute('aria-hidden') === 'true', box: box(mark) } : null,
             badge: badge ? { text: badge.textContent?.trim(), box: box(badge), fg: w.__toHex(getComputedStyle(badge).color), bg: w.__toHex(getComputedStyle(badge).backgroundColor) } : null,
             bgImages,
+            preview: !!c.querySelector('.card-preview'),
         };
     })));
 
@@ -78,9 +79,13 @@ test.describe('project cards (spec 014)', () => {
                 if (!inside(c.media, c.card) || (c.title && c.media.b > c.title.t + 0.5)) offenders.push(`RF-1: ${where} placeholder is not above the name inside the card`);
                 if (c.fill !== neutral) offenders.push(`NFR: ${where} placeholder fill ${c.fill}, not ${neutral}`);
                 if (c.bgImages.length) offenders.push(`NFR: ${where} draws a background image (${c.bgImages[0].slice(0, 40)})`);
-                const allowed = logo ? d.logoFiles(logo) : [];
+                // Spec 032: the card's own same-origin preview is the one project image allowed.
+                const preview = `/api/v1/projects/preview/${encodeURIComponent(c.name)}`;
+                const allowed = [...(logo ? d.logoFiles(logo) : []), ...(c.preview ? [preview] : [])];
                 for (const src of c.all) if (!allowed.includes(src)) offenders.push(`NFR: ${where} draws ${src}, not its language logo`);
-                if (logo) {
+                if (c.preview) {
+                    if (c.shown.length !== 1 || c.shown[0].src !== preview) offenders.push(`spec 032: ${where} shows ${c.shown.map((s) => s.src).join(', ')}, not its preview alone`);
+                } else if (logo) {
                     const want = d.logoFor(logo, theme);
                     if (c.shown.length !== 1 || c.shown[0].src !== want) offenders.push(`RF-2: ${where} shows ${c.shown.map((s) => s.src).join(', ') || 'no image'}, not ${want}`);
                     else if (c.shown[0].alt !== '') offenders.push(`RF-2: ${where} logo alt is ${JSON.stringify(c.shown[0].alt)}`);
@@ -98,7 +103,8 @@ test.describe('project cards (spec 014)', () => {
                         if (!inside(c.badge.box, c.media)) offenders.push(`RF-4: ${where} badge sits outside the placeholder`);
                         const pic = c.shown[0]?.box ?? c.mark?.box;
                         // Owner, 2026-10-17 (spec 031): the wider badge may overlap the picture's edge, never its centre.
-                        if (pic && overlap(c.badge.box, pic) && c.badge.box.l < (pic.l + pic.r) / 2) offenders.push(`RF-4: ${where} badge covers the logo or mark past its centre`);
+                        // Spec 032: over a full-bleed preview the badge overlaps it by design.
+                        if (pic && !c.preview && overlap(c.badge.box, pic) && c.badge.box.l < (pic.l + pic.r) / 2) offenders.push(`RF-4: ${where} badge covers the logo or mark past its centre`);
                         const ratio = contrast(c.badge.fg, c.badge.bg);
                         if (ratio < 4.5) offenders.push(`NFR: ${where} badge ${c.badge.fg} on ${c.badge.bg} is ${ratio.toFixed(2)}:1`);
                     }

@@ -7,7 +7,7 @@ import ContactSection from './ContactSection.astro';
 import AboutSection from './AboutSection.astro';
 import ValuePropositionSection from './ValuePropositionSection.astro';
 import { applyLocale } from '@utils/locale';
-import { listRepos, sortRepos } from '@lib/github';
+import { listRepos, listPreviewNames, sortRepos } from '@lib/github';
 import { t } from '@i18n/index';
 
 interface Props {
@@ -30,6 +30,7 @@ try {
 }
 
 const sortedRepos = sortRepos(repos);
+const previews = await listPreviewNames();
 
 // ContactSection gets no locale prop: its strings come from t(), which reads the
 // module-level locale that applyLocale() already set for this request.
@@ -44,6 +45,7 @@ const sortedRepos = sortRepos(repos);
 	locale={locale}
 	preview={4}
 	error={fetchError}
+	previews={previews}
 />
 
 <ContactSection />

@@ -104,6 +104,75 @@ export async function getReadme(owner: string, name: string, now = Date.now()): 
     return cached(`readme:${name}`, now, () => ghRepoReadme({ user: USER, name }));
 }
 
+// Spec 032: a repository's social preview, only when the owner uploaded one. GraphQL alone
+// exposes it, and GraphQL answers no request without a token.
+const PREVIEWS_QUERY = `query($login: String!) { user(login: $login) { repositories(first: 100, ownerAffiliations: OWNER, privacy: PUBLIC) {
+    nodes { name usesCustomOpenGraphImage openGraphImageUrl } } } }`;
+
+type PreviewNode = { name?: string; usesCustomOpenGraphImage?: boolean; openGraphImageUrl?: string | null };
+
+/**
+ * The previews the owner uploaded, by repository name; GitHub's generated ones are dropped.
+ * @param nodes GraphQL repository nodes @returns name → image URL
+ */
+export function previewsFrom(nodes: PreviewNode[]): Map<string, string> {
+    const map = new Map<string, string>();
+    for (const n of nodes) if (n.name && n.usesCustomOpenGraphImage && n.openGraphImageUrl) map.set(n.name, n.openGraphImageUrl);
+    return map;
+}
+
+async function ghPreviews(): Promise<Map<string, string>> {
+    if (!TOKEN) return new Map();
+    const r = await fetch("https://api.github.com/graphql", {
+        method: "POST",
+        headers: { ...baseHeaders, "Content-Type": "application/json" },
+        body: JSON.stringify({ query: PREVIEWS_QUERY, variables: { login: USER } }),
+    });
+    if (!r.ok) throw new Error(`GitHub error ${r.status}`);
+    const json = (await r.json()) as { data?: { user?: { repositories?: { nodes?: PreviewNode[] } } } };
+    return previewsFrom(json.data?.user?.repositories?.nodes ?? []);
+}
+
+/**
+ * The configured user's uploaded previews, cached like the list.
+ * @param now the clock, a parameter for tests @returns name → image URL
+ */
+export function listPreviews(now = Date.now()): Promise<Map<string, string>> {
+    return cached("previews", now, ghPreviews);
+}
+
+/**
+ * A listed repository's preview as GitHub serves it; null for any other name, before any
+ * request built from it (spec 032 RF-5). @param name as asked @param now the clock
+ * @returns the upstream response or null
+ */
+export async function getPreview(name: string, now = Date.now()): Promise<Response | null> {
+    const [repos, previews] = await Promise.all([listRepos(now), listPreviews(now)]);
+    const url = previews.get(name);
+    if (!url || !repos.some((r) => r.name === name)) return null;
+    return fetch(url);
+}
+
+/**
+ * The names with an uploaded preview; a failed read means none, so the cards render as without
+ * spec 032 (RF-4). @param now the clock @returns repository names
+ */
+export async function listPreviewNames(now = Date.now()): Promise<string[]> {
+    try {
+        return [...(await listPreviews(now)).keys()];
+    } catch {
+        return [];
+    }
+}
+
+/**
+ * The same-origin path a card loads a preview from (spec 032 RF-3).
+ * @param name the repository @returns the route's path
+ */
+export function previewPath(name: string): string {
+    return `/api/v1/projects/preview/${encodeURIComponent(name)}`;
+}
+
 /** Empty the cache; tests only, so one case's answer never reaches the next. */
 export function clearGitHubCache(): void {
     memo.clear();

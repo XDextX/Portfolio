@@ -4,6 +4,7 @@ import type { GitHubRepo } from '../types/github';
 import { t } from '@i18n/index';
 import SectionTitle from './SectionTitle.astro';
 import { SECTION_TITLES } from '../data/sectionTitles';
+import { previewPath } from '../pages/lib/github';
 
 export interface Props {
 	repos: GitHubRepo[];
@@ -18,6 +19,8 @@ export interface Props {
 	 * "you have no projects".
 	 */
 	error?: string | null;
+	/** Names of the repositories with an uploaded social preview (spec 032). */
+	previews?: string[];
 }
 
 const {
@@ -27,6 +30,7 @@ const {
 	locale = 'es',
 	preview,
 	error = null,
+	previews = [],
 } = Astro.props;
 
 const headingId = SECTION_TITLES.projects.id;
@@ -70,7 +74,7 @@ const viewAll = t('projects.viewAll');
 				<div class='projects-grid'>
 					{visible.map((r) => (
 						<div class='project-item'>
-							<ProjectCard repo={r} locale={locale} />
+							<ProjectCard repo={r} locale={locale} preview={previews.includes(r.name) ? previewPath(r.name) : null} />
 						</div>
 					))}
 				</div>

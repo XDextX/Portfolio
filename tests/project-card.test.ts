@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import ProjectCard from '../src/components/ProjectCard.astro';
+import ProjectsSection from '../src/components/ProjectsSection.astro';
 import ProjectPage from '../src/pages/proyectos/[name].astro';
 import { setLocale, t } from '@i18n/index';
 import * as tech from '../src/data/tech';
@@ -86,6 +87,39 @@ describe('project card, rendered (spec 014 RF-3, RF-5, RF-6, RF-7, RF-8)', () =>
         if (/<img\b/.test(unknown) || /\bmark\b/.test(unknown)) offenders.push('RF-3: the Cobol badge draws a logo or a mark');
         if (!/<img\b/.test(badge(await card({ language: 'TypeScript' })))) offenders.push('RF-1: the TypeScript badge draws no logo');
         expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+
+    it('preview: the image replaces the logo, decorative, sized and lazy; the badge stays (spec 032 RF-1, RF-7)', async () => {
+        setLocale('es');
+        const html = await container.renderToString(ProjectCard, { props: { repo: buildRepo({ language: 'TypeScript' }), preview: '/api/v1/projects/preview/repo' } });
+        const media = html.slice(html.search(/class="[^"]*\bcard-media\b/), html.search(/<header\b/));
+        const imgs = [...media.matchAll(/<img\b[^>]*>/g)].map((m) => m[0]);
+        const preview = imgs.filter((i) => /\bcard-preview\b/.test(i));
+        const offenders: string[] = [];
+        if (preview.length !== 1) offenders.push(`RF-1: ${preview.length} preview images`);
+        else {
+            const p = preview[0];
+            if (!/src="\/api\/v1\/projects\/preview\/repo"/.test(p)) offenders.push('RF-1: the preview is not the given path');
+            if (!/\salt=""/.test(p)) offenders.push('RF-7: the preview alt is not empty');
+            if (!/\swidth="\d+"/.test(p) || !/\sheight="\d+"/.test(p)) offenders.push('RF-7: the preview declares no size');
+            if (!/\sloading="lazy"/.test(p)) offenders.push('RF-7: the preview is not lazy');
+        }
+        // The badge's own logo is the one other image allowed in the placeholder (spec 031).
+        const rest = media.replace(/<span class="card-lang"[\s\S]*?<\/span>\s*<\/span>/, '');
+        if ([...rest.matchAll(/<img\b[^>]*>/g)].some((m) => !/\bcard-preview\b/.test(m[0]))) offenders.push('RF-1: the large logo is still drawn');
+        if (/\bcard-mark\b/.test(media)) offenders.push('RF-1: the mark is still drawn');
+        if (!/\bcard-lang\b/.test(media)) offenders.push('RF-2: the badge is gone');
+        const plain = await card({ language: 'TypeScript' });
+        if (/\bcard-preview\b/.test(plain)) offenders.push('RF-4: a card without a preview draws one');
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+
+    it('preview source: the section points a card at the same-origin route, only for a listed name (spec 032 RF-3)', async () => {
+        setLocale('es');
+        const repos = [buildRepo({ id: 1, name: 'with-image' }), buildRepo({ id: 2, name: 'without' })];
+        const html = await container.renderToString(ProjectsSection, { props: { repos, previews: ['with-image'] } });
+        const srcs = [...html.matchAll(/<img\b[^>]*\bcard-preview\b[^>]*>/g)].map((m) => m[0].match(/src="([^"]*)"/)?.[1]);
+        expect(srcs).toEqual(['/api/v1/projects/preview/with-image']);
     });
 
     it('description: the card shows what the detail page resolves, both locales', async () => {
