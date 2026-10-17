@@ -1,6 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
+import { createHash } from 'crypto';
 
 import {
     homeDescription,
@@ -487,6 +489,15 @@ describe('the og-cover readings (T-S4a, RF-4)', () => {
         ).toEqual([]);
     });
 
+    // Spec 033: the card is the hero on the dark page, so its text colours come from the dark theme.
+    it('draws the dark theme tokens at the dark sheet own values', async () => {
+        const read = (await readings()).darkTokens ?? {};
+        const sheet = sheetTokens(path.join(SHEET_DIR, 'themes', 'dark.css'));
+        expect(Object.keys(read).length, 'the generator exports no dark tokens').toBeGreaterThan(0);
+        const off = Object.entries(read).filter(([name, value]) => typeof value !== 'string' || value !== sheet[name]);
+        expect(off.map(([n, v]) => `${n}: ${v} (dark.css: ${sheet[n]})`)).toEqual([]);
+    });
+
     it('names only font files that are really there under public/fonts', async () => {
         const { fonts } = await readings();
 
@@ -535,7 +546,26 @@ async function cardContrast(): Promise<number> {
     return contrastRatio(palette.accent, palette.ground);
 }
 
+/** Every text colour the card draws, measured on its ground (spec 033 RF-8). */
+async function textContrasts(): Promise<Record<string, number>> {
+    const { contrastRatio } = await import('../scripts/og-cover.ts');
+    const { palette } = await readings();
+    const out: Record<string, number> = {};
+    for (const key of ['accent', 'ink', 'secondary'] as const) {
+        const colour = (palette as any)[key];
+        if (typeof colour !== 'string' || typeof palette.ground !== 'string') throw new Error(`the generator exports no ${key} or ground`);
+        out[key] = contrastRatio(colour, palette.ground);
+    }
+    return out;
+}
+
 describe('the og-cover contrast (T-S7, RF-7)', () => {
+    it('draws every text colour on the ground at 4.5:1 or better (spec 033 RF-8)', async () => {
+        const ratios = await textContrasts();
+        const low = Object.entries(ratios).filter(([, r]) => r < 4.5);
+        expect(low.map(([k, r]) => `${k} ${r.toFixed(2)}:1`)).toEqual([]);
+    });
+
     it('draws the accent on the ground at 4.5:1 or better', async () => {
         const ratio = await cardContrast();
 
@@ -611,7 +641,7 @@ describe('the og-cover generator source (T-LANG)', () => {
         // Both values read out of the data module and looked for as text. Typed
         // in here, this would compare the file against this file's own copy, and
         // then it could never go red.
-        for (const value of [ABOUT.name, ABOUT.title]) {
+        for (const value of [ABOUT.name, ABOUT.title, ABOUT.location, ABOUT.nameParts.given]) {
             expect(
                 src,
                 `scripts/og-cover.ts spells out a value that lives in src/data/about.ts, so\n` +
@@ -642,18 +672,18 @@ function filesUnder(dir: string): string[] {
 }
 
 describe('the og-cover listings (T-S5a, T-S5b, RF-5)', () => {
-    it('public/ holds og-cover.png and nothing that renders it beside it', () => {
+    it('public/ holds one card per locale, no og-cover.png, and nothing that renders them beside it', () => {
         const files = fs.readdirSync(PUBLIC_DIR);
 
-        expect(
-            files,
-            `public/ holds no og-cover.png, so every share resolves a 404.`,
-        ).toContain('og-cover.png');
+        for (const card of OG_COVERS) {
+            expect(files, `public/ holds no ${card}, so a share in that locale resolves a 404.`).toContain(card);
+        }
+        expect(files, 'og-cover.png is still there beside the per-locale cards (spec 033 RF-9)').not.toContain('og-cover.png');
 
         // Astro serves `public/` verbatim, so any of these is fetched by the
         // browser as a separate asset. An HTML file beside the PNG means the
         // card is also rendered by the visitor's browser — RF-5 forbids that.
-        const renderers = files.filter((f) => /^og-cover\.(html|css|js)$/i.test(f));
+        const renderers = files.filter((f) => /^og-cover[\w-]*\.(html|css|js)$/i.test(f));
         expect(
             renderers,
             `public/ holds files that render the card beside the PNG: ` +
@@ -758,7 +788,9 @@ describe('the og-cover name fit floor (T-S8b, RF-8)', () => {
 // `pngInfo()` reads the file's own header rather than a constant repeated in
 // the test — which is the only reason RF-2 can fail on a 1200×600 card.
 
-const OG_COVER = path.join(ROOT, 'public', 'og-cover.png');
+// Spec 033: one card per locale the site serves, read from the locale files by this test.
+const CARD_LOCALES = fs.readdirSync(path.join(ROOT, 'i18n', 'locales')).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).sort();
+const OG_COVERS = CARD_LOCALES.map((l) => `og-cover-${l}.png`);
 
 /**
  * Reads the PNG header of `file`: signature, first chunk, IHDR dimensions
@@ -794,25 +826,22 @@ function pngInfo(file: string): { width: number; height: number; bytes: number }
 }
 
 describe('the og-cover artifact (T-S1, RF-1)', () => {
-    it('ships at public/og-cover.png with a real PNG signature', () => {
-        expect(
-            fs.existsSync(OG_COVER),
-            `public/og-cover.png does not exist. og:image composes \${site}/og-cover.png\n` +
-                `(BaseLayout.astro:28) and Astro serves public/ verbatim, so that is the\n` +
-                `only pathname that can answer it.`,
-        ).toBe(true);
-
-        const info = pngInfo(OG_COVER);
-        expect(info.bytes).toBeGreaterThan(0);
+    it('ships public/og-cover-<locale>.png for every locale with a real PNG signature', () => {
+        expect(OG_COVERS.length, 'no locale files, so no card is asked for').toBeGreaterThan(0);
+        for (const card of OG_COVERS) {
+            const file = path.join(PUBLIC_DIR, card);
+            expect(fs.existsSync(file), `public/${card} does not exist, and og:image composes it for that locale`).toBe(true);
+            expect(pngInfo(file).bytes).toBeGreaterThan(0);
+        }
     });
 });
 
 describe('the og-cover dimensions (T-S2, RF-2)', () => {
     it('is 1200×630, read from the IHDR', () => {
-        const info = pngInfo(OG_COVER);
-
-        expect(info.width).toBe(1200);
-        expect(info.height).toBe(630);
+        for (const card of OG_COVERS) {
+            const info = pngInfo(path.join(PUBLIC_DIR, card));
+            expect([card, info.width, info.height]).toEqual([card, 1200, 630]);
+        }
     });
 });
 
@@ -853,12 +882,10 @@ describe('the package.json dependency sets (T-S3, RF-3)', () => {
 
 describe('the og-cover byte size (T-SIZE)', () => {
     it('is under 5 MB', () => {
-        const info = pngInfo(OG_COVER);
-
-        expect(
-            info.bytes,
-            `public/og-cover.png is ${info.bytes} bytes, past the 5 MB platform ceiling`,
-        ).toBeLessThan(5 * 1024 * 1024);
+        for (const card of OG_COVERS) {
+            const info = pngInfo(path.join(PUBLIC_DIR, card));
+            expect(info.bytes, `public/${card} is ${info.bytes} bytes, past the 5 MB platform ceiling`).toBeLessThan(5 * 1024 * 1024);
+        }
     });
 });
 
@@ -871,7 +898,7 @@ describe('the og-cover byte size (T-SIZE)', () => {
 const BASE_LAYOUT = path.join(ROOT, 'src', 'layouts', 'BaseLayout.astro');
 
 describe('the og-cover image tags (T-S6, RF-6)', () => {
-    it('binds og:image and twitter:image to the same content expression, composing og-cover.png from site, and that file exists with a PNG signature', () => {
+    it('binds og:image and twitter:image to the same content expression, composing the locale card from site, and every such file exists with a PNG signature', () => {
         // Comments off first: a note naming `og-cover.png` would satisfy a grep
         // while the tag bound nothing, which is the six-guard shape.
         const src = stripComments(fs.readFileSync(BASE_LAYOUT, 'utf-8'));
@@ -914,22 +941,126 @@ describe('the og-cover image tags (T-S6, RF-6)', () => {
         expect(
             imageTemplate,
             `The image definition is \`${imageTemplate}\`, which does not compose ` +
-                `\${site}/og-cover.png. The pathname must be og-cover.png, or the ` +
-                `card is never served.`,
-        ).toBe('${site}/og-cover.png');
+                `\${site}/og-cover-\${locale}.png: a page would share another locale's card (spec 033).`,
+        ).toBe('${site}/og-cover-${locale}.png');
 
         // ── 3. This check stats that path and reads the PNG signature itself ──
         // The pathname is `og-cover.png`, so the file is `public/og-cover.png`.
         // This check defers to nothing: it stats the path and reads the signature.
-        const cardPath = path.join(ROOT, 'public', 'og-cover.png');
-        expect(
-            fs.existsSync(cardPath),
-            `public/og-cover.png does not exist. og:image composes \${site}/og-cover.png ` +
-                `(BaseLayout.astro) and Astro serves public/ verbatim, so that is the ` +
-                `only pathname that can answer it.`,
-        ).toBe(true);
+        for (const card of OG_COVERS) {
+            const cardPath = path.join(PUBLIC_DIR, card);
+            expect(fs.existsSync(cardPath), `public/${card} does not exist, and og:image composes it for that locale`).toBe(true);
+            expect(pngInfo(cardPath).bytes).toBeGreaterThan(0);
+        }
+    });
+});
+// ── Spec 033: the card composed like the hero, one per locale ───────────────
 
-        const info = pngInfo(cardPath);
-        expect(info.bytes).toBeGreaterThan(0);
+const LOCALES_DIR = path.join(ROOT, 'i18n', 'locales');
+const FAKE_AVATAR = 'data:image/png;base64,iVBORw0KGgo=';
+const localeFile = (l: string) => JSON.parse(fs.readFileSync(path.join(LOCALES_DIR, `${l}.json`), 'utf-8'));
+const at = (obj: any, key: string) => key.split('.').reduce((n, k) => n?.[k], obj);
+/** The text inside the first element carrying `cls`, tags stripped. */
+const textOf = (html: string, cls: string) => (html.match(new RegExp(`class="${cls}"[^>]*>([\\s\\S]*?)</(?:span|p|h1)>`))?.[1] ?? '').replace(/<[^>]+>/g, '').trim();
+
+async function card(locale: string): Promise<string> {
+    const gen = await import('../scripts/og-cover.ts');
+    const r = await readings();
+    return gen.cardHtml(r, gen.phrasesFor(locale, LOCALES_DIR), 52, PUBLIC_DIR, FAKE_AVATAR);
+}
+
+describe('the og-cover hero composition (spec 033 RF-1 to RF-5)', () => {
+    it('draws the avatar it was given, the name parts, the role and the location', async () => {
+        const html = await card('es');
+        const imgs = [...html.matchAll(/<img\b[^>]*>/g)].map((m) => m[0]);
+        const offenders: string[] = [];
+        if (imgs.length !== 1 || !imgs[0].includes(`src="${FAKE_AVATAR}"`)) offenders.push(`RF-1: ${imgs.length} images, not the avatar it was given`);
+        if (textOf(html, 'given') !== ABOUT.nameParts.given) offenders.push(`RF-2: given reads "${textOf(html, 'given')}"`);
+        if (textOf(html, 'family') !== (ABOUT.nameParts.family ?? '')) offenders.push(`RF-2: family reads "${textOf(html, 'family')}"`);
+        if (textOf(html, 'role') !== ABOUT.title) offenders.push('RF-3: the role is missing');
+        if (textOf(html, 'location') !== ABOUT.location) offenders.push('RF-3: the location is missing');
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+
+    it('draws each locale its own four phrases, in order', async () => {
+        const offenders: string[] = [];
+        for (const locale of CARD_LOCALES) {
+            const html = await card(locale);
+            const shown = [...(html.match(/<ul class="phrases">([\s\S]*?)<\/ul>/)?.[1] ?? '').matchAll(/<li>([\s\S]*?)<\/li>/g)].map((m) => m[1]);
+            const want = ABOUT.phraseKeys.map((k) => at(localeFile(locale), k));
+            if (JSON.stringify(shown) !== JSON.stringify(want)) offenders.push(`RF-4: ${locale} shows ${shown.join(' · ')}, not ${want.join(' · ')}`);
+        }
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+
+    it('draws no action and no bio', async () => {
+        const offenders: string[] = [];
+        for (const locale of CARD_LOCALES) {
+            const html = (await card(locale)).replace(/<style>[\s\S]*?<\/style>/, '');
+            const m = localeFile(locale);
+            const actions = ['about.cv', ...ABOUT.socials.map((x: any) => x.labelKey)].map((k) => at(m, k));
+            if (actions.some((x) => typeof x !== 'string')) offenders.push(`RF-5: ${locale} lacks an action label to check against`);
+            for (const label of actions) if (html.includes(`>${label}<`)) offenders.push(`RF-5: ${locale} draws "${label}"`);
+            const bio = (ABOUT.bio as any)[locale];
+            if (typeof bio === 'string' && html.includes(bio.slice(0, 40))) offenders.push(`RF-5: ${locale} draws the bio`);
+        }
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+
+    it('fails naming a phrase key a locale file lacks', async () => {
+        const { phrasesFor } = await import('../scripts/og-cover.ts');
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'og-locales-'));
+        fs.writeFileSync(path.join(dir, 'xx.json'), JSON.stringify({ about: { phrases: {} } }));
+        expect(() => phrasesFor('xx', dir)).toThrow(ABOUT.phraseKeys[0]);
+        fs.rmSync(dir, { recursive: true, force: true });
+    });
+});
+
+describe('the og-cover avatar (spec 033 RF-1, RF-7)', () => {
+    const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 9, 8, 7]);
+
+    it('asks ABOUT.avatar once and embeds its bytes', async () => {
+        const { fetchAvatar } = await import('../scripts/og-cover.ts');
+        const asked: string[] = [];
+        const url = await fetchAvatar(ABOUT.avatar, (async (u: any) => { asked.push(String(u)); return new Response(png, { headers: { 'Content-Type': 'image/png' } }); }) as any);
+        expect(asked).toEqual([ABOUT.avatar]);
+        expect(url).toBe(`data:image/png;base64,${Buffer.from(png).toString('base64')}`);
+    });
+
+    it('rejects a failed answer and one that is not an image', async () => {
+        const { fetchAvatar } = await import('../scripts/og-cover.ts');
+        await expect(fetchAvatar(ABOUT.avatar, (async () => new Response('', { status: 404 })) as any)).rejects.toThrow();
+        await expect(fetchAvatar(ABOUT.avatar, (async () => new Response('<html>', { headers: { 'Content-Type': 'text/html' } })) as any)).rejects.toThrow();
+    });
+
+    it('leaves every committed card untouched when the avatar cannot be fetched', async () => {
+        const { main } = await import('../scripts/og-cover.ts');
+        // A copy of what the generator reads, so a broken generator can never overwrite the real cards.
+        const root = fs.mkdtempSync(path.join(os.tmpdir(), 'og-root-'));
+        for (const dir of ['public/styles', 'public/fonts', 'i18n/locales']) fs.cpSync(path.join(ROOT, dir), path.join(root, dir), { recursive: true });
+        for (const card of OG_COVERS) fs.copyFileSync(path.join(PUBLIC_DIR, card), path.join(root, 'public', card));
+        const snapshot = () => fs.readdirSync(path.join(root, 'public')).filter((f) => f.startsWith('og-cover')).map((f) => [f, createHash('sha1').update(fs.readFileSync(path.join(root, 'public', f))).digest('hex')].join(':')).sort();
+        const before = snapshot();
+        try {
+            for (const answer of [() => new Response('', { status: 500 }), () => new Response('<html>', { headers: { 'Content-Type': 'text/html' } })]) {
+                vi.stubGlobal('fetch', async () => answer());
+                await expect(main(root)).rejects.toThrow();
+                vi.unstubAllGlobals();
+            }
+            expect(before.length, 'the copy holds no card to compare').toBe(OG_COVERS.length);
+            expect(snapshot()).toEqual(before);
+        } finally {
+            vi.unstubAllGlobals();
+            fs.rmSync(root, { recursive: true, force: true });
+        }
+    }, 30_000);
+});
+
+describe('the og-cover generator spells out no colour (spec 033 RF-6)', () => {
+    // A source check on purpose (constitution 8): the AGENTS rule is about what the author types.
+    it('holds no hex, rgb() or hsl() literal', () => {
+        const src = stripComments(fs.readFileSync(GENERATOR, 'utf-8'));
+        const literals = src.match(/#[0-9a-f]{3,8}\b|\brgba?\(|\bhsla?\(/gi) ?? [];
+        expect(literals).toEqual([]);
     });
 });

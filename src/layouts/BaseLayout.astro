@@ -25,7 +25,7 @@ const {
 } = Astro.props as Props;
 
 const site       = 'https://portfolio-dext.vercel.app';
-const image      = `${site}/og-cover.png`;
+const image      = `${site}/og-cover-${locale}.png`;
 const canonical  = `${site}${Astro.url.pathname}`;
 const htmlLang   = locale === 'es' ? 'es-CR' : 'en-US';
 const siteName   = `${ABOUT.name} - Portfolio`;
