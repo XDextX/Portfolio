@@ -12,47 +12,58 @@ import LanguageBadge from '@components/LanguageBadge.astro';
 const { name } = Astro.params;
 const locale = applyLocale(Astro);
 
-const repository = await fetch(
-	`${Astro.url.origin}/api/v1/projects/${name}.json`
-);
-if (!repository.ok) {
-	return Astro.redirect('/404');
+// Spec 021: a missing project is a 404 at its own URL; anything else that fails is a 503, never
+// "this project does not exist". Spec 023 replaces the call to the project route.
+let repo: GitHubRepo | null = null;
+try {
+	const repository = await fetch(`${Astro.url.origin}/api/v1/projects/${name}.json`);
+	// The query carries ?lang=; a bare '/404' rendered the not-found page in Spanish for English.
+	if (repository.status === 404) return Astro.rewrite(`/404${Astro.url.search}`);
+	if (repository.ok) repo = (await repository.json()) as GitHubRepo;
+} catch {
+	// network failure: the unavailable state below
 }
+if (!repo) Astro.response.status = 503;
 
-const repo = (await repository.json()) as GitHubRepo;
+const view = repo && (() => {
+	const intlLocale = locale === 'es' ? 'es-CR' : 'en-US';
+	const title = `${repo.name} - ${t('projects.title')}`;
+	// One resolution, three readers: the paragraph below, the layout's description
+	// and the entity. `lang` stays out of the entity — its `N/A` is a badge label,
+	// not a language (RF-7).
+	const desc = projectDescription(repo, t('project.meta.noDescription'));
+	const lang = repo.language ?? 'N/A';
+	const hasDemo = !!repo.homepage && String(repo.homepage).trim() !== '';
+	const topics: string[] = Array.isArray(repo.topics) ? repo.topics : [];
+	const updated = new Date(repo.updated_at);
+	const fmtDate = new Intl.DateTimeFormat(intlLocale, { dateStyle: 'medium' });
+	const fmtNum = new Intl.NumberFormat(intlLocale);
+	const starsLabel = t('project.meta.starsLabel', {
+		count: fmtNum.format(repo.stargazers_count),
+	});
+	const forksLabel = t('project.meta.forksLabel', {
+		count: fmtNum.format(repo.forks_count),
+	});
 
-const intlLocale = locale === 'es' ? 'es-CR' : 'en-US';
-const title = `${repo.name} - ${t('projects.title')}`;
-// One resolution, three readers: the paragraph below, the layout's description
-// and the entity. `lang` stays out of the entity — its `N/A` is a badge label,
-// not a language (RF-7).
-const desc = projectDescription(repo, t('project.meta.noDescription'));
-const lang = repo.language ?? 'N/A';
-const hasDemo = !!repo.homepage && String(repo.homepage).trim() !== '';
-const topics: string[] = Array.isArray(repo.topics) ? repo.topics : [];
-const updated = new Date(repo.updated_at);
-const fmtDate = new Intl.DateTimeFormat(intlLocale, { dateStyle: 'medium' });
-const fmtNum = new Intl.NumberFormat(intlLocale);
-const starsLabel = t('project.meta.starsLabel', {
-	count: fmtNum.format(repo.stargazers_count),
-});
-const forksLabel = t('project.meta.forksLabel', {
-	count: fmtNum.format(repo.forks_count),
-});
+	const directions = [
+		{ label: t('nav.home'), href: '/' },
+		{ label: t('nav.projects'), href: '/proyectos' },
+		{ label: repo.name, href: `/proyectos/${repo.name}` },
+	];
 
-const directions = [
-	{ label: t('nav.home'), href: '/' },
-	{ label: t('nav.projects'), href: '/proyectos' },
-	{ label: repo.name, href: `/proyectos/${repo.name}` },
-];
-
-const jsonLd = projectEntity({
-	repo,
-	url: `${Astro.url.origin}/proyectos/${repo.name}`,
-	description: desc,
-});
+	const jsonLd = projectEntity({
+		repo,
+		url: `${Astro.url.origin}/proyectos/${repo.name}`,
+		description: desc,
+	});
+	return { title, desc, lang, hasDemo, topics, updated, fmtDate, starsLabel, forksLabel, directions, jsonLd };
+})();
+const { title, desc, lang, hasDemo, topics, updated, fmtDate, starsLabel, forksLabel, directions, jsonLd } =
+	view ?? ({} as Record<string, never>);
 ---
 
+{
+	repo ? (
 <BaseLayout title={title} description={desc} jsonLd={jsonLd} locale={locale}>
 	<section class='wrap'>
 		<Breadcrumbs directions={directions} />
@@ -144,77 +155,99 @@ const jsonLd = projectEntity({
 			</section>
 		</header>
 	</section>
-
-	<style>
-		.back-btn {
-			display: inline-flex;
-			align-items: center;
-			gap: 0.4rem;
-			margin-block: 0.75rem;
-			font-size: var(--fs-sm);
-		}
-
-		.hero__top {
-			align-items: center;
-			gap: 0.75rem;
-			margin: 1rem 0;
-		}
-
-		.grid {
-			display: grid;
-			grid-template-columns: 320px 1fr;
-			gap: 1rem;
-			align-items: start;
-			min-height: 60vh;
-		}
-
-		.sidebar {
-			position: sticky;
-			top: 1rem;
-		}
-
-		.readme {
-			overflow: auto;
-			max-height: calc(70vh - 2rem);
-			padding-right: 0.25rem;
-		}
-
-		.dot {
-			width: 6px;
-			height: 6px;
-			border-radius: 50%;
-			background: hsl(220 30% 60%);
-			display: inline-block;
-		}
-
-		.updated {
-			white-space: nowrap;
-		}
-
-		.topics {
-			display: flex;
-			gap: 0.5rem;
-			flex-wrap: wrap;
-			margin-top: 0.9rem;
-		}
-
-		.actions {
-			display: flex;
-			gap: 0.6rem;
-			margin-top: 1rem;
-			flex-wrap: wrap;
-		}
-
-		@media (max-width: 900px) {
-			.grid {
-				grid-template-columns: 1fr;
-			}
-			.sidebar {
-				position: static;
-			}
-			.readme {
-				max-height: none;
-			}
-		}
-	</style>
 </BaseLayout>
+	) : (
+		<BaseLayout
+			title={`${t('project.unavailable.title')} - Portfolio`}
+			description={t('project.unavailable.message')}
+			locale={locale}
+		>
+			<section class='wrap'>
+				<a class='btn ghost back-btn' href='/proyectos'>
+					<span aria-hidden='true'>←</span>
+					{t('nav.back')}
+				</a>
+				<h1 class='title'>{t('project.unavailable.title')}</h1>
+				<p class='unavailable'>{t('project.unavailable.message')}</p>
+			</section>
+		</BaseLayout>
+	)
+}
+
+<style>
+	.back-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		margin-block: 0.75rem;
+		font-size: var(--fs-sm);
+	}
+
+	.hero__top {
+		align-items: center;
+		gap: 0.75rem;
+		margin: 1rem 0;
+	}
+
+	.grid {
+		display: grid;
+		grid-template-columns: 320px 1fr;
+		gap: 1rem;
+		align-items: start;
+		min-height: 60vh;
+	}
+
+	.sidebar {
+		position: sticky;
+		top: 1rem;
+	}
+
+	.readme {
+		overflow: auto;
+		max-height: calc(70vh - 2rem);
+		padding-right: 0.25rem;
+	}
+
+	.dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: hsl(220 30% 60%);
+		display: inline-block;
+	}
+
+	.updated {
+		white-space: nowrap;
+	}
+
+	.topics {
+		display: flex;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+		margin-top: 0.9rem;
+	}
+
+	.actions {
+		display: flex;
+		gap: 0.6rem;
+		margin-top: 1rem;
+		flex-wrap: wrap;
+	}
+
+	@media (max-width: 900px) {
+		.grid {
+			grid-template-columns: 1fr;
+		}
+		.sidebar {
+			position: static;
+		}
+		.readme {
+			max-height: none;
+		}
+	}
+
+	.unavailable {
+		margin: 0;
+		max-width: var(--measure);
+	}
+</style>

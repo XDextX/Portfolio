@@ -1,6 +1,7 @@
 import type { GitHubRepo } from "@type/github";
 
-const USER = import.meta.env.GITHUB_USERNAME || "XDextX";
+/** The GitHub user whose repositories the site shows; the one place that names it (spec 021). */
+export const USER = import.meta.env.GITHUB_USERNAME || "XDextX";
 const TOKEN = import.meta.env.GITHUB_TOKEN; // opcional
 
 const baseHeaders: Record<string, string> = {
@@ -27,7 +28,15 @@ export async function ghListByTopic({ topic = "", per_page = 50 }: { topic: stri
     return items;
 }
 
-export async function ghRepo({ user, name }: { user: string; name: string }): Promise<GitHubRepo | null> {
+/**
+ * Whether a login is the configured user; GitHub logins are case-insensitive (spec 021 D-4).
+ * @param login a repository owner as it arrived @returns true for the configured user
+ */
+export function isOwner(login: string): boolean {
+    return login.toLowerCase() === USER.toLowerCase();
+}
+
+export async function ghRepo({ user = USER, name }: { user?: string; name: string }): Promise<GitHubRepo | null> {
     const r = await fetch(`https://api.github.com/repos/${user}/${name}`, { headers: baseHeaders });
     if (r.status === 404) return null;
     if (!r.ok) throw new Error(`GitHub error ${r.status}`);

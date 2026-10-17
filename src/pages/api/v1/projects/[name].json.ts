@@ -10,7 +10,7 @@ export const GET: APIRoute = async ({ params }) => {
         if (data && Date.now() - data.at < TTL_MS) {
             return new Response(JSON.stringify(data.data), { headers: { "Content-Type": "application/json" } });
         }
-        const repo = await ghRepo({ user: "XDextX", name });
+        const repo = await ghRepo({ name });
         if (!repo) return new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
         cache[name] = { data: repo, at: Date.now() };
         return new Response(JSON.stringify(repo), { headers: { "Content-Type": "application/json" } });

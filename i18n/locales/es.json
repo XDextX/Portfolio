@@ -26,6 +26,10 @@
 		"license": "Licencia:",
 		"readme": {
 			"missing": "Este repositorio no tiene README."
+		},
+		"unavailable": {
+			"title": "Proyecto no disponible",
+			"message": "GitHub no responde ahora mismo. Inténtalo de nuevo en unos minutos."
 		}
 	},
 	"projects": {

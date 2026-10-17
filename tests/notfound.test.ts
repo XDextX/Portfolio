@@ -16,9 +16,10 @@ describe('404 route', () => {
         expect(stat.isFile()).toBe(true);
     });
 
-    it('the redirect target matches the page that exists', async () => {
+    // Spec 021 rewrites instead of redirecting (a 302 hid the 404); the target must still exist.
+    it('the not-found target matches the page that exists', async () => {
         const detail = await read('src', 'pages', 'proyectos', '[name].astro');
-        const redirect = detail.match(/Astro\.redirect\(['"]([^'"]+)['"]\)/)?.[1];
+        const redirect = detail.match(/Astro\.rewrite\(\s*[`'"](\/[\w-]+)/)?.[1];
 
         expect(redirect).toBe('/404');
 

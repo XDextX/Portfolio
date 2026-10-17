@@ -1,6 +1,6 @@
 // src/pages/api/v1/projects/readme/[owner]/[name].ts
 import type { APIRoute } from "astro";
-import { ghRepoReadme } from "@lib/github";
+import { ghRepoReadme, isOwner } from "@lib/github";
 
 type CacheEntry = { data: string; at: number };
 const cache: Record<string, CacheEntry> = {};
@@ -14,6 +14,14 @@ export const GET: APIRoute = async ({ params }) => {
             return new Response(
                 JSON.stringify({ error: "Missing params: owner/name" }),
                 { status: 400, headers: { "Content-Type": "application/json" } }
+            );
+        }
+
+        // Spec 021: only the configured user's READMEs; any other owner spent the token quota.
+        if (!isOwner(owner)) {
+            return new Response(
+                JSON.stringify({ error: "README not found" }),
+                { status: 404, headers: { "Content-Type": "application/json" } }
             );
         }
 
