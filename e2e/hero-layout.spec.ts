@@ -58,3 +58,17 @@ for (const locale of ['es', 'en']) {
         expect(offenders, offenders.join('\n')).toEqual([]);
     });
 }
+
+for (const theme of THEMES) {
+    test(`tile and role line — ${theme} (RF-1, RF-2)`, async ({ page }) => {
+        await open(page, 1280, theme);
+        const r = await readHero(page);
+        const offenders: string[] = [];
+        if (!(r.border.width >= 1 && r.border.style !== 'none' && r.border.colour === r.borderToken)) offenders.push(`RF-1: the tile border is ${r.border.width}px ${r.border.style} ${r.border.colour}, not --color-border`);
+        if (!(r.padding > 0)) offenders.push('RF-1: the tile has no padding around the image');
+        if (Math.abs(r.tile!.t - r.name!.t) > 4) offenders.push(`RF-1: the tile's top ${r.tile!.t.toFixed(0)} is not level with the name's ${r.name!.t.toFixed(0)}`);
+        if (!r.img || r.img.w > 140 || r.img.h > 140) offenders.push(`RF-1: the image is ${r.img?.w.toFixed(0)}×${r.img?.h.toFixed(0)}`);
+        if (r.job !== r.base || r.location !== r.base) offenders.push(`RF-2: role ${r.job}, location ${r.location}, not ${r.base}`);
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+}

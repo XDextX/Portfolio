@@ -86,15 +86,20 @@ const { given, family } = ABOUT.nameParts;
 <style>
 	.about-grid {
 		display: grid;
-		grid-template-columns: 180px 1fr;
-		align-items: center;
+		grid-template-columns: 160px 1fr;
+		align-items: start;
 		gap: 2rem;
 	}
 
-	/* Avatar column */
+	/* The avatar in a framed tile, top-aligned with the name, as the proposal draws it (spec 035). */
 	.about-avatar {
-		width: 180px;
-		height: 180px;
+		width: 160px;
+		height: 160px;
+		box-sizing: border-box;
+		padding: var(--sp-3);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background: var(--card-background);
 	}
 
 	/* Content column */
@@ -137,7 +142,7 @@ const { given, family } = ABOUT.nameParts;
 	}
 
 	.about-job {
-		font-size: var(--fs-sm);
+		font-size: var(--fs-base);
 		font-weight: 700;
 		color: var(--text-color);
 	}
@@ -146,7 +151,7 @@ const { given, family } = ABOUT.nameParts;
 		display: inline-flex;
 		align-items: center;
 		gap: 0.3rem;
-		font-size: var(--fs-sm);
+		font-size: var(--fs-base);
 		color: var(--neutral-600);
 	}
 
