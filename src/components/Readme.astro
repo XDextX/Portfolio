@@ -1,6 +1,7 @@
 ---
 import type { GitHubRepo } from '@type/github';
 import { t } from '@i18n/index';
+import { getReadme } from '@lib/github';
 
 interface Props {
 	repo: GitHubRepo;
@@ -16,11 +17,9 @@ let readmeText = '';
 let available = false;
 
 try {
-	const res = await fetch(
-		`${Astro.url.origin}/api/v1/projects/readme/${repo.owner.login}/${repo.name}/readme.json`
-	);
-	if (res.ok) {
-		readmeText = await res.text();
+	const html = await getReadme(repo.owner.login, repo.name);
+	if (html !== null) {
+		readmeText = html;
 		available = true;
 	}
 } catch {

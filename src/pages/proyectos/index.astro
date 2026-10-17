@@ -6,26 +6,16 @@ import { t } from '@i18n/index';
 import { SECTION_TITLES } from '../../data/sectionTitles';
 import type { GitHubRepo } from '@type/github';
 import { applyLocale } from '@utils/locale';
-import { sortRepos } from '@lib/github';
+import { listRepos, sortRepos } from '@lib/github';
 
 const locale = applyLocale(Astro);
 const topic = (import.meta.env.GITHUB_TOPIC ?? '').trim();
-const apiUrl = new URL('/api/github-list.json', Astro.url);
 
 let repos: GitHubRepo[] = [];
 let fetchError: string | null = null;
 
 try {
-	const response = await fetch(apiUrl);
-	if (!response.ok) {
-		throw new Error(`Request failed with status ${response.status}`);
-	}
-	const payload = await response.json();
-	const items: GitHubRepo[] = Array.isArray(payload)
-		? payload
-		: Array.isArray(payload?.items)
-			? payload.items
-			: [];
+	const items = await listRepos();
 
 	const filtered = topic
 		? items.filter(

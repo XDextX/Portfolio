@@ -6,6 +6,7 @@ import { t } from '@i18n/index';
 import Readme from '@components/Readme.astro';
 import type { GitHubRepo } from '@type/github';
 import { applyLocale } from '@utils/locale';
+import { getRepo } from '@lib/github';
 import { projectDescription, projectEntity } from '@utils/seo';
 import LanguageBadge from '@components/LanguageBadge.astro';
 
@@ -13,15 +14,14 @@ const { name } = Astro.params;
 const locale = applyLocale(Astro);
 
 // Spec 021: a missing project is a 404 at its own URL; anything else that fails is a 503, never
-// "this project does not exist". Spec 023 replaces the call to the project route.
+// "this project does not exist".
 let repo: GitHubRepo | null = null;
 try {
-	const repository = await fetch(`${Astro.url.origin}/api/v1/projects/${name}.json`);
+	repo = await getRepo(name!);
 	// The query carries ?lang=; a bare '/404' rendered the not-found page in Spanish for English.
-	if (repository.status === 404) return Astro.rewrite(`/404${Astro.url.search}`);
-	if (repository.ok) repo = (await repository.json()) as GitHubRepo;
+	if (repo === null) return Astro.rewrite(`/404${Astro.url.search}`);
 } catch {
-	// network failure: the unavailable state below
+	// GitHub failed: the unavailable state below
 }
 if (!repo) Astro.response.status = 503;
 

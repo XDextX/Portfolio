@@ -7,6 +7,7 @@ import ProjectPage from '../src/pages/proyectos/[name].astro';
 import { setLocale, t } from '@i18n/index';
 import * as tech from '../src/data/tech';
 import { buildRepo, mockTextResponse } from './helpers/github-mocks';
+import { clearGitHubCache } from '../src/pages/lib/github';
 
 /**
  * Spec 014: the project card, rendered through Astro's Container API (D-1) so the cases
@@ -81,8 +82,10 @@ describe('project card, rendered (spec 014 RF-3, RF-5, RF-6, RF-7, RF-8)', () =>
         for (const locale of LOCALES) {
             for (const description of [null, '', '   ', ' Text ']) {
                 const repo = buildRepo({ name: 'fixture', description } as any);
+                // GitHub's repo URL (the page reads it in process, spec 023); the README is absent.
                 vi.stubGlobal('fetch', async (url: string) =>
-                    String(url).includes('/api/v1/projects/') ? mockTextResponse(JSON.stringify(repo)) : mockTextResponse('', 404));
+                    /\/repos\/[^/]+\/fixture$/.test(String(url)) ? mockTextResponse(JSON.stringify(repo)) : mockTextResponse('', 404));
+                clearGitHubCache();
                 setLocale(locale);
                 const page = await container.renderToString(ProjectPage, {
                     params: { name: 'fixture' },

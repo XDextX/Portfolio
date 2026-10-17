@@ -1,69 +1,24 @@
-// src/pages/api/v1/projects/readme/[owner]/[name].ts
 import type { APIRoute } from "astro";
-import { ghRepoReadme, isOwner } from "@lib/github";
+import { getReadme } from "@lib/github";
 
-type CacheEntry = { data: string; at: number };
-const cache: Record<string, CacheEntry> = {};
-const TTL_MS = 30 * 60 * 1000; // 30 min
+const MAX_AGE_S = 30 * 60;
+const json = (body: object, status: number) =>
+    new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 
+// A configured repository's README as GitHub renders it; another owner is a 404 before any
+// request (spec 021), and the cache is github.ts's, shared with the pages (spec 023).
 export const GET: APIRoute = async ({ params }) => {
     try {
         const owner = String(params.owner || "");
         const name = String(params.name || "");
-        if (!owner || !name) {
-            return new Response(
-                JSON.stringify({ error: "Missing params: owner/name" }),
-                { status: 400, headers: { "Content-Type": "application/json" } }
-            );
-        }
-
-        // Spec 021: only the configured user's READMEs; any other owner spent the token quota.
-        if (!isOwner(owner)) {
-            return new Response(
-                JSON.stringify({ error: "README not found" }),
-                { status: 404, headers: { "Content-Type": "application/json" } }
-            );
-        }
-
-        const key = `${owner}/${name}`;
-        const entry = cache[key];
-
-        // Cache HIT
-        if (entry && Date.now() - entry.at < TTL_MS) {
-            return new Response(entry.data, {
-                status: 200,
-                headers: {
-                    "Content-Type": "text/html; charset=utf-8",
-                    "Cache-Control": `public, max-age=${TTL_MS / 1000}`,
-                    "X-Cache": "HIT",
-                },
-            });
-        }
-
-        // Fetch desde GitHub
-        const readme = await ghRepoReadme({ user: owner, name });
-        if (readme === null) {
-            return new Response(
-                JSON.stringify({ error: "README not found" }),
-                { status: 404, headers: { "Content-Type": "application/json" } }
-            );
-        }
-
-        // Guardar en caché (MISS)
-        cache[key] = { data: readme, at: Date.now() };
-
+        if (!owner || !name) return json({ error: "Missing params: owner/name" }, 400);
+        const readme = await getReadme(owner, name);
+        if (readme === null) return json({ error: "README not found" }, 404);
         return new Response(readme, {
             status: 200,
-            headers: {
-                "Content-Type": "text/html; charset=utf-8",
-                "Cache-Control": `public, max-age=${TTL_MS / 1000}`,
-                "X-Cache": "MISS",
-            },
+            headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": `public, max-age=${MAX_AGE_S}` },
         });
     } catch (e: any) {
-        return new Response(
-            JSON.stringify({ error: "Unexpected error", detail: String(e) }),
-            { status: 500, headers: { "Content-Type": "application/json" } }
-        );
+        return json({ error: "Unexpected error", detail: String(e) }, 500);
     }
 };

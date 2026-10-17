@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { listRepos } from "./lib/github";
 
 const SITE = "https://portfolio-dext.vercel.app";
 const TTL_MS = 30 * 60 * 1000;
@@ -31,23 +32,13 @@ export const GET: APIRoute = async ({ site }) => {
     // If the repo listing fails the sitemap is still valid with the static
     // routes: a dead API must not turn this into a 500.
     try {
-        const res = await fetch(new URL("/api/github-list.json", site ?? origin));
-        if (res.ok) {
-            const payload = await res.json();
-            const repos: Array<{ name?: string }> = Array.isArray(payload)
-                ? payload
-                : Array.isArray(payload?.items)
-                    ? payload.items
-                    : [];
-
-            for (const repo of repos) {
-                if (!repo?.name) continue;
-                urls.push({
-                    loc: `${origin}/proyectos/${encodeURIComponent(repo.name)}`,
-                    changefreq: "monthly",
-                    priority: "0.7",
-                });
-            }
+        for (const repo of await listRepos()) {
+            if (!repo?.name) continue;
+            urls.push({
+                loc: `${origin}/proyectos/${encodeURIComponent(repo.name)}`,
+                changefreq: "monthly",
+                priority: "0.7",
+            });
         }
     } catch {
         // no project detail; emit the static routes only

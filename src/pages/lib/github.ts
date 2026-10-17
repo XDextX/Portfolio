@@ -58,6 +58,57 @@ export async function ghRepoReadme({ user, name }: { user: string; name: string 
     return response;
 }
 
+// Spec 023: one cache for pages and API routes, so a page no longer calls its own API over HTTP.
+const TTL_MS = 30 * 60 * 1000;
+const memo = new Map<string, { at: number; value: unknown }>();
+
+/**
+ * A read answered from memory for 30 minutes; a throw is not stored, so the next call retries.
+ * @param key what is asked @param now the caller's clock @param read the GitHub request
+ * @returns the cached or fresh value
+ */
+async function cached<T>(key: string, now: number, read: () => Promise<T>): Promise<T> {
+    const hit = memo.get(key);
+    if (hit && now - hit.at < TTL_MS) return hit.value as T;
+    const value = await read();
+    // Expired entries go on every write: absent names asked by a bot never pile up.
+    for (const [k, e] of memo) if (now - e.at >= TTL_MS) memo.delete(k);
+    memo.set(key, { at: now, value });
+    return value;
+}
+
+/**
+ * The configured user's repositories for the configured topic, cached.
+ * @param now the clock, a parameter for tests @returns the repositories, unsorted
+ */
+export function listRepos(now = Date.now()): Promise<GitHubRepo[]> {
+    const topic = import.meta.env.GITHUB_TOPIC ?? "";
+    return cached(`list:${topic}`, now, () => ghListByTopic({ topic }));
+}
+
+/**
+ * One of the configured user's repositories, cached; null when GitHub has none by that name.
+ * @param name the repository @param now the clock @returns the repository or null
+ */
+export function getRepo(name: string, now = Date.now()): Promise<GitHubRepo | null> {
+    return cached(`repo:${name}`, now, () => ghRepo({ name }));
+}
+
+/**
+ * A README rendered by GitHub, cached; null for another owner (spec 021) or no README.
+ * @param owner the repository owner as asked @param name the repository @param now the clock
+ * @returns the HTML or null
+ */
+export async function getReadme(owner: string, name: string, now = Date.now()): Promise<string | null> {
+    if (!isOwner(owner)) return null;
+    return cached(`readme:${name}`, now, () => ghRepoReadme({ user: USER, name }));
+}
+
+/** Empty the cache; tests only, so one case's answer never reaches the next. */
+export function clearGitHubCache(): void {
+    memo.clear();
+}
+
 /**
  * Order repos: stars desc, forks desc, has-demo first, then name asc so the
  * order is total and stable. Shared by / and /proyectos so a repo cannot land
