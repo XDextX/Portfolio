@@ -220,3 +220,28 @@ test.describe('experience timeline (spec 013)', () => {
         });
     }
 });
+
+// Spec 027: from 40rem the rail and dots run down the left edge, as in the proposal, with each
+// period beside its dot and the card after it (spec 013 had the period left of the rail).
+test.describe('timeline rail on the left (spec 027)', () => {
+    for (const width of [1280, 800]) {
+        test(`rail, then period, then card, the period level with its dot — ${width}px (RF-1, RF-2)`, async ({ page }) => {
+            await page.setViewportSize({ width, height: 900 });
+            await openIn(page, DEV_URL, 'light', '/?lang=es');
+            await page.locator('#Experience').scrollIntoViewIfNeeded();
+            const items = await page.locator('#Experience .exp-item').evaluateAll((els) => els.map((li) => {
+                const b = (s: string) => { const r = li.querySelector(s)!.getBoundingClientRect(); return { l: r.left, r: r.right, t: r.top, b: r.bottom }; };
+                return { dot: b('.exp-dot'), period: b('.exp-period'), card: b('.exp-card') };
+            }));
+            const offenders: string[] = [];
+            items.forEach(({ dot, period, card }, i) => {
+                if (dot.r > period.l) offenders.push(`RF-1: job ${i + 1}: the dot ends at ${dot.r.toFixed(0)}, past the period's start ${period.l.toFixed(0)}`);
+                if (period.r > card.l) offenders.push(`RF-1: job ${i + 1}: the period ends at ${period.r.toFixed(0)}, past the card's start ${card.l.toFixed(0)}`);
+                const cy = (dot.t + dot.b) / 2;
+                if (cy < period.t || cy > period.b) offenders.push(`RF-2: job ${i + 1}: the dot's centre ${cy.toFixed(0)} is outside the period ${period.t.toFixed(0)}–${period.b.toFixed(0)}`);
+            });
+            if (!items.length) offenders.push('RF-1: no timeline items found');
+            expect(offenders, offenders.join('\n')).toEqual([]);
+        });
+    }
+});

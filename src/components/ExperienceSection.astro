@@ -86,18 +86,20 @@ const last = EXPERIENCES.length - 1;
 		border-inline-start: 2px dotted var(--neutral-400);
 	}
 
-	/* From 40rem the period leaves the card for its own column, left of the rail. */
+	/* From 40rem the period leaves the card for its own column, between the rail and
+	   the card, as in the proposal (spec 027). It anchors to the card, which is
+	   positioned, so the offset is measured back from the card's own start. */
 	@media (min-width: 40rem) {
-		.exp-list {
-			padding-inline-start: var(--period-col);
+		.exp-item {
+			padding-inline-start: calc(var(--rail-col) + var(--period-col));
 		}
 
 		.exp-item :global(.exp-period) {
 			position: absolute;
-			inset-inline-end: calc(100% + var(--rail-col));
-			inline-size: var(--period-col);
+			inset-inline-end: calc(100% + var(--gap));
+			inline-size: calc(var(--period-col) - var(--gap));
 			top: 1.25rem;
-			text-align: end;
+			text-align: start;
 		}
 	}
 
