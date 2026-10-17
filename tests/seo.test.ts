@@ -827,11 +827,10 @@ describe('the package.json dependency sets (T-S3, RF-3)', () => {
         const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf-8'));
 
         expect(pkg.dependencies).toEqual({
-            '@astrojs/node': '^9.1.3',
+            '@astrojs/vercel': '^8.2.8',
             astro: '^5.5.5',
         });
         expect(pkg.devDependencies).toEqual({
-            '@astrojs/vercel': '^8.2.8',
             '@playwright/test': '^1.56.0',
             '@types/node': '^20.4.2',
             husky: '^9.1.7',
@@ -839,6 +838,16 @@ describe('the package.json dependency sets (T-S3, RF-3)', () => {
             // ^3.2: Vite 6, the one Astro 5 runs on, so .astro compiles in vitest (spec 014 D-1, owner OK).
             vitest: '^3.2.7',
         });
+    });
+
+    // Spec 024 RF-1. Source by necessity (constitution 8): the adapter choice lives only in the config.
+    it('the adapter the build configuration uses is a runtime dependency', () => {
+        const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf-8'));
+        const config = stripComments(fs.readFileSync(path.join(ROOT, 'astro.config.mjs'), 'utf-8'));
+        const binding = config.match(/adapter:\s*(\w+)\s*\(/)?.[1];
+        const module = binding && config.match(new RegExp(`import\\s+${binding}\\s+from\\s+['"]([^'"]+)['"]`))?.[1];
+        expect(module, 'no adapter import found in astro.config.mjs').toBeTruthy();
+        expect(Object.keys(pkg.dependencies), `${module} is not a runtime dependency`).toContain(module);
     });
 });
 
