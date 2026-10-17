@@ -47,17 +47,17 @@
     /* Error / alert text on the navy field. */
     --danger-color: #F2B8B5;
 
-    /* The bar tones do not work as text on dark (1.2-1.5:1).
-       Lighter variants: 8.6:1 / 7.4:1 / 7.9:1 */
-    --clr-beginner-text: #FBBF24;
-    --clr-intermediate-text: #7DA9F5;
-    --clr-advanced-text: #6EE7A8;
+    /* Level words on the card face, no pill (spec 026): 5.58 / 6.61 / 5.85 on
+       --card-background; the old blue text read 4.13 there. Green: the steps' tone. */
+    --clr-blue-text: #A8C5F7;
+    --clr-teal-text: #5EEAD4;
+    --clr-amber-text: #FBBF24;
+    --clr-green-text: #6EE7A8;
 
-    /* Bar fills vs the track: 3.72 / 3.72 / 3.72 — the raw tones give
-       3.33 / 1.94 / 3.13 here, so the blue fails 3:1 in this theme. */
-    --clr-beginner: #F6AD2E;
-    --clr-intermediate: #9DBCF5;
-    --clr-advanced: #34D399;
+    /* Bar fills vs the unlit segment: 3.72 / 3.84 / 3.72. */
+    --clr-blue: #9DBCF5;
+    --clr-teal: #2DD4BF;
+    --clr-amber: #F6AD2E;
 
     /* "Lo que construyo" steps only (AGENTS exception, spec 011): the navy card
        for all four, the tone alone tells them apart; each clears 5:1 on it. */
@@ -66,8 +66,8 @@
     --step-3-tint: var(--card-background);
     --step-4-tint: var(--card-background);
     --step-1-tone: var(--accent-text);
-    --step-2-tone: var(--clr-intermediate);
-    --step-3-tone: var(--clr-advanced-text);
+    --step-2-tone: var(--clr-blue);
+    --step-3-tone: var(--clr-green-text);
     --step-4-tone: #C7B5F7;
 
     /* Neutral scale — navy steps, so a chip, a track and a card all belong to

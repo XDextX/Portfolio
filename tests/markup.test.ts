@@ -260,28 +260,6 @@ describe('the health bar (spec 006)', () => {
         expect(offenders, offenders.join('\n')).toEqual([]);
     });
 
-    it('frames the bar square: 2px border, padding and gap, derived radius, no pill', () => {
-        // RF-5. The segment radius is the frame's minus its padding, written as
-        // that relationship (AGENTS.md, radius), so a square segment is derived.
-        const offenders: string[] = [];
-        const track = body('.bar-track');
-        const seg = body('.bar-seg');
-        if (!/--bar-pad\s*:\s*2px\s*;/.test(track)) offenders.push('.bar-track sets no --bar-pad: 2px');
-        if (!/(?:^|[\s;])border\s*:\s*2px\s+solid\s/.test(track)) offenders.push('.bar-track has no 2px solid border');
-        if (!/padding\s*:\s*var\(\s*--bar-pad\s*\)/.test(track)) offenders.push('.bar-track padding is not var(--bar-pad)');
-        if (!/(?:^|[\s;])gap\s*:\s*var\(\s*--bar-pad\s*\)/.test(track)) offenders.push('.bar-track gap is not var(--bar-pad)');
-        if (!/border-radius\s*:\s*var\(\s*--radius-xs\s*\)/.test(track)) offenders.push('.bar-track radius is not --radius-xs');
-        if (!/border-radius\s*:\s*calc\(\s*var\(\s*--radius-xs\s*\)\s*-\s*var\(\s*--bar-pad\s*\)\s*\)/.test(seg)) {
-            offenders.push('.bar-seg radius is not calc(var(--radius-xs) - var(--bar-pad))');
-        }
-        for (const r of rules()) {
-            if (/bar-(?:track|seg)/.test(r.selector) && /--radius-pill/.test(r.body)) {
-                offenders.push(`the pill radius is back on ${r.selector}`);
-            }
-        }
-        expect(offenders, offenders.join('\n')).toEqual([]);
-    });
-
     it('lights lit segments 120ms apart, 120ms each, and never animates an unlit one', () => {
         // RF-6. The delay is derived from each segment's own index, so no
         // segment carries a typed delay; an unlit segment matches no animation.
@@ -326,50 +304,9 @@ describe('the health bar (spec 006)', () => {
     });
 });
 
-describe('the skill rows per line (spec 006 RF-9)', () => {
-    it('fits two rows per line from a minimum derived from the row itself', () => {
-        // RF-9: the list's minimum row width is the row's own geometry summed —
-        // icon, gap, track floor, gap, badge maximum — so a change to the row
-        // moves the threshold with it. auto-fill keeps a lone row at half width.
-        const offenders: string[] = [];
-        const bar = cssRules(styleBlock(SKILL_BAR));
-        const list = cssRules(styleBlock(path.join(ROOT, 'src', 'components', 'TechGrid.astro')))
-            .find((r) => r.selector === '.bars-list')?.body ?? '';
-
-        const row = bar.find((r) => r.selector === '.bar-row')?.body ?? '';
-        const cols = row.match(/grid-template-columns\s*:\s*(\S+)\s+minmax\(\s*([^,\s]+)\s*,\s*1fr\s*\)/);
-        const gap = row.match(/(?:^|[\s;])gap\s*:\s*([^;\s]+)\s*;/)?.[1];
-        const badge = bar.find((r) => r.selector === '.level-tag')?.body.match(/max-width\s*:\s*([^;\s]+)\s*;/)?.[1];
-        if (!cols || !gap || !badge) offenders.push('the row geometry (icon, floor, gap, badge max) is not readable');
-
-        if (!/display\s*:\s*grid/.test(list)) offenders.push('.bars-list is not a grid');
-        const fill = list.match(
-            /grid-template-columns\s*:\s*repeat\(\s*(auto-fill|auto-fit)\s*,\s*minmax\(\s*min\(\s*calc\(([^)]*)\)\s*,\s*100%\s*\)\s*,\s*1fr\s*\)\s*\)/,
-        );
-        if (!fill) {
-            offenders.push('.bars-list columns are not repeat(auto-fill, minmax(min(calc(…), 100%), 1fr))');
-        } else {
-            if (fill[1] !== 'auto-fill') offenders.push(`${fill[1]} stretches a lone row; RF-9 keeps it at half width`);
-            if (cols && gap && badge) {
-                const terms = fill[2].split('+').map((t) => t.trim()).sort();
-                const expected = [cols[1], gap, cols[2], gap, badge].sort();
-                if (JSON.stringify(terms) !== JSON.stringify(expected)) {
-                    offenders.push(`the minimum is calc(${fill[2].trim()}), not the row's ${expected.join(' + ')}`);
-                }
-            }
-        }
-
-        expect(
-            offenders,
-            `Two rows share a line only when both keep the row's own minimum:\n  ` +
-            offenders.join('\n  '),
-        ).toEqual([]);
-    });
-});
-
 describe('the area cards per line (spec 006 RF-10)', () => {
     it('fits as many area cards as hold one minimum row with their own padding and border', () => {
-        // RF-10: a card's minimum is RF-9's row minimum plus .card-frame's padding
+        // RF-10: a card's minimum is one row's minimum plus .card-frame's padding
         // and border, summed, so changing the row or the card frame moves the
         // threshold with it instead of leaving a stale number behind.
         const offenders: string[] = [];
@@ -381,9 +318,13 @@ describe('the area cards per line (spec 006 RF-10)', () => {
                 .replace(/\/\*[\s\S]*?\*\//g, ' '),
         ).find((r) => r.selector === '.card-frame')?.body ?? '';
 
-        const row = bar.find((r) => r.selector === '.bar-row')?.body ?? '';
-        const cols = row.match(/grid-template-columns\s*:\s*(\S+)\s+minmax\(\s*([^,\s]+)\s*,\s*1fr\s*\)/);
-        const gap = row.match(/(?:^|[\s;])gap\s*:\s*([^;\s]+)\s*;/)?.[1];
+        // Spec 026: the columns live on .bars-list (the rows are its subgrids), and a
+        // name can shrink to nothing, so one row's minimum is logo, three gaps, the
+        // bar's floor and the level cap.
+        const list = cssRules(styleBlock(path.join(ROOT, 'src', 'components', 'TechGrid.astro')))
+            .find((r) => r.selector === '.bars-list')?.body ?? '';
+        const cols = list.match(/grid-template-columns\s*:\s*(\S+)\s+fit-content\([^)]*\)\s+minmax\(\s*([^,\s]+)\s*,\s*1fr\s*\)\s+max-content/);
+        const gap = list.match(/(?:^|[\s;])column-gap\s*:\s*([^;\s]+)\s*;/)?.[1];
         const badge = bar.find((r) => r.selector === '.level-tag')?.body.match(/max-width\s*:\s*([^;\s]+)\s*;/)?.[1];
         const pad = frame.match(/(?:^|[\s;])padding\s*:\s*([^;\s]+)\s*;/)?.[1];
         const border = frame.match(/(?:^|[\s;])border\s*:\s*(\d+(?:\.\d+)?px)\s/)?.[1];
@@ -399,7 +340,7 @@ describe('the area cards per line (spec 006 RF-10)', () => {
             offenders.push(`.bars-grid uses ${fit[1]}; RF-10 is auto-fit`);
         } else if (cols && gap && badge && pad && border) {
             const terms = fit[2].split('+').map((t) => t.trim()).sort();
-            const expected = [cols[1], gap, cols[2], gap, badge, pad, pad, border, border].sort();
+            const expected = [cols[1], gap, gap, gap, cols[2], badge, pad, pad, border, border].sort();
             if (JSON.stringify(terms) !== JSON.stringify(expected)) {
                 offenders.push(`the card minimum is calc(${fit[2].trim()}), not ${expected.join(' + ')}`);
             }

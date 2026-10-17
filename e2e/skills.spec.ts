@@ -322,3 +322,61 @@ test.describe('skills (spec 012)', () => {
         expect(shown, `RF-14: with scripts off the indicators read ${shown.join(', ')}`).toEqual(['bars:shown', 'list:hidden']);
     });
 });
+
+// Spec 026: each bars-view row on one line like the proposal — logo, name, bar, level word — with
+// the bars of a card aligned, three rounded segments and no frame, and the label as plain text.
+test.describe('skill rows (spec 026)', () => {
+    const scale = ['beginner', 'intermediate', 'advanced'];
+    const stepOf = (name: string) => scale.indexOf(data.TECH.find((t: any) => t.name === name)?.level ?? 'beginner') + 1;
+
+    for (const width of [1280, 360]) {
+        test(`one line per skill, aligned bars, rounded segments, plain label — ${width}px (RF-1, RF-2, RF-3, RF-5)`, async ({ page }) => {
+            await page.setViewportSize({ width, height: 900 });
+            await openIn(page, DEV_URL, 'light', '/?lang=es');
+            await page.locator(`${SECTION} .bar-row`).first().scrollIntoViewIfNeeded();
+            await page.waitForTimeout(800);
+            const r = await page.evaluate((sel) => {
+                const box = (e: Element | null) => { const b = e!.getBoundingClientRect(); return { x: b.x, top: b.top, bottom: b.bottom, width: b.width }; };
+                const cards = [...document.querySelectorAll(`${sel} [data-panel='bars'] .card-frame`)].map((card) => [...card.querySelectorAll('.bar-row')].map((row) => {
+                    const track = row.querySelector('.bar-track');
+                    const segs = [...row.querySelectorAll('.bar-seg')];
+                    const tag = row.querySelector('.level-tag');
+                    return {
+                        name: row.querySelector('.bar-name')?.textContent?.trim() ?? '',
+                        parts: ['.bar-logo', '.bar-name', '.bar-track', '.level-tag'].map((s) => box(row.querySelector(s))),
+                        track: box(track),
+                        trackBorder: getComputedStyle(track!).borderTopWidth,
+                        lit: segs.map((s) => s.classList.contains('lit')),
+                        rounded: segs.every((s) => parseFloat(getComputedStyle(s).borderTopLeftRadius) >= s.getBoundingClientRect().height / 2),
+                        tagBg: getComputedStyle(tag!).backgroundColor,
+                    };
+                }));
+                return { cards, scroll: document.documentElement.scrollWidth - document.documentElement.clientWidth };
+            }, SECTION);
+            const offenders: string[] = [];
+            for (const rows of r.cards) {
+                for (const row of rows) {
+                    const top = Math.max(...row.parts.map((p) => p.top));
+                    const bottom = Math.min(...row.parts.map((p) => p.bottom));
+                    if (top >= bottom) offenders.push(`RF-1: ${row.name}: logo, name, bar and level are not on one line`);
+                    const xs = row.parts.map((p) => p.x);
+                    if (xs.some((x, i) => i && x <= xs[i - 1])) offenders.push(`RF-1: ${row.name}: parts out of order (${xs.map((x) => Math.round(x)).join(' < ')})`);
+                    if (row.lit.length !== scale.length) offenders.push(`RF-3: ${row.name}: ${row.lit.length} segments for a ${scale.length}-level scale`);
+                    const step = stepOf(row.name);
+                    if (JSON.stringify(row.lit) !== JSON.stringify(scale.map((_, i) => i < step))) offenders.push(`RF-3: ${row.name}: lit [${row.lit}], expected the leftmost ${step}`);
+                    if (!row.rounded) offenders.push(`RF-3: ${row.name}: a segment's radius is under half its height`);
+                    if (row.trackBorder !== '0px') offenders.push(`RF-3: ${row.name}: the bar draws a ${row.trackBorder} border`);
+                    if (!/rgba\(0, 0, 0, 0\)|transparent/.test(row.tagBg)) offenders.push(`RF-5: ${row.name}: the level label paints ${row.tagBg}`);
+                }
+                const [first, ...rest] = rows;
+                for (const row of rest) {
+                    if (Math.abs(row.track.x - first.track.x) > 1 || Math.abs(row.track.width - first.track.width) > 1) {
+                        offenders.push(`RF-2: ${row.name}'s bar at ${Math.round(row.track.x)}+${Math.round(row.track.width)}, ${first.name}'s at ${Math.round(first.track.x)}+${Math.round(first.track.width)}`);
+                    }
+                }
+            }
+            if (r.scroll > 0) offenders.push(`RF-1: ${r.scroll}px of page scroll at ${width}px`);
+            expect(offenders, offenders.join('\n')).toEqual([]);
+        });
+    }
+});

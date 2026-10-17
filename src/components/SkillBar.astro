@@ -11,7 +11,7 @@ export interface Props {
 }
 
 /**
- * One bars-view skill row: logo, name over track, level badge.
+ * One bars-view skill row on one line, as in the design proposal: logo, name, bar, level word.
  * @param name tech name shown above the track; logo its original logo (spec 012).
  * @param level drives fill and label.
  */
@@ -30,25 +30,23 @@ const label     = levelLabelMap[locale][level];
 
 <li class='bar-row'>
 	<span class='bar-logo' aria-hidden='true'><SkillLogo logo={logo} size={22} /></span>
-	<div class='bar-main'>
-		<span class='bar-name'>{name}</span>
-		<div class='bar-track' aria-hidden='true' style={`--clr:${color};--segments:${LEVEL_SCALE.length}`}>
-			{segmentsFor(level).map((lit, i) => (
-				<span class:list={['bar-seg', { lit }]} style={`--i:${i}`}></span>
-			))}
-		</div>
+	<span class='bar-name'>{name}</span>
+	<div class='bar-track' aria-hidden='true' style={`--clr:${color};--segments:${LEVEL_SCALE.length}`}>
+		{segmentsFor(level).map((lit, i) => (
+			<span class:list={['bar-seg', { lit }]} style={`--i:${i}`}></span>
+		))}
 	</div>
 	<span class='level-tag' style={`color:${textColor}`}>{label}</span>
 </li>
 
 <style>
-	/* Icon and level are fixed; the middle column is minmax(60px, 1fr), so a
-	   long name ellipsizes instead of squeezing the track below its floor. */
+	/* The row takes its four columns from the list (spec 026), so every bar in a
+	   card starts at the same x whatever the name and level beside it. */
 	.bar-row {
+		grid-column: 1 / -1;
 		display: grid;
-		grid-template-columns: 22px minmax(60px, 1fr) auto;
+		grid-template-columns: subgrid;
 		align-items: center;
-		gap: 0.6rem;
 	}
 
 	/* The 22px box is the slot, held here rather than by the logo arriving, so a
@@ -56,13 +54,6 @@ const label     = levelLabelMap[locale][level];
 	.bar-logo {
 		width: 22px;
 		height: 22px;
-	}
-
-	.bar-main {
-		display: flex;
-		flex-direction: column;
-		gap: var(--sp-2);
-		min-width: 0;
 	}
 
 	.bar-name {
@@ -74,23 +65,18 @@ const label     = levelLabelMap[locale][level];
 		min-width: 0;
 	}
 
-	/* A health bar (spec 006): one block per level, lit from the left. The
-	   frame's padding and the gap are one value, and the segment radius is
-	   derived from it, so the blocks come out square inside a 2px corner. */
+	/* One thin rounded segment per level, lit from the left, no frame (spec 026,
+	   after spec 006's square health bar): the unlit ones read as the track. */
 	.bar-track {
-		--bar-pad: 2px;
 		display: grid;
 		grid-template-columns: repeat(var(--segments), 1fr);
-		gap: var(--bar-pad);
-		padding: var(--bar-pad);
-		border: 2px solid var(--icon-mono);
-		border-radius: var(--radius-xs);
+		gap: 4px;
 	}
 
 	.bar-seg {
-		height: 8px;
+		height: 6px;
 		background: var(--neutral-200);
-		border-radius: calc(var(--radius-xs) - var(--bar-pad));
+		border-radius: var(--radius-pill);
 	}
 
 	/* The lit colour is content, not the animation's end state: with scripts
@@ -118,26 +104,16 @@ const label     = levelLabelMap[locale][level];
 		}
 	}
 
-	/* The level shrinks before anything else: capped by max-width, two lines
-	   at most with ellipsis, never hidden and never a fixed pixel width. */
+	/* The level word as plain text where the proposal shows "90%" (spec 026):
+	   on the card face, so each level's colour is chosen to clear 4.5:1 there.
+	   Capped, never a fixed width: the column sizes to the card's longest word. */
 	.level-tag {
-		/* The label's own pill: the soft fill inside the sheet, one
-		   colour for that job in both themes. On the card face the
-		   dark intermediate label is 4.13:1; on this surface every
-		   level clears 4.5:1 in both themes. */
-		background: var(--tag-surface);
-		border-radius: var(--radius-pill);
-		padding: 0.15rem 0.5rem;
 		font-size: var(--fs-xs);
 		font-weight: 600;
-		display: -webkit-box;
-		-webkit-box-orient: vertical;
-		-webkit-line-clamp: 2;
-		line-clamp: 2;
+		white-space: nowrap;
 		overflow: hidden;
-		overflow-wrap: break-word;
+		text-overflow: ellipsis;
 		max-width: 7rem;
-		min-width: 0;
 		text-align: right;
 	}
 </style>

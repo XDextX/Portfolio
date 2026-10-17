@@ -63,16 +63,17 @@
     /* Error / alert text on the sheet: ~6.6:1 — passes AA. */
     --danger-color: #B3261E;
 
-    /* Skill levels. Darkened from the raw tones, which give 1.7-3.0:1 as text
-       on a light ground and are unreadable there. */
-    --clr-beginner: #92400E;
-    --clr-intermediate: #2C5FB8;
-    --clr-advanced: #1F7A38;
+    /* Level fills by hue (spec 026) vs the unlit segment: 4.69 / 4.20 / 3.77. */
+    --clr-blue: #2C5FB8;
+    --clr-teal: #0F766E;
+    --clr-amber: #A16207;
 
-    /* Level text (12px, weight 600): needs 4.5:1. */
-    --clr-beginner-text: #7A3208;
-    --clr-intermediate-text: #1F4494;
-    --clr-advanced-text: #14572A;
+    /* Level words on the white card (12px, weight 600, needs 4.5:1): 9.08 / 7.58 / 6.85.
+       Green: the steps' tone. */
+    --clr-blue-text: #1F4494;
+    --clr-teal-text: #115E59;
+    --clr-amber-text: #854D0E;
+    --clr-green-text: #14572A;
 
     /* "Lo que construyo" steps only (AGENTS exception, spec 011): tints 1.08-1.18
        on the sheet, so the card keeps its border; each tone clears 5.5:1 on its tint. */
@@ -81,8 +82,8 @@
     --step-3-tint: #DEF2E5;
     --step-4-tint: #ECE6FA;
     --step-1-tone: var(--accent-text);
-    --step-2-tone: var(--clr-intermediate-text);
-    --step-3-tone: var(--clr-advanced-text);
+    --step-2-tone: var(--clr-blue-text);
+    --step-3-tone: var(--clr-green-text);
     --step-4-tone: #5532A0;
 
     color-scheme: light;

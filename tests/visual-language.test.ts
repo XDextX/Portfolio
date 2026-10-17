@@ -56,17 +56,6 @@ function ruleBackground(src: string, selector: string): string | null {
     return bg ? bg[1].trim() : null;
 }
 
-// Background painted inline on the level-tag element, or null. Covers a
-// badge wired through the style attribute rather than the stylesheet.
-function levelTagInlineBackground(src: string): string | null {
-    const tag = src.match(/<[^>]*class=['"]level-tag['"][^>]*>/i);
-    if (!tag) return null;
-    const inline = tag[0].match(/style=\{`([^`]*)`\}/) ?? tag[0].match(/style="([^"]*)"/);
-    if (!inline) return null;
-    const bg = inline[1].match(/background(?:-color)?\s*:\s*([^;`]+)/i);
-    return bg ? bg[1].trim() : null;
-}
-
 describe('visual language', () => {
     it('no hover lifts an element', () => {
         // "Hover means the border turns gold, and nothing lifts." Three rules
@@ -284,61 +273,56 @@ describe('visual language', () => {
         ).toEqual([]);
     });
 
-    it('level labels clear their badge in both themes', () => {
-        // RF-3: every level word label on its own badge at 4.5:1 or above, in
-        // both themes. Label colours come from LEVEL_TEXT_COLOR; the badge is
-        // whatever surface .level-tag paints behind the label, and T-5 owns
-        // it — this guard only measures the pair.
-        const MIN_LABEL = 4.5;
+    // Spec 026 RF-4: the mockup's hues, blue for advanced, teal for intermediate, amber for
+    // beginner. The bands are wide enough for each theme's own step of the hue.
+    it('level fills wear their hue in both themes', () => {
+        const BANDS: Record<string, [number, number, string]> = {
+            advanced: [200, 240, 'blue'], intermediate: [160, 195, 'teal'], beginner: [30, 50, 'amber'],
+        };
         const offenders: string[] = [];
-        const skillBar = stripComments(
-            fs.readFileSync(path.join(ROOT, 'src', 'components', 'SkillBar.astro'), 'utf-8'),
-        );
-        const shared = stripComments(
-            fs.readFileSync(path.join(ROOT, 'public', 'styles', '00-tokens.css'), 'utf-8'),
-        );
-        const badgeRef =
-            ruleBackground(skillBar, '.level-tag') ?? levelTagInlineBackground(skillBar);
-
+        const shared = stripComments(fs.readFileSync(path.join(ROOT, 'public', 'styles', '00-tokens.css'), 'utf-8'));
         for (const theme of ['light.css', 'dark.css']) {
-            const themeSrc = stripComments(
-                fs.readFileSync(path.join(ROOT, 'public', 'styles', 'themes', theme), 'utf-8'),
-            );
-            if (!badgeRef) {
-                offenders.push(`${theme}: no badge surface painted behind the level label`);
-                continue;
-            }
-            let badge: string;
-            try {
-                badge = resolveColour(badgeRef, themeSrc, shared);
-            } catch (err) {
-                offenders.push(`${theme}: the badge surface fails to resolve (${detail(err)})`);
-                continue;
-            }
+            const themeSrc = stripComments(fs.readFileSync(path.join(ROOT, 'public', 'styles', 'themes', theme), 'utf-8'));
             for (const level of SKILL_LEVELS) {
-                let label: string;
+                const [lo, hi, name] = BANDS[level];
                 try {
-                    label = resolveColour(LEVEL_TEXT_COLOR[level], themeSrc, shared);
+                    const fill = resolveColour(LEVEL_COLOR[level], themeSrc, shared);
+                    const h = hue(fill);
+                    if (h < lo || h > hi) offenders.push(`${theme}: ${level} fill ${fill} has hue ${h.toFixed(0)}°, not ${name} (${lo}–${hi}°)`);
                 } catch (err) {
-                    offenders.push(`${theme}: the ${level} label fails to resolve (${detail(err)})`);
-                    continue;
-                }
-                const ratio = contrast(label, badge);
-                if (ratio < MIN_LABEL) {
-                    offenders.push(
-                        `${theme}: the ${level} label ${label} vs the badge ${badge} is ` +
-                            `${ratio.toFixed(2)}:1 — below ${MIN_LABEL}:1`,
-                    );
+                    offenders.push(`${theme}: the ${level} fill fails to resolve (${detail(err)})`);
                 }
             }
         }
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
 
-        expect(
-            offenders,
-            `These labels sit below 4.5:1 against their badge, so the level\n` +
-            `word is decoration rather than text. T-5 owns the badge:\n  ` +
-            offenders.join('\n  '),
-        ).toEqual([]);
+    // Spec 026 RF-5: with no pill, the level word sits on the area card's face; it replaces the
+    // badge guard of spec 006, which measured the label on a surface the row no longer paints.
+    it('level labels clear the card face in both themes', () => {
+        const MIN_LABEL = 4.5;
+        const offenders: string[] = [];
+        const shared = stripComments(fs.readFileSync(path.join(ROOT, 'public', 'styles', '00-tokens.css'), 'utf-8'));
+        for (const theme of ['light.css', 'dark.css']) {
+            const themeSrc = stripComments(fs.readFileSync(path.join(ROOT, 'public', 'styles', 'themes', theme), 'utf-8'));
+            let card: string;
+            try {
+                card = resolveColour('var(--card-background)', themeSrc, shared);
+            } catch (err) {
+                offenders.push(`${theme}: the card fails to resolve (${detail(err)})`);
+                continue;
+            }
+            for (const level of SKILL_LEVELS) {
+                try {
+                    const label = resolveColour(LEVEL_TEXT_COLOR[level], themeSrc, shared);
+                    const ratio = contrast(label, card);
+                    if (ratio < MIN_LABEL) offenders.push(`${theme}: the ${level} label ${label} on the card ${card} is ${ratio.toFixed(2)}:1`);
+                } catch (err) {
+                    offenders.push(`${theme}: the ${level} label fails to resolve (${detail(err)})`);
+                }
+            }
+        }
+        expect(offenders, `A level word on the card face is text and needs 4.5:1:\n  ${offenders.join('\n  ')}`).toEqual([]);
     });
 
     it('each level lights its leftmost segments, one segment per level', () => {
@@ -376,44 +360,6 @@ describe('visual language', () => {
             offenders,
             `A bar is one segment per level, and a level lights the leftmost segments\n` +
             `up to its own position in the scale — never a percentage:\n  ` +
-            offenders.join('\n  '),
-        ).toEqual([]);
-    });
-
-    it('the health bar frame clears the card in both themes', () => {
-        // Spec 006 RF-4: the frame is drawn in the colour the component binds
-        // on .bar-track's 2px border, at 3:1 or above against the area card.
-        const MIN_FRAME = 3;
-        const offenders: string[] = [];
-        const skillBar = stripComments(
-            fs.readFileSync(path.join(ROOT, 'src', 'components', 'SkillBar.astro'), 'utf-8'),
-        );
-        const shared = stripComments(
-            fs.readFileSync(path.join(ROOT, 'public', 'styles', '00-tokens.css'), 'utf-8'),
-        );
-        const track = skillBar.match(/\.bar-track\s*\{([^}]*)\}/)?.[1] ?? '';
-        const frameRef = track.match(/border\s*:\s*2px\s+solid\s+([^;]+);/i)?.[1]?.trim();
-        if (!frameRef) offenders.push('.bar-track draws no 2px solid frame');
-
-        for (const theme of frameRef ? ['light.css', 'dark.css'] : []) {
-            const themeSrc = stripComments(
-                fs.readFileSync(path.join(ROOT, 'public', 'styles', 'themes', theme), 'utf-8'),
-            );
-            try {
-                const frame = resolveColour(frameRef as string, themeSrc, shared);
-                const card = resolveColour('var(--card-background)', themeSrc, shared);
-                const ratio = contrast(frame, card);
-                if (ratio < MIN_FRAME) {
-                    offenders.push(`${theme}: frame ${frame} on card ${card} is ${ratio.toFixed(2)}:1`);
-                }
-            } catch (err) {
-                offenders.push(`${theme}: the frame or the card fails to resolve (${detail(err)})`);
-            }
-        }
-
-        expect(
-            offenders,
-            `The health bar's frame must outline the bar against the card at 3:1:\n  ` +
             offenders.join('\n  '),
         ).toEqual([]);
     });

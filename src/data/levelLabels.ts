@@ -42,22 +42,21 @@ export const levelVariantMap: Record<TechLevel, 'warning' | 'info' | 'success'> 
 } as const;
 
 /**
- * Bar and dot colour: a graphic element, so not held to text contrast. This
- * resolves through --clr-*, which light lowers for label legibility, so a light
- * bar is the darker tone: the raw tones land near 1.7:1 against the light track.
+ * Bar colour by level, the proposal's hues (spec 026): a graphic element, held to 3:1
+ * against the unlit segment, not to text contrast. Every theme defines each token.
  */
 export const LEVEL_COLOR: Record<TechLevel, string> = {
-	advanced:     'var(--clr-advanced, #22c55e)',
-	intermediate: 'var(--clr-intermediate, #3b82f6)',
-	beginner:     'var(--clr-beginner, #f59e0b)',
+	advanced:     'var(--clr-blue)',
+	intermediate: 'var(--clr-teal)',
+	beginner:     'var(--clr-amber)',
 };
 
 /**
- * Level TEXT colour. The bar tones give 1.7-3.0:1 as text on a light ground and
- * are unreadable, so the light theme defines darker variants in --clr-*-text.
+ * Level word colour, on the card face (spec 026): each theme's -text variant
+ * clears 4.5:1 there, where the bar tones would not.
  */
 export const LEVEL_TEXT_COLOR: Record<TechLevel, string> = {
-	advanced:     'var(--clr-advanced-text, var(--clr-advanced))',
-	intermediate: 'var(--clr-intermediate-text, var(--clr-intermediate))',
-	beginner:     'var(--clr-beginner-text, var(--clr-beginner))',
+	advanced:     'var(--clr-blue-text)',
+	intermediate: 'var(--clr-teal-text)',
+	beginner:     'var(--clr-amber-text)',
 };

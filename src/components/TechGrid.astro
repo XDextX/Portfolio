@@ -140,14 +140,14 @@ const areas = populatedAreas(SKILL_AREAS, items);
 		gap: var(--sp-3) var(--sp-6);
 	}
 
-	/* As many area cards per line as each still holds one minimum row: the
-	   .bars-list minimum below plus .card-frame's padding and border (spec 006
-	   RF-10). 3 per line at 1280px and 1024px, 2 at 800px, 1 at 390px. */
+	/* As many area cards per line as each still holds one minimum row: logo, the
+	   three column gaps, the bar's 60px floor and the level cap (a name can shrink
+	   to nothing), plus .card-frame's padding and border (spec 006 RF-10, 026). */
 	.bars-grid {
 		display: grid;
 		grid-template-columns: repeat(
 			auto-fit,
-			minmax(min(calc(22px + 0.6rem + 60px + 0.6rem + 7rem + 1.25rem + 1.25rem + 1px + 1px), 100%), 1fr)
+			minmax(min(calc(22px + 0.6rem + 0.6rem + 0.6rem + 60px + 7rem + 1.25rem + 1.25rem + 1px + 1px), 100%), 1fr)
 		);
 		gap: var(--sp-3) var(--sp-6);
 	}
@@ -160,19 +160,17 @@ const areas = populatedAreas(SKILL_AREAS, items);
 		display: none;
 	}
 
-	/* Two rows share a line when both keep the row's own minimum: SkillBar's
-	   icon, gap, track floor, gap and badge maximum, summed (spec 006 RF-9).
-	   auto-fill keeps a lone row at half width, so every bar has one length. */
+	/* One skill per line, as in the proposal (spec 026): logo, name, bar, level.
+	   The rows are subgrids of these columns, so the name and level columns size
+	   to the card's longest entry and every bar shares one start and width. */
 	.bars-list {
 		list-style: none;
 		margin: 0;
 		padding: 0;
 		display: grid;
-		grid-template-columns: repeat(
-			auto-fill,
-			minmax(min(calc(22px + 0.6rem + 60px + 0.6rem + 7rem), 100%), 1fr)
-		);
-		gap: var(--sp-2) var(--sp-4);
+		grid-template-columns: 22px fit-content(9rem) minmax(60px, 1fr) max-content;
+		column-gap: 0.6rem;
+		row-gap: var(--sp-3);
 	}
 
 	.chip-list {

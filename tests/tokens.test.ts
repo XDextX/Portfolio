@@ -77,7 +77,7 @@ function collectUsed(): Map<string, { fallback: boolean; where: string }> {
 
         // Capture whether a fallback follows the token name. The delimiter may be
         // a comma or the closing paren, and it may be a quote: a token read from
-        // inside a JS string is written 'var(--clr-beginner-text, …)', where a
+        // inside a JS string is written 'var(--clr-amber-text, …)', where a
         // pattern requiring , or ) straight after the name misses it. That made
         // three live tokens look dead on the first run.
         for (const m of src.matchAll(/var\(\s*(--[a-z0-9-]+)\s*([,)\s'"])/gi)) {
@@ -254,7 +254,7 @@ describe('theme token coverage', () => {
         /*
          * Dead token surface: `--text-inverse` and `--color-brand-600` sat in
          * light.css with zero readers. A reader counts inside another token's
-         * value too — scanning components only called `--clr-beginner-text` dead.
+         * value too — scanning components only called `--clr-amber-text` dead.
          */
         const shared = base();
         const used = collectUsed();

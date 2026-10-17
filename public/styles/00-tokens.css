@@ -57,10 +57,10 @@
     --sp-4: 1rem;
     --sp-6: 1.5rem;
 
-    /* Skill level colors — consumidas por src/data/levelLabels.ts */
-    --clr-advanced: #22c55e;
-    --clr-intermediate: #3b82f6;
-    --clr-beginner: #f59e0b;
+    /* Level colours by hue (spec 026), read by src/data/levelLabels.ts; each theme sets its own. */
+    --clr-blue: #3b82f6;
+    --clr-teal: #14b8a6;
+    --clr-amber: #f59e0b;
 
     /* Avatar ring. Aliased to --color-border, which both themes redefine, so
        the ring follows the theme with no per-theme override. AvatarCircle
