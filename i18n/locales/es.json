@@ -76,7 +76,8 @@
 			"github": "GitHub",
 			"linkedin": "LinkedIn",
 			"email": "Correo"
-		}
+		},
+		"emailButton": "Email"
 	},
 	"experience": {
 		"techAria": "Tecnologías en {{company}}, {{period}}",

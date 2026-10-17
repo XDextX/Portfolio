@@ -11,7 +11,7 @@ const SOCIAL_ORDER = [
     { id: "github", labelKey: "about.social.github", glyph: "/icons/ui/brand-github.svg" },
     { id: "linkedin", labelKey: "about.social.linkedin", glyph: "/icons/ui/brand-linkedin.svg" },
     // The email glyph is the contact card's own (spec 029): one source for it.
-    { id: "email", labelKey: "about.social.email" },
+    { id: "email", labelKey: "about.emailButton" },
 ] as const;
 
 const socials: HeroSocial[] = SOCIAL_ORDER.flatMap((entry) => {
@@ -67,13 +67,10 @@ export const ABOUT = {
     resumeUrl: "/cv/German Montero CV EN.pdf",
     socials,
     phraseKeys: PHRASE_KEYS,
+    // The proposal's copy (spec 035).
     bio: {
-        es: `Soy desarrollador de software con más de 6 años de experiencia, especializado en desarrollo Full Stack...
-A lo largo de mi carrera he trabajado con .NET Core, Azure Functions y Angular, con experiencia en Java, TypeScript, C# y SQL...
-Actualmente profundizo en Server-Sent Events (SSE), Jasmine y Selenium.`,
-        en: `I’m a software engineer with 6+ years of experience, focused on Full-Stack development...
-Experienced with .NET Core, Azure Functions, Angular, plus Java, TypeScript, C#, and SQL...
-Currently sharpening Server-Sent Events (SSE), Jasmine, and Selenium.`
+        es: "Desarrollo soluciones de software completas, desde la arquitectura hasta su puesta en producción. Más de 6 años de experiencia trabajando con .NET, Java, TypeScript y tecnologías en la nube.",
+        en: "I build complete software solutions, from the architecture to production. Over 6 years of experience working with .NET, Java, TypeScript and cloud technologies."
     }
 } as const;
 
