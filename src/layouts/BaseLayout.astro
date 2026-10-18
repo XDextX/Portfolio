@@ -33,6 +33,7 @@ const canonical  = `${production}${Astro.url.pathname}`;
 const shareUrl   = `${site}${Astro.url.pathname}`;
 const htmlLang   = locale === 'es' ? 'es-CR' : 'en-US';
 const siteName   = `${ABOUT.name} - Portfolio`;
+const stylesVersion = import.meta.env.STYLES_VERSION; // the public sheets' content hash (spec 038)
 
 /*
  * Styles. 05-fonts.css must come first: @font-face has to be known before
@@ -73,14 +74,14 @@ const siteName   = `${ABOUT.name} - Portfolio`;
 	<!-- Preconnect -->
 	<link rel='preconnect' href='https://avatars.githubusercontent.com' />
 
-	<link rel='stylesheet' href='/styles/00-tokens.css' />
-	<link rel='stylesheet' href='/styles/05-fonts.css' />
-	<link rel='stylesheet' href='/styles/01-base.css' />
-	<link rel='stylesheet' href='/styles/02-utilities.css' />
-	<link rel='stylesheet' href='/styles/03-components.css' />
-	<link rel='stylesheet' href='/styles/04-layouts.css' />
-	<link rel='stylesheet' href='/styles/themes/light.css' />
-	<link rel='stylesheet' href='/styles/themes/dark.css' />
+	<link rel='stylesheet' href={`/styles/00-tokens.css?v=${stylesVersion}`} />
+	<link rel='stylesheet' href={`/styles/05-fonts.css?v=${stylesVersion}`} />
+	<link rel='stylesheet' href={`/styles/01-base.css?v=${stylesVersion}`} />
+	<link rel='stylesheet' href={`/styles/02-utilities.css?v=${stylesVersion}`} />
+	<link rel='stylesheet' href={`/styles/03-components.css?v=${stylesVersion}`} />
+	<link rel='stylesheet' href={`/styles/04-layouts.css?v=${stylesVersion}`} />
+	<link rel='stylesheet' href={`/styles/themes/light.css?v=${stylesVersion}`} />
+	<link rel='stylesheet' href={`/styles/themes/dark.css?v=${stylesVersion}`} />
 
 	<ClientRouter />
 </head>
