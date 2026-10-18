@@ -137,7 +137,7 @@ describe('project card, rendered (spec 014 RF-3, RF-5, RF-6, RF-7, RF-8)', () =>
                     request: new Request(`https://example.test/proyectos/fixture?lang=${locale}`),
                 });
                 vi.unstubAllGlobals();
-                const detail = (page.match(/id="project-desc"[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/)?.[1] ?? '').trim();
+                const detail = (page.match(/<p class="page-header__lead"[^>]*>([\s\S]*?)<\/p>/)?.[1] ?? '').trim();
                 const shown = text(await card(repo, locale), 'card-desc');
                 if (!detail) offenders.push(`RF-6: ${locale} ${JSON.stringify(description)}: no description on the detail page`);
                 else if (shown !== detail) offenders.push(`RF-6: ${locale} ${JSON.stringify(description)}: card "${shown}", detail "${detail}"`);
