@@ -1,11 +1,11 @@
 # Portfolio
 
 [![Astro](https://img.shields.io/badge/Astro-5-blueviolet?style=flat-square&logo=astro)](https://astro.build)
-[![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=flat-square&logo=vercel)](https://portfolio-dext.vercel.app)
+[![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=flat-square&logo=vercel)](https://www.xdextx.dev)
 
 A full-stack developer's portfolio, in Spanish and English, rendered per request on Vercel.
 
-**Live:** [portfolio-dext.vercel.app](https://portfolio-dext.vercel.app)
+**Live:** [www.xdextx.dev](https://www.xdextx.dev)
 
 ## Features
 
