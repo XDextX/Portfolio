@@ -107,13 +107,13 @@ const { title, desc, lang, hasDemo, topics, updated, fmtDate, starsLabel, forksL
 						class='flex gap-4 items-center mt-2'
 						aria-label={t('project.meta.metrics')}
 					>
-						<span title='Stars' aria-label='Stars'>{starsLabel}</span>
-						<span title='Forks' aria-label='Forks'>{forksLabel}</span>
+						<span title={starsLabel}>{starsLabel}</span>
+						<span title={forksLabel}>{forksLabel}</span>
 					</div>
 
 					{
 						topics.length ? (
-							<div class='topics' aria-label='Tags'>
+							<div class='topics' role='group' aria-label={t('project.meta.tags')}>
 								{topics.map((tag) => (
 									<Chip text={tag} />
 								))}
@@ -149,7 +149,7 @@ const { title, desc, lang, hasDemo, topics, updated, fmtDate, starsLabel, forksL
 					</nav>
 				</aside>
 
-				<section class='readme' aria-label='Documentation'>
+				<section class='readme' aria-label={t('project.readme.label')}>
 					<Readme repo={repo} />
 				</section>
 			</section>

@@ -160,3 +160,65 @@ describe('project card, rendered (spec 014 RF-3, RF-5, RF-6, RF-7, RF-8)', () =>
         expect(offenders, offenders.join('\n')).toEqual([]);
     });
 });
+
+describe('project labels in the visitor language (spec 043)', () => {
+    const locale = (l: string) => JSON.parse(fs.readFileSync(path.join(ROOT, 'i18n', 'locales', `${l}.json`), 'utf-8'));
+
+    it('RF-1: the counts read "Estrellas" / "Forks" in Spanish and "Stars" / "Forks" in English', () => {
+        const meta = (l: string) => locale(l).project.meta;
+        expect([meta('es').starsLabel, meta('es').forksLabel]).toEqual(['Estrellas: {{count}}', 'Forks: {{count}}']);
+        expect([meta('en').starsLabel, meta('en').forksLabel]).toEqual(['Stars: {{count}}', 'Forks: {{count}}']);
+    });
+
+    it('RF-2: a card count has the label as tooltip and as announced text, the digits hidden from assistive tech', async () => {
+        const offenders: string[] = [];
+        for (const l of LOCALES) {
+            const html = await card({ stargazers_count: 1234, forks_count: 5 }, l);
+            const meta = html.match(/<div class="card-meta"[^>]*>([\s\S]*?)<\/div>/)?.[1] ?? '';
+            const spans = [...meta.matchAll(/<span\b([^>]*)>([\s\S]*?<\/span>)\s*<\/span>/g)];
+            if (spans.length !== 2) { offenders.push(`${l}: ${spans.length} count spans`); continue; }
+            const want = [['project.meta.starsLabel', '1234', '1.2k'], ['project.meta.forksLabel', '5', '5']];
+            spans.forEach((m, k) => {
+                const label = t(want[k][0], { count: want[k][1] });
+                if (m[1].match(/\btitle="([^"]*)"/)?.[1] !== label) offenders.push(`${l}: title is not "${label}"`);
+                if (/\baria-label=/.test(m[1])) offenders.push(`${l}: "${label}" keeps an aria-label on a generic span`);
+                if (m[2].match(/<span class="sr-only"[^>]*>([^<]*)<\/span>/)?.[1] !== label) offenders.push(`${l}: no sr-only "${label}"`);
+                if (!new RegExp(`<span aria-hidden="true"[^>]*>${want[k][2]}</span>`).test(m[2])) offenders.push(`${l}: the digits ${want[k][2]} are not aria-hidden`);
+            });
+            setLocale(l);
+        }
+        expect(offenders, offenders.join(', ')).toEqual([]);
+        expect(await card({ stargazers_count: 0, forks_count: 0 })).not.toContain('card-meta');
+    });
+
+    it('RF-2, RF-3: the page counts, topics and README section are named through t(), both locales', async () => {
+        const offenders: string[] = [];
+        for (const l of LOCALES) {
+            const repo = buildRepo({ name: 'fixture', stargazers_count: 1234, forks_count: 0, topics: ['web'] } as any);
+            vi.stubGlobal('fetch', async (url: string) =>
+                /\/repos\/[^/]+\/fixture$/.test(String(url)) ? mockTextResponse(JSON.stringify(repo)) : mockTextResponse('', 404));
+            clearGitHubCache();
+            setLocale(l);
+            const html = await container.renderToString(ProjectPage, {
+                params: { name: 'fixture' },
+                request: new Request(`https://example.test/proyectos/fixture?lang=${l}`),
+            });
+            vi.unstubAllGlobals();
+            const tag = l === 'es' ? 'es-CR' : 'en-US';
+            const want = [t('project.meta.starsLabel', { count: new Intl.NumberFormat(tag).format(1234) }), t('project.meta.forksLabel', { count: '0' })];
+            for (const label of want) {
+                const span = [...html.matchAll(/<span\b([^>]*)>([^<]*)<\/span>/g)].find((m) => m[2].trim() === label);
+                if (!span) { offenders.push(`${l}: no count reads "${label}"`); continue; }
+                if (/\baria-label=/.test(span[1])) offenders.push(`${l}: "${label}" keeps an aria-label that replaces its text`);
+                if (span[1].match(/\btitle="([^"]*)"/)?.[1] !== label) offenders.push(`${l}: its title is not "${label}"`);
+            }
+            const topics = html.match(/<div class="topics"([^>]*)>/)?.[1] ?? '';
+            if (!/\brole="group"/.test(topics)) offenders.push(`${l}: the topics are not a group`);
+            if (topics.match(/\baria-label="([^"]*)"/)?.[1] !== t('project.meta.tags')) offenders.push(`${l}: the topics are not named "${t('project.meta.tags')}"`);
+            const readme = html.match(/<section class="readme"([^>]*)>/)?.[1] ?? '';
+            if (readme.match(/\baria-label="([^"]*)"/)?.[1] !== t('project.readme.label')) offenders.push(`${l}: the README is not named "${t('project.readme.label')}"`);
+            if (l === 'es') for (const w of ['Tags', 'Documentation', 'Stars', 'Forks']) if (new RegExp(`(?:aria-label|title)="${w}"`).test(html)) offenders.push(`es: an attribute is still "${w}"`);
+        }
+        expect(offenders, offenders.join(', ')).toEqual([]);
+    });
+});

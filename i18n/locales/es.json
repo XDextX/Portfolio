@@ -16,15 +16,17 @@
 		"meta": {
 			"stack": "Stack:",
 			"metrics": "Métricas",
-			"starsLabel": "Stars: {{count}}",
+			"starsLabel": "Estrellas: {{count}}",
 			"forksLabel": "Forks: {{count}}",
 			"updated": "Actualizado: {{date}}",
 			"description": "Descripción:",
-			"noDescription": "Sin descripción"
+			"noDescription": "Sin descripción",
+			"tags": "Etiquetas"
 		},
 		"repo": "Repositorio:",
 		"license": "Licencia:",
 		"readme": {
+			"label": "Documentación",
 			"missing": "Este repositorio no tiene README."
 		},
 		"unavailable": {
