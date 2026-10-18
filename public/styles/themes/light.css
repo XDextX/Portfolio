@@ -85,6 +85,14 @@
     --step-2-tone: var(--clr-blue-text);
     --step-3-tone: var(--clr-green-text);
     --step-4-tone: #5532A0;
+    /* The hero band (spec 036), all aliases. The controls rest at 3.0:1 on the sheet, so no step
+       sits under them: the centre tile is the sheet itself, the corners one step down. */
+    --band-soft: var(--main-bg);
+    --band-mid: var(--neutral-100);
+    --band-low: color-mix(in srgb, var(--brand-accent) 45%, var(--main-bg));
+    --band-gold: var(--band-low);
+    --band-line: var(--brand-primary-light);
+    --band-line-gold: var(--brand-accent);
 
     color-scheme: light;
 }

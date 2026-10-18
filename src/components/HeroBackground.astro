@@ -1,0 +1,55 @@
+---
+import { HERO_SHAPES, HERO_BOX, TILE_RADIUS } from '../data/heroShapes';
+
+/**
+ * The flat-shape band behind the top of the home page (spec 036): from the sheet's top edge to
+ * the hero's bottom, decoration only. Each shape takes the class of its `--band-*` token, so the
+ * fills live in the stylesheet below and follow the theme.
+ */
+const cls = (token: string) => token.slice(2);
+---
+
+<div class='hero-band' aria-hidden='true'>
+	<svg viewBox={`0 0 ${HERO_BOX.width} ${HERO_BOX.height}`} preserveAspectRatio='xMidYMid slice' focusable='false'>
+		{HERO_SHAPES.map((s) => 'side' in s
+			? <rect data-shape class={cls(s.fill)} x={s.cx - s.side / 2} y={s.cy - s.side / 2} width={s.side} height={s.side} rx={s.side * TILE_RADIUS} transform={`rotate(45 ${s.cx} ${s.cy})`} />
+			: <line data-shape class={cls(s.stroke)} x1={s.from[0]} y1={s.from[1]} x2={s.to[0]} y2={s.to[1]} />)}
+	</svg>
+</div>
+
+<style>
+	/* Reaches out of the hero by the sheet's padding and the topbar, so it starts at the sheet's
+	   edge; sits under the hero's content (the hero isolates) and clips to the sheet's corners. */
+	.hero-band {
+		position: absolute;
+		inset-block-start: calc(-1 * (var(--sheet-pad-block) + var(--topbar-block)));
+		inset-inline: calc(-1 * var(--sheet-pad-inline));
+		inset-block-end: 0;
+		z-index: -1;
+		overflow: clip;
+		border-radius: var(--sheet-radius) var(--sheet-radius) 0 0;
+		pointer-events: none;
+	}
+
+	svg {
+		display: block;
+		inline-size: 100%;
+		block-size: 100%;
+	}
+
+	line {
+		stroke-width: 5;
+		stroke-linecap: round;
+	}
+
+	.band-soft { fill: var(--band-soft); }
+	.band-mid { fill: var(--band-mid); }
+	.band-low { fill: var(--band-low); }
+	.band-gold { fill: var(--band-gold); }
+	.band-line { stroke: var(--band-line); }
+	.band-line-gold { stroke: var(--band-line-gold); }
+
+	@media (forced-colors: active) {
+		.hero-band { display: none; }
+	}
+</style>

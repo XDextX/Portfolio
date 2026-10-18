@@ -91,6 +91,13 @@
     /* Bars-view icon: the same alias as light.css, over this theme own
        --text-secondary. No literal here, or one theme would drift. */
     --icon-mono: var(--text-secondary);
+    /* The hero band (spec 036): navy steps around the sheet and the brand gold, all aliases. */
+    --band-soft: var(--neutral-50);
+    --band-mid: var(--neutral-100);
+    --band-low: var(--brand-accent);
+    --band-gold: var(--brand-accent);
+    --band-line: var(--brand-primary-light);
+    --band-line-gold: var(--brand-accent);
 
     color-scheme: dark;
 }

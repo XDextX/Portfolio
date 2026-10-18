@@ -1,5 +1,6 @@
 ---
 import AvatarCircle from './AvatarCircle.astro';
+import HeroBackground from './HeroBackground.astro';
 import { ABOUT, JsonLdAbout } from '../data/about';
 import { t } from '@i18n/index';
 
@@ -27,6 +28,7 @@ const { given, family } = ABOUT.nameParts;
 ---
 
 <section class='section section--hero' id='About' aria-labelledby='about-title'>
+	<HeroBackground />
 	{personJsonLd && (
 		<script type='application/ld+json' set:html={JSON.stringify(personJsonLd)} />
 	)}
@@ -84,6 +86,12 @@ const { given, family } = ABOUT.nameParts;
 </section>
 
 <style>
+	/* The band draws under the hero's content and over its own glow (spec 036). */
+	.section--hero {
+		position: relative;
+		isolation: isolate;
+	}
+
 	.about-grid {
 		display: grid;
 		grid-template-columns: 160px 1fr;

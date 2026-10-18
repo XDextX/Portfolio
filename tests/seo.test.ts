@@ -1099,3 +1099,18 @@ describe('the head origins (spec 034)', () => {
         expect(src).not.toContain(new URL(CONFIGURED_SITE).host);
     });
 });
+
+// ── Spec 036: the flat-shape band, one definition for the hero and the cards ──
+
+describe('the hero band shapes (spec 036 RF-2)', () => {
+    it('name only band tokens, each defined in both theme files', async () => {
+        const { HERO_SHAPES } = await import('../src/data/heroShapes');
+        const light = sheetTokens(path.join(SHEET_DIR, 'themes', 'light.css'));
+        const dark = sheetTokens(path.join(SHEET_DIR, 'themes', 'dark.css'));
+        const names = [...new Set(HERO_SHAPES.map((s: any) => s.fill ?? s.stroke))];
+        expect(names.length, 'the definition names no token').toBeGreaterThan(0);
+        const offenders = names.filter((n) => !/^--band-/.test(n) || !light[n] || !dark[n]);
+        expect(offenders, `not a band token defined in both themes: ${offenders.join(', ')}`).toEqual([]);
+    });
+});
+
