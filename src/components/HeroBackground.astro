@@ -29,6 +29,10 @@ const cls = (token: string) => token.slice(2);
 		overflow: clip;
 		border-radius: var(--sheet-radius) var(--sheet-radius) 0 0;
 		pointer-events: none;
+		/* The last 6rem fade out, so the shapes blend into the sheet instead of ending in a line at
+		   the hero's bottom (owner, spec 036 RF-6); clear over the last 4px so no rounding leaves a seam. */
+		mask-image: linear-gradient(to bottom, black calc(100% - 6rem), transparent calc(100% - 4px));
+		-webkit-mask-image: linear-gradient(to bottom, black calc(100% - 6rem), transparent calc(100% - 4px));
 	}
 
 	svg {

@@ -101,3 +101,41 @@ test('the hero lays out the same with and without the band (RF-5)', async ({ pag
     sels.forEach((s, i) => { for (const k of ['l', 'r', 't', 'b'] as const) if (Math.abs(withBand[i][k] - without[i][k]) > 1) offenders.push(`RF-5: ${s} ${k} moves ${(withBand[i][k] - without[i][k]).toFixed(1)}px`); });
     expect(offenders, offenders.join('\n')).toEqual([]);
 });
+
+// RF-6: the band's last 6rem fade out, so its bottom rows are the page as it is without the band.
+async function rows(page: Page, ys: number[], x: number, width: number) {
+    const shots: number[][][] = [];
+    for (const y of ys) {
+        const png = await page.screenshot({ clip: { x, y, width, height: 1 }, animations: 'disabled' });
+        shots.push(await page.evaluate(async (b64) => {
+            const img = new Image(); img.src = `data:image/png;base64,${b64}`; await img.decode();
+            const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = 1;
+            const g = c.getContext('2d')!; g.drawImage(img, 0, 0);
+            const d = g.getImageData(0, 0, c.width, 1).data; const out: number[][] = [];
+            for (let i = 0; i < d.length; i += 4) out.push([d[i], d[i + 1], d[i + 2]]);
+            return out;
+        }, png.toString('base64')));
+    }
+    return shots;
+}
+
+for (const theme of THEMES) for (const width of [1280, 1860]) {
+    test(`the band fades out at its bottom — ${theme}, ${width}px (RF-6)`, async ({ page }) => {
+        await open(page, width, theme);
+        const band = (await page.locator('.hero-band').boundingBox())!;
+        const remPx = await page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).fontSize));
+        const bottom = Math.floor(band.y + band.height) - 2;
+        const above = Math.floor(band.y + band.height - 6 * remPx) - 2;
+        // Only the band's own pixels: hide everything in front of it, then capture with and without it.
+        await page.evaluate(() => { for (const e of document.querySelectorAll('.layout-topbar, .section--hero > :not(.hero-band), main > .section:not(.section--hero)')) (e as HTMLElement).style.visibility = 'hidden'; });
+        const x = Math.ceil(band.x), w = Math.floor(band.width);
+        const [withBottom, withAbove] = await rows(page, [bottom, above], x, w);
+        await page.evaluate(() => { (document.querySelector('.hero-band') as HTMLElement).style.visibility = 'hidden'; });
+        const [bareBottom, bareAbove] = await rows(page, [bottom, above], x, w);
+        const diff = (a: number[][], b: number[][]) => Math.max(...a.map((p, i) => Math.max(...p.map((v, k) => Math.abs(v - b[i][k])))));
+        const offenders: string[] = [];
+        if (diff(withBottom, bareBottom) > 2) offenders.push(`RF-6: the band's bottom row differs from the bare page by ${diff(withBottom, bareBottom)}`);
+        if (diff(withAbove, bareAbove) <= 10) offenders.push('RF-6: 6rem above the bottom no shape shows, so the fade check has nothing to fade');
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+}
