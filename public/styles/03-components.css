@@ -108,6 +108,21 @@
     text-decoration: none;
 }
 
+/* Spec 048: under a finger the shared buttons are at least 44 × 44. .btn centres its label in a
+   flex box here only, so a taller .btn keeps its text in the middle. */
+@media (pointer: coarse) {
+    .btn,
+    .btn-action {
+        min-block-size: 44px;
+        min-inline-size: 44px;
+    }
+
+    .btn {
+        display: inline-flex;
+        justify-content: center;
+    }
+}
+
 /* Spec 040: a card that leaves or arrives while the projects filter changes fades and shrinks a
    little; the ones that stay (both snapshots) just move. Only without a motion preference. */
 @media (prefers-reduced-motion: no-preference) {
