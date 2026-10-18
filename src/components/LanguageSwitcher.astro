@@ -96,4 +96,11 @@ const hint = t('layout.languageSwitcher');
 	.select:hover {
 		color: var(--accent-text);
 	}
+
+	/* The platform draws the list from each option: transparent fell back to a white popup under
+	   the dark theme's light text, so the options carry the card ground and ink of the theme. */
+	.select option {
+		background-color: var(--card-background);
+		color: var(--text-color);
+	}
 </style>
