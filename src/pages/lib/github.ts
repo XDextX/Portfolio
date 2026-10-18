@@ -1,4 +1,5 @@
 import type { GitHubRepo } from "@type/github";
+import { PROJECT_CATEGORIES, type CategoryKey } from "../../data/projectCategories";
 
 /** The GitHub user whose repositories the site shows; the one place that names it (spec 021). */
 export const USER = import.meta.env.GITHUB_USERNAME || "XDextX";
@@ -251,6 +252,28 @@ export function sortRepos(repos: GitHubRepo[]): GitHubRepo[] {
         if (bHasDemo !== aHasDemo) return bHasDemo - aHasDemo;
         return a.name.localeCompare(b.name);
     });
+}
+
+/**
+ * The category named by the `cat` query value (spec 040).
+ * @param value the raw query value, exact: keys are lowercase as typed in the URL
+ * @returns one of the six keys, or null for a missing or unknown value (which means Todos)
+ */
+export function parseCategory(value: string | null): CategoryKey | null {
+    return PROJECT_CATEGORIES.find((c) => c.key === value)?.key ?? null;
+}
+
+/**
+ * Whether a repository belongs to a category: it carries the category's topic, or for `other`
+ * none of the category topics. A repository with two category topics is in both (spec 040).
+ * @param repo its `topics` @param key the category @returns true when it belongs
+ */
+export function inCategory(repo: Pick<GitHubRepo, "topics">, key: CategoryKey): boolean {
+    const topics = repo.topics ?? [];
+    const entry = PROJECT_CATEGORIES.find((c) => c.key === key);
+    if (!entry) return false;
+    if (entry.topic) return topics.includes(entry.topic);
+    return !PROJECT_CATEGORIES.some((c) => c.topic && topics.includes(c.topic));
 }
 
 /**

@@ -3,11 +3,12 @@ import BaseLayout from '@layouts/BaseLayout.astro';
 import Breadcrumbs from '@components/BreadCrumbs.astro';
 import ProjectsSection from '@components/ProjectsSection.astro';
 import HeroBackground from '@components/HeroBackground.astro';
+import ProjectFilters from '@components/ProjectFilters.astro';
 import { t, tWords } from '@i18n/index';
 import { SECTION_TITLES } from '../../data/sectionTitles';
 import type { GitHubRepo } from '@type/github';
 import { applyLocale } from '@utils/locale';
-import { listRepos, listPreviewNames, sortRepos } from '@lib/github';
+import { listRepos, listPreviewNames, sortRepos, parseCategory, inCategory } from '@lib/github';
 
 const locale = applyLocale(Astro);
 const topic = (import.meta.env.GITHUB_TOPIC ?? '').trim();
@@ -30,6 +31,10 @@ try {
 	fetchError = error instanceof Error ? error.message : 'Unknown error';
 	repos = [];
 }
+
+// Spec 040: an unknown `cat` parses to null, which renders every repository.
+const cat = parseCategory(Astro.url.searchParams.get('cat'));
+const shown = cat ? repos.filter((repo) => inCategory(repo, cat)) : repos;
 
 const previews = await listPreviewNames();
 
@@ -65,7 +70,7 @@ const jsonLd = {
 	locale={locale}
 >
 	<section class='wrap projects-page'>
-		<header class='projects-page__header'>
+		<header class='projects-page__header' transition:animate='none'>
 			<HeroBackground variant='header' />
 			<Breadcrumbs directions={directions} />
 			<div class='projects-page__row'>
@@ -80,6 +85,7 @@ const jsonLd = {
 					</p>
 				)
 			}
+			<ProjectFilters current={cat} />
 		</header>
 
 		{
@@ -89,7 +95,8 @@ const jsonLd = {
 				</p>
 			) : (
 				<ProjectsSection
-					repos={repos}
+					repos={shown}
+						emptyKey={cat ? 'projects.empty.category' : undefined}
 					title={t('projects.title')}
 					hideTitle={true}
 					locale={locale}

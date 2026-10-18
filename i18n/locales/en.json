@@ -41,7 +41,18 @@
 		},
 		"error": "Could not load projects. Detail: {{detail}}",
 		"empty": {
-			"message": "No projects to show. Add the topic {{topic}} to your repos on GitHub."
+			"message": "No projects to show. Add the topic {{topic}} to your repos on GitHub.",
+			"category": "No projects in this category yet."
+		},
+		"filters": {
+			"label": "Filter projects by category",
+			"all": "All",
+			"web": "Web",
+			"backend": "Backend",
+			"frontend": "Frontend",
+			"mobile": "Mobile",
+			"database": "Databases",
+			"other": "Other"
 		},
 		"viewAll": "View all",
 		"lead": "A selection of personal projects where I apply different technologies and explore new ideas."

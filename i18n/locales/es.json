@@ -41,7 +41,18 @@
 		},
 		"error": "No se pudieron cargar los proyectos. Detalle: {{detail}}",
 		"empty": {
-			"message": "No hay proyectos para mostrar. Agrega el topic {{topic}} a tus repos en GitHub."
+			"message": "No hay proyectos para mostrar. Agrega el topic {{topic}} a tus repos en GitHub.",
+			"category": "Todavía no hay proyectos en esta categoría."
+		},
+		"filters": {
+			"label": "Filtrar proyectos por categoría",
+			"all": "Todos",
+			"web": "Web",
+			"backend": "Backend",
+			"frontend": "Frontend",
+			"mobile": "Móvil",
+			"database": "Base de datos",
+			"other": "Otros"
 		},
 		"viewAll": "Ver todos",
 		"lead": "Una selección de proyectos personales donde aplico diferentes tecnologías y exploro nuevas ideas."

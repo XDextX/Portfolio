@@ -93,6 +93,9 @@ const TARGETS: PixelTarget[] = [
     { sel: '.layout-topbar select, .layout-topbar label', kind: 'border', floor: 3 },
     { sel: '.theme-btn', kind: 'border', floor: 3 },
     { sel: '.theme-btn', kind: 'icon', floor: 3 },
+    // Spec 040: the filters rest transparent on the band; the current one carries its own fill (RF-3).
+    { sel: '.projects-page__header .project-filter:not([aria-current])', kind: 'text', floor: 4.5 },
+    { sel: '.projects-page__header .project-filter:not([aria-current])', kind: 'border', floor: 3 },
 ];
 
 for (const width of [1280, 390]) {

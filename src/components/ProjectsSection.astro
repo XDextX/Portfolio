@@ -21,6 +21,8 @@ export interface Props {
 	error?: string | null;
 	/** Names of the repositories with an uploaded social preview (spec 032). */
 	previews?: string[];
+	/** Locale key of the message for an empty list; defaults to the topic message (spec 040). */
+	emptyKey?: string;
 }
 
 const {
@@ -31,6 +33,7 @@ const {
 	preview,
 	error = null,
 	previews = [],
+	emptyKey = 'projects.empty.message',
 } = Astro.props;
 
 const headingId = SECTION_TITLES.projects.id;
@@ -68,7 +71,7 @@ const viewAll = t('projects.viewAll');
 		error ? (
 			<p class='empty' role='alert'>{t('projects.error', { detail: error })}</p>
 		) : repos.length === 0 ? (
-			<p class='empty'>{t('projects.empty.message', { topic: topicValue })}</p>
+			<p class='empty'>{t(emptyKey, { topic: topicValue })}</p>
 		) : (
 			<>
 				<div class='projects-grid'>

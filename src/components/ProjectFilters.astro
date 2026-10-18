@@ -1,0 +1,108 @@
+---
+import { t } from '@i18n/index';
+import { PROJECT_CATEGORIES, ALL_FILTER, type CategoryKey } from '../data/projectCategories';
+
+/** Props of the filters row. */
+export interface Props {
+	/** The category the page shows; null means Todos (spec 040). */
+	current: CategoryKey | null;
+}
+
+/**
+ * The row of category filters under the projects header: plain links the server renders, so it
+ * works without a script and the back button returns to the previous filter (spec 040).
+ */
+const { current } = Astro.props;
+
+const filters = [
+	{ ...ALL_FILTER, key: null, href: '/proyectos' },
+	...PROJECT_CATEGORIES.map((c) => ({ ...c, href: `/proyectos?cat=${c.key}` })),
+];
+---
+
+<nav class='project-filters' aria-label={t('projects.filters.label')}>
+	{
+		filters.map((f) => (
+			<a class='project-filter' href={f.href} aria-current={f.key === current ? 'page' : undefined}>
+				<span class='project-filter__mark' aria-hidden='true' style={`--icon: url(/icons/ui/${f.icon}.svg)`}></span>
+				{t(f.labelKey)}
+			</a>
+		))
+	}
+</nav>
+
+<script>
+	// The router scrolls to the top on every new URL; a filter is a new URL (?cat=), so it restores
+	// the scroll in astro:after-swap, before the new view is captured (spec 040 RF-9). A short
+	// category reserves the missing height first, or the browser clamps the scroll and the row jumps.
+	document.addEventListener('astro:page-load', () => {
+		document.addEventListener('astro:before-preparation', (e) => {
+			if (e.navigationType === 'traverse' || !e.sourceElement?.closest('.project-filter')) return;
+			const y = scrollY;
+			document.addEventListener('astro:after-swap', () => {
+				// Measured from the sheet's own edge (its end margin is not scrollable): something
+				// overflowing can make the document taller than the sheet.
+				const sheet = document.querySelector('main');
+				if (sheet && y + innerHeight > document.documentElement.scrollHeight) {
+					const end = sheet.getBoundingClientRect().bottom + scrollY;
+					sheet.style.minBlockSize = `${sheet.offsetHeight + y + innerHeight - end}px`;
+				}
+				scrollTo({ left: 0, top: y, behavior: 'instant' });
+			}, { once: true });
+		}, { once: true });
+	});
+</script>
+
+<style>
+	.project-filters {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--sp-2);
+		margin-block-start: var(--sp-2);
+	}
+
+	/* Two controls side by side state their height (AGENTS): the same literal as the toggle's row. */
+	.project-filter {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--sp-2);
+		box-sizing: border-box;
+		block-size: 2.5rem;
+		padding-inline: var(--sp-3);
+		border: 1px solid var(--control-border);
+		border-radius: var(--radius-md);
+		color: var(--text-color);
+		font-size: var(--fs-sm);
+		font-weight: 600;
+		text-decoration: none;
+		white-space: nowrap;
+		transition:
+			border-color var(--dur) var(--ease),
+			color var(--dur) var(--ease);
+	}
+
+	.project-filter:hover:not([aria-current]) {
+		border-color: var(--accent-text);
+		color: var(--accent-text);
+	}
+
+	.project-filter:focus-visible {
+		outline: 2px solid var(--focus-ring);
+		outline-offset: 2px;
+	}
+
+	.project-filter[aria-current] {
+		background: var(--accent-surface);
+		color: var(--accent-surface-text);
+		border-color: transparent;
+		view-transition-name: project-filter-current;
+	}
+
+	.project-filter__mark {
+		inline-size: 1.1rem;
+		block-size: 1.1rem;
+		background-color: currentColor;
+		-webkit-mask: var(--icon) center / contain no-repeat;
+		mask: var(--icon) center / contain no-repeat;
+	}
+</style>

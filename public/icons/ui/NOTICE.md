@@ -30,5 +30,9 @@ outline glyphs, painted the same way; the skills row's brand logos live apart, i
 | `file-code.svg` | Tabler Icons v3.49.0, `icons/outline/file-code.svg` | `LICENSE-tabler.txt` | Project card: no known language |
 | `send.svg` | Tabler Icons v3.49.0, `icons/outline/send.svg` | `LICENSE-tabler.txt` | Contact form: the send button (spec 029) |
 | `circle-check.svg` | Tabler Icons v3.49.0, `icons/outline/circle-check.svg` | `LICENSE-tabler.txt` | Hero: each step of the phrases' flow (spec 035) |
+| `layout-grid.svg` | Tabler Icons v3.49.0, `icons/outline/layout-grid.svg` | `LICENSE-tabler.txt` | Projects filter: All (spec 040) |
+| `world.svg` | Tabler Icons v3.49.0, `icons/outline/world.svg` | `LICENSE-tabler.txt` | Projects filter: Web (spec 040) |
+| `device-mobile.svg` | Tabler Icons v3.49.0, `icons/outline/device-mobile.svg` | `LICENSE-tabler.txt` | Projects filter: Mobile (spec 040) |
+| `dots.svg` | Tabler Icons v3.49.0, `icons/outline/dots.svg` | `LICENSE-tabler.txt` | Projects filter: Other (spec 040) |
 
 Tabler Icons: https://github.com/tabler/tabler-icons
