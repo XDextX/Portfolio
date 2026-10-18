@@ -56,6 +56,15 @@ describe('README rewrite (spec 037 RF-1, RF-6)', () => {
         [CAMO_A, CAMO_B, RAW, FOREIGN].forEach((u, i) => { back = back.replace(`src="${readmeImagePath(USER, 'repo', i)}"`, `src="${u}"`); });
         expect(back).toBe(README.replace(` srcset="${CAMO_B} 2x"`, ''));
     });
+
+    it('serves the rewritten HTML from one README fetch', async () => {
+        const urls = github();
+        const gh = await load();
+        const html = await gh.getReadme(gh.USER, 'repo');
+        expect(html).toContain(`src="${gh.readmeImagePath(gh.USER, 'repo', 0)}"`);
+        await gh.getReadmeImage(gh.USER, 'repo', '0');
+        expect(urls.filter((u) => u.endsWith('/readme'))).toHaveLength(1);
+    });
 });
 
 describe('README image route (spec 037 RF-2 to RF-5)', () => {

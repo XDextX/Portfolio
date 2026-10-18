@@ -101,7 +101,8 @@ export function getRepo(name: string, now = Date.now()): Promise<GitHubRepo | nu
  */
 export async function getReadme(owner: string, name: string, now = Date.now()): Promise<string | null> {
     if (!isOwner(owner)) return null;
-    return rawReadme(name, now);
+    const raw = await rawReadme(name, now);
+    return raw === null ? null : rewriteReadmeImages(raw, USER, name);
 }
 
 function rawReadme(name: string, now: number): Promise<string | null> {
