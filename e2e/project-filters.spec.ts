@@ -27,7 +27,7 @@ async function open(page: Page, theme: Theme, route = '/proyectos', lang = 'es')
 }
 
 const hex = (rgb: string) => '#' + (rgb.match(/\d+/g)!.slice(0, 3).map((n) => Number(n).toString(16).padStart(2, '0')).join(''));
-const NAV = '.projects-page__header .project-filters a';
+const NAV = '.page-header .project-filters a';
 
 for (const lang of ['es', 'en']) {
     test(`seven links in order, each with its label and an aria-hidden glyph mask — ${lang} (RF-1)`, async ({ page }) => {
@@ -51,7 +51,7 @@ for (const lang of ['es', 'en']) {
             if (!got.glyph) offenders.push(`RF-1: link ${i} (${f.href}) has no aria-hidden glyph`);
             else if (!got.mask.includes(`/icons/ui/${f.icon}.svg`)) offenders.push(`RF-1: link ${i} glyph mask "${got.mask}", want /icons/ui/${f.icon}.svg`);
         });
-        const label = await page.locator('.projects-page__header .project-filters').first().getAttribute('aria-label');
+        const label = await page.locator('.page-header .project-filters').first().getAttribute('aria-label');
         if (label !== l.label) offenders.push(`RF-1: nav aria-label "${label}", want "${l.label}"`);
         expect(offenders, offenders.join('\n')).toEqual([]);
     });
@@ -62,7 +62,7 @@ for (const theme of THEMES) for (const current of [null, 'backend']) {
         await open(page, theme, current ? `/proyectos?cat=${current}` : '/proyectos');
         const r = await page.evaluate((sel) => {
             const links = [...document.querySelectorAll<HTMLAnchorElement>(sel)];
-            const header = document.querySelector('.projects-page__header');
+            const header = document.querySelector('.page-header');
             return {
                 inHeader: links.every((a) => header?.contains(a)),
                 current: links.map((a, i) => ({ i, c: a.getAttribute('aria-current') })).filter((x) => x.c !== null),
@@ -73,7 +73,7 @@ for (const theme of THEMES) for (const current of [null, 'backend']) {
         }, NAV);
         const offenders: string[] = [];
         const want = FILTERS.findIndex((f) => f.key === current);
-        if (!r.inHeader) offenders.push('RF-3: the links sit outside .projects-page__header');
+        if (!r.inHeader) offenders.push('RF-3: the links sit outside .page-header');
         if (r.current.length !== 1 || r.current[0].i !== want || r.current[0].c !== 'page') offenders.push(`RF-3: aria-current on ${JSON.stringify(r.current)}, want only link ${want} = page`);
         r.links.forEach((l, i) => {
             if (i === want) {
@@ -113,11 +113,11 @@ test('nothing scrolls sideways at 360px (RF-1)', async ({ page }) => {
 const settled = (page: Page) => page.evaluate(() => new Promise<void>((done) => {
     document.addEventListener('astro:page-load', () => setTimeout(done, 700), { once: true });
 }));
-const headerBox = (page: Page) => page.evaluate(() => { const r = document.querySelector('.projects-page__header')!.getBoundingClientRect(); return { x: r.left, y: r.top + scrollY, w: r.width, h: r.height }; });
+const headerBox = (page: Page) => page.evaluate(() => { const r = document.querySelector('.page-header')!.getBoundingClientRect(); return { x: r.left, y: r.top + scrollY, w: r.width, h: r.height }; });
 
 test('the header is excluded from the transition and keeps its box across a filter click (RF-6)', async ({ page }) => {
     await open(page, 'light');
-    const scoped = await page.locator('.projects-page__header').getAttribute('data-astro-transition-scope');
+    const scoped = await page.locator('.page-header').getAttribute('data-astro-transition-scope');
     expect(scoped, 'header carries no data-astro-transition-scope (transition:animate none)').not.toBeNull();
     const before = await headerBox(page);
     const done = settled(page);
