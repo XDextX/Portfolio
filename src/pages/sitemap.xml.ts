@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { listRepos } from "./lib/github";
+import { CANONICAL_ORIGIN } from "../data/site";
 
-const SITE = "https://portfolio-dext.vercel.app";
 const TTL_MS = 30 * 60 * 1000;
 
 let cache: { xml: string; at: number } | null = null;
@@ -12,7 +12,7 @@ type SitemapUrl = {
     priority: string;
 };
 
-export const GET: APIRoute = async ({ site }) => {
+export const GET: APIRoute = async () => {
     if (cache && Date.now() - cache.at < TTL_MS) {
         return new Response(cache.xml, {
             headers: {
@@ -22,7 +22,7 @@ export const GET: APIRoute = async ({ site }) => {
         });
     }
 
-    const origin = (site?.origin ?? SITE).replace(/\/$/, "");
+    const origin = CANONICAL_ORIGIN;
 
     const urls: SitemapUrl[] = [
         { loc: `${origin}/`, changefreq: "weekly", priority: "1.0" },

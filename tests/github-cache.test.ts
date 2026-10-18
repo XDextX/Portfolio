@@ -2,13 +2,13 @@ import { describe, it, expect, vi, afterEach, beforeAll } from 'vitest';
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { setLocale } from '@i18n/index';
 import { buildRepo, mockTextResponse } from './helpers/github-mocks';
+import { CANONICAL_ORIGIN } from '../src/data/site';
 
 // Spec 023: pages read GitHub data in process (RF-1), one 30-minute cache serves pages and
 // routes (RF-2), the sitemap lists its own environment's repos (RF-3), and the public routes
 // keep their answers (RF-4).
 
 const ORIGIN = 'https://example.test';
-const PRODUCTION = 'https://portfolio-dext.vercel.app';
 const TTL_MS = 30 * 60 * 1000;
 const REPOS = [buildRepo({ id: 1, name: 'alpha' }), buildRepo({ id: 2, name: 'beta' })];
 
@@ -83,15 +83,30 @@ describe('one cache for pages and routes (spec 023 RF-2)', () => {
     });
 });
 
-describe('the sitemap (spec 023 RF-3)', () => {
-    it('lists the stubbed repositories without asking the production address', async () => {
+describe('the sitemap (spec 023 RF-3, spec 042 RF-2)', () => {
+    const locs = (xml: string) => [...xml.matchAll(/<loc>([^<]*)<\/loc>/g)].map((m) => m[1]);
+    const cases: [string, any][] = [['no site', {}], ['a preview site', { site: new URL(ORIGIN) }]];
+
+    for (const [label, ctx] of cases) {
+        it(`lists the stubbed repositories on the canonical origin, with ${label}, without asking it`, async () => {
+            await lib();
+            const urls = github();
+            const { GET } = await import('../src/pages/sitemap.xml');
+            const found = locs(await (await GET(ctx as any)).text());
+            for (const r of REPOS) expect(found, r.name).toContain(`${CANONICAL_ORIGIN}/proyectos/${r.name}`);
+            expect(found.filter((l) => !l.startsWith(`${CANONICAL_ORIGIN}/`)), 'a <loc> off the canonical origin').toEqual([]);
+            const asked = urls.filter((u) => u.startsWith(CANONICAL_ORIGIN));
+            expect(asked, `asked the canonical origin: ${asked.join(', ')}`).toEqual([]);
+        });
+    }
+
+    it('still lists / and /proyectos on the canonical origin when GitHub fails', async () => {
         await lib();
-        const urls = github();
+        github('fail');
         const { GET } = await import('../src/pages/sitemap.xml');
-        const xml = await (await GET({ site: new URL(PRODUCTION) } as any)).text();
-        for (const r of REPOS) expect(xml, r.name).toContain(`/proyectos/${r.name}`);
-        const prod = urls.filter((u) => u.startsWith(PRODUCTION));
-        expect(prod, `asked production:\n${prod.join('\n')}`).toEqual([]);
+        const res = await GET({ site: new URL(ORIGIN) } as any);
+        expect(res.status).toBe(200);
+        expect(locs(await res.text())).toEqual([`${CANONICAL_ORIGIN}/`, `${CANONICAL_ORIGIN}/proyectos`]);
     });
 });
 
