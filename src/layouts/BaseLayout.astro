@@ -3,6 +3,7 @@ import { ClientRouter } from 'astro:transitions';
 import '../styles/global.css';
 import LanguageSwitcher from '@components/LanguageSwitcher.astro';
 import ThemeSwitch from '@components/ThemeSwitch.astro';
+import ReturnToOrigin from '@components/ReturnToOrigin.astro';
 import { ABOUT } from '../data/about';
 
 interface Props {
@@ -91,6 +92,8 @@ const stylesVersion = import.meta.env.STYLES_VERSION; // the public sheets' cont
 		if (saved === 'dark')
 			document.documentElement.setAttribute('data-theme', 'dark');
 	</script>
+
+	<ReturnToOrigin />
 
 	<main>
 		<header class='layout-topbar' transition:name='layout-topbar' transition:animate='none'>

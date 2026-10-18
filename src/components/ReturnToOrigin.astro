@@ -1,0 +1,45 @@
+---
+/**
+ * Remembers the link the visitor leaves a page by and, when a link brings them back, shows that
+ * link focused (spec 041). It has no markup: it is the script, rendered once by the layout.
+ */
+---
+
+<script>
+	import type { TransitionBeforePreparationEvent } from 'astro:transitions/client';
+	import { isLeaving, originKey, parseOrigin } from '../utils/returnOrigin';
+
+	const tryGet = (k: string) => { try { return sessionStorage.getItem(k); } catch { return null; } };
+	const trySet = (k: string, v: string) => { try { sessionStorage.setItem(k, v); } catch { /* blocked: no origin */ } };
+	const links = (href: string) => document.querySelectorAll<HTMLAnchorElement>(`a[href="${CSS.escape(href)}"]`);
+
+	// The router scrolls to the top on every new URL, so the restore runs in astro:after-swap,
+	// before the new view is captured (the technique of spec 040 RF-9): never a frame at the top.
+	// One stable handler, never `once`: a once-listener re-armed on page-load is dead between a
+	// swap and its page-load, and a Back click in that gap (~500ms) found no listener.
+	let disarm = () => {};
+	const onLeave = (e: TransitionBeforePreparationEvent) => {
+		disarm(); // a navigation that is superseded before its swap must not restore on the next one
+		disarm = () => {};
+		if (e.navigationType === 'traverse' || !isLeaving(e.from, e.to) || e.to.hash) return;
+		const link = e.sourceElement instanceof Element ? e.sourceElement.closest<HTMLAnchorElement>('a[href]') : null;
+		if (link) {
+			const href = link.getAttribute('href')!;
+			const index = [...links(href)].indexOf(link);
+			const heading = link.closest('section[aria-labelledby]')?.getAttribute('aria-labelledby') ?? null;
+			trySet(originKey(e.from.pathname), JSON.stringify({ href, index, heading }));
+		}
+		const record = parseOrigin(tryGet(originKey(e.to.pathname)));
+		if (!record) return;
+		const restore = () => {
+			const origin = links(record.href)[record.index];
+			const target = origin ?? (record.heading ? document.querySelector(`[id="${CSS.escape(record.heading)}"]`) : document.querySelector('main h1'));
+			if (!target) return;
+			target.scrollIntoView({ block: 'center', behavior: 'instant' });
+			origin?.focus({ preventScroll: true });
+		};
+		document.addEventListener('astro:after-swap', restore, { once: true });
+		disarm = () => document.removeEventListener('astro:after-swap', restore);
+	};
+	document.addEventListener('astro:page-load', () => document.addEventListener('astro:before-preparation', onLeave));
+</script>
