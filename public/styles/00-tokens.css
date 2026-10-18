@@ -101,6 +101,14 @@
     --max-w: 72rem;
 }
 
+/* Spec 048: the topbar holds 44px controls under a finger (30px + 2 × 0.75rem is 3.375rem). The 44
+   repeats the literal in the header controls' own coarse blocks, by design (plan D-2). */
+@media (pointer: coarse) {
+    :root {
+        --topbar-block: calc(44px + 2 * 0.75rem);
+    }
+}
+
 /* ── Theme change transition ──
    Scoped to surfaces that actually change colour on a flip: `:root *` reached
    791 of 881 elements. Only color/background/border-color — `all` would drag in
