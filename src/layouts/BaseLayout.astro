@@ -5,6 +5,7 @@ import LanguageSwitcher from '@components/LanguageSwitcher.astro';
 import ThemeSwitch from '@components/ThemeSwitch.astro';
 import ReturnToOrigin from '@components/ReturnToOrigin.astro';
 import { ABOUT } from '../data/about';
+import { CANONICAL_ORIGIN } from '../data/site';
 
 interface Props {
 	title?: string;
@@ -26,9 +27,9 @@ const {
 } = Astro.props as Props;
 
 // Social tags follow the serving origin, so a preview deployment shows its own card; canonical
-// and hreflang stay on the production site astro.config.mjs declares (spec 034).
+// and hreflang stay on the canonical origin (specs 034, 042).
 const site       = Astro.url.origin;
-const production = new URL(Astro.site ?? Astro.url).origin;
+const production = CANONICAL_ORIGIN;
 const image      = `${site}/og-cover-${locale}.png`;
 const canonical  = `${production}${Astro.url.pathname}`;
 const shareUrl   = `${site}${Astro.url.pathname}`;
