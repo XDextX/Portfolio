@@ -7,6 +7,7 @@ import Readme from '@components/Readme.astro';
 import type { GitHubRepo } from '@type/github';
 import { applyLocale } from '@utils/locale';
 import { getRepo } from '@lib/github';
+import { CANONICAL_ORIGIN } from '../../data/site';
 import { projectDescription, projectEntity } from '@utils/seo';
 import LanguageBadge from '@components/LanguageBadge.astro';
 
@@ -53,7 +54,7 @@ const view = repo && (() => {
 
 	const jsonLd = projectEntity({
 		repo,
-		url: `${Astro.url.origin}/proyectos/${repo.name}`,
+		url: `${CANONICAL_ORIGIN}/proyectos/${repo.name}`,
 		description: desc,
 	});
 	return { title, desc, lang, hasDemo, topics, updated, fmtDate, starsLabel, forksLabel, directions, jsonLd };

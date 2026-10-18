@@ -6,6 +6,7 @@ import HeroBackground from '@components/HeroBackground.astro';
 import ProjectFilters from '@components/ProjectFilters.astro';
 import { t, tWords } from '@i18n/index';
 import { SECTION_TITLES } from '../../data/sectionTitles';
+import { CANONICAL_ORIGIN } from '../../data/site';
 import type { GitHubRepo } from '@type/github';
 import { applyLocale } from '@utils/locale';
 import { listRepos, listPreviewNames, sortRepos, parseCategory, inCategory } from '@lib/github';
@@ -55,7 +56,7 @@ const jsonLd = {
 	'@type': 'CollectionPage',
 	name: t('projects.title'),
 	description: pageDescription,
-	url: Astro.url.href,
+	url: `${CANONICAL_ORIGIN}${Astro.url.pathname}${Astro.url.search}`,
 	numberOfItems: repos.length,
 	about: topic
 		? `GitHub repositories tagged with ${topic}`

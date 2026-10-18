@@ -1,4 +1,5 @@
 import { CONTACTS } from "./contacts.ts";
+import { CANONICAL_ORIGIN } from "./site.ts";
 import type { ContactItem, HeroSocial } from "../types/contact";
 
 export type Lang = "es" | "en";
@@ -79,7 +80,7 @@ export const JsonLdAbout = {
     "@type": "Person",
     name: ABOUT.name,
     jobTitle: ABOUT.title,
-    url: "https://portfolio-dext.vercel.app",
+    url: CANONICAL_ORIGIN,
     image: `${ABOUT.avatar}`,
     // Publishable profiles (excluding mailto:) feed sameAs / rel=me.
     // `sameAs` on the contact is the flag that marks a profile as publishable,
