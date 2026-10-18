@@ -15,11 +15,21 @@ export async function openIn(page: Page, base: string, theme: Theme, route: stri
     await gotoPastOverlay(page, base + route);
 }
 
+// The GitHub avatar, the page's one remote asset: a 1×1 PNG answered locally, so `load` never waits
+// on GitHub (two of 875 runs timed out on it, 2026-10-17). The request still fires and is recorded.
+const AVATAR = /^https:\/\/(github\.com\/[^/]+\.png|avatars\.githubusercontent\.com\/)/;
+const PIXEL = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=', 'base64');
+const routed = new WeakSet<Page>();
+
 /**
- * Navigate, reloading past Vite's error overlay up to twice.
+ * Navigate, reloading past Vite's error overlay up to twice; the avatar is answered locally.
  * @param page the Playwright page @param url the full address
  */
 export async function gotoPastOverlay(page: Page, url: string) {
+    if (!routed.has(page)) {
+        routed.add(page);
+        await page.route(AVATAR, (r) => r.fulfill({ contentType: 'image/png', body: PIXEL }));
+    }
     await page.goto(url);
     // A cold dev server can answer the first request mid dependency-optimisation, and
     // Vite's error overlay then swallows every click (three hook runs failed this way).
