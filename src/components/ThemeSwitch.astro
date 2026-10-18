@@ -76,6 +76,12 @@ import { t } from '@i18n/index';
 	// No global id — the button is found by data attribute, so several
 	// instances on one page work independently.
 	document.addEventListener('astro:page-load', () => {
+		// The router copies <html>'s attributes from the new page, which has no data-theme: carry it
+		// over before the swap, or the dark body paints light for a frame and fades back (spec 040).
+		document.addEventListener('astro:before-swap', (e) => {
+			if (currentTheme() === 'dark') e.newDocument.documentElement.setAttribute('data-theme', 'dark');
+		}, { once: true });
+
 		document
 			.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]')
 			.forEach((btn) => {
