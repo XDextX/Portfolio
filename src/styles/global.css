@@ -36,15 +36,15 @@ main {
     max-width: min(100% - 2.5rem, var(--max-w));
     margin: clamp(1rem, 4vw, 3rem) auto;
     background-color: var(--main-bg);
-    padding-block: clamp(1.5rem, 4vw, 4rem);
-    padding-inline: clamp(1.25rem, 4vw, 4rem);
-    border-radius: var(--radius-lg);
+    padding-block: var(--sheet-pad-block);
+    padding-inline: var(--sheet-pad-inline);
+    border-radius: var(--sheet-radius);
 }
 
 @media (max-width: 480px) {
     main {
         max-width: 100%;
         margin: 0;
-        border-radius: 0;
+        --sheet-radius: 0;
     }
 }

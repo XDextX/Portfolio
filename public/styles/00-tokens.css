@@ -79,6 +79,13 @@
     --radius-lg: 14px;     /* the page sheet             */
     --radius-pill: 999px;  /* level badge, language chip */
 
+    /* The sheet's frame, declared once: main pads and rounds with these, and the hero band
+       (spec 036) reaches past them to the sheet's edge. --topbar-block is the topbar's height. */
+    --sheet-pad-block: clamp(1.5rem, 4vw, 4rem);
+    --sheet-pad-inline: clamp(1.25rem, 4vw, 4rem);
+    --sheet-radius: var(--radius-lg);
+    --topbar-block: 3.375rem;
+
     /* Shadows. Reserved for the sheet and for elevation on interaction. Cards
        at rest carry a border and no shadow, so a shadow always means "this
        responded to you". */

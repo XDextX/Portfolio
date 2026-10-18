@@ -116,5 +116,10 @@ const siteName   = `${ABOUT.name} - Portfolio`;
 		justify-content: flex-end;
 		gap: var(--sp-3);
 		padding: 0.75rem 1rem;
+		/* An explicit height the hero band reaches up by, and above that band (spec 036). */
+		block-size: var(--topbar-block);
+		box-sizing: border-box;
+		position: relative;
+		z-index: 1;
 	}
 </style>
