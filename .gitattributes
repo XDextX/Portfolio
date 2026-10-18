@@ -1,0 +1,4 @@
+# The tests outweigh the site's code in bytes, so GitHub's Linguist named the repo TypeScript
+# (80.4%) instead of Astro; leave them out of the language count only.
+tests/** linguist-detectable=false
+e2e/** linguist-detectable=false
