@@ -30,9 +30,12 @@ test('README images load from this origin only (RF-1)', async ({ page }) => {
             if (i.srcset) offenders.push(`RF-1: ${route} image ${n} keeps a srcset`);
             // An image broken at its source (camo answering 404) shows as 502, the spec's edge case;
             // anything else that fails to load is this site's fault.
+            // Not loaded yet is not broken: a lazy image below the fold may still be pending, so the
+            // route itself is asked — an image back (200, image/*) or a source failure (502).
             if (!i.loaded) {
-                const status = (await page.request.get(`${origin}${i.src}`)).status();
-                if (status !== 502) offenders.push(`RF-1: ${route} image ${n} (${i.src}) did not load: ${status}`);
+                const res = await page.request.get(`${origin}${i.src}`);
+                const ok = (res.status() === 200 && (res.headers()['content-type'] ?? '').startsWith('image/')) || res.status() === 502;
+                if (!ok) offenders.push(`RF-1: ${route} image ${n} (${i.src}) answers ${res.status()} ${res.headers()['content-type']}`);
             }
         }
         const extra = [...hosts].filter((h) => h !== new URL(E2E_URL).host && !BASELINE.has(h));
