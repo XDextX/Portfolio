@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
-import fs from 'fs';
 import path from 'path';
 import { E2E_URL } from './helpers/server';
+import { CANONICAL_ORIGIN } from '../src/data/site';
 import { worstOverBackground } from './helpers/pixels';
 import { readTokens, cardHtml, phrasesFor, cardLocales } from '../scripts/og-cover.ts';
 
@@ -12,8 +12,8 @@ const ROOT = process.cwd();
 const PUBLIC = path.join(ROOT, 'public');
 const LOCALES_DIR = path.join(ROOT, 'i18n', 'locales');
 const readings = readTokens(path.join(PUBLIC, 'styles'));
-// Spec 034: canonical and hreflang stay on the site astro.config.mjs declares.
-const CONFIGURED_SITE = new URL(fs.readFileSync(path.join(ROOT, 'astro.config.mjs'), 'utf-8').match(/site:\s*['"]([^'"]+)['"]/)![1]).origin;
+// Spec 034: canonical and hreflang stay on the canonical origin (spec 042).
+const CONFIGURED_SITE = CANONICAL_ORIGIN;
 
 for (const locale of cardLocales(LOCALES_DIR)) {
     test(`card layout: avatar left, name on one line in ink and gold, italic phrases — ${locale} (RF-1, RF-2, RF-4)`, async ({ page }) => {
