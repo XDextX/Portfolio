@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 import { E2E_URL } from './helpers/server';
+import { worstOverBackground } from './helpers/pixels';
 import { readTokens, cardHtml, phrasesFor, cardLocales } from '../scripts/og-cover.ts';
 
 // Spec 033: the social card laid out like the hero (RF-1, RF-2, RF-4), checked on the generator's
@@ -51,6 +52,17 @@ for (const locale of cardLocales(LOCALES_DIR)) {
         // AGENTS: IBM Plex Sans, never the fallback (every card before spec 033 drew in Segoe UI).
         if (!r.fonts.includes('normal loaded') || !r.fonts.includes('italic loaded')) offenders.push(`fonts: ${r.fonts.join(', ')}`);
         if (r.phrases.length !== 4 || r.phrases.some((s) => s !== 'italic')) offenders.push(`RF-4: phrases ${JSON.stringify(r.phrases)}`);
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+
+    test(`card text clears 4.5:1 over the band — ${locale} (spec 036 RF-4)`, async ({ page }) => {
+        await page.setViewportSize({ width: readings.geometry.widthPx, height: readings.geometry.heightPx });
+        const avatar = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=';
+        await page.setContent(cardHtml(readings, phrasesFor(locale, LOCALES_DIR), readings.type.baseSizePx, PUBLIC, avatar), { waitUntil: 'load' });
+        await page.evaluate(() => document.fonts.ready);
+        const targets = ['.given', '.family', '.role', '.location', '.phrases li'].map((sel) => ({ sel, kind: 'text' as const, floor: 4.5 }));
+        const offenders = (await worstOverBackground(page, targets, '.text, .avatar', 'body')).filter((w) => w.ratio < w.floor)
+            .map((w) => `RF-4: ${w.sel} ${w.fg} on ${w.at} is ${w.ratio.toFixed(2)}:1`);
         expect(offenders, offenders.join('\n')).toEqual([]);
     });
 

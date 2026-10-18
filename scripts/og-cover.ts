@@ -10,6 +10,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { ABOUT } from '../src/data/about.ts';
+import { HERO_SHAPES, HERO_BOX, TILE_RADIUS } from '../src/data/heroShapes.ts';
 
 /** The card's own padding. The sheet's spacing scale has no step for a 1200px
  *  canvas, and a token invented for one file would be a second source. */
@@ -49,6 +50,8 @@ export interface Readings {
     tokens: Record<string, string | undefined>;
     /** The dark theme's tokens the card draws, verbatim from `themes/dark.css`, same contract. */
     darkTokens: Record<string, string | undefined>;
+    /** The hero band's tokens (spec 036), each alias resolved to its dark value. */
+    band: Record<string, string | undefined>;
     /** Root-absolute paths the font sheet names, read from it and not listed here. */
     fonts: string[];
     /**
@@ -234,10 +237,19 @@ export function readTokens(sheetDir: string): Readings {
     const darkTokens: Record<string, string | undefined> = {};
     for (const name of DARK_TOKENS) darkTokens[name] = dark[name];
     const contentWidthPx = 1200 - CARD_PADDING_PX * 2;
+    // A band token is an alias (`var(--neutral-50)`): followed through the dark sheet, then the base.
+    const resolve = (name: string): string | undefined => {
+        let v = dark[name] ?? sheet[name];
+        for (let m; v && (m = v.match(/^var\((--[\w-]+)\)$/)); ) v = dark[m[1]] ?? sheet[m[1]];
+        return v;
+    };
+    const band: Record<string, string | undefined> = {};
+    for (const shape of HERO_SHAPES) { const name = 'side' in shape ? shape.fill : shape.stroke; band[name] = resolve(name); }
 
     return {
         tokens,
         darkTokens,
+        band,
         fonts,
         // The names stay here: this is the only place that knows which value is
         // drawn over which, so a caller cannot pair two colours the card never
@@ -352,6 +364,11 @@ export function cardHtml(readings: Readings, phrases: string[], fitSizePx: numbe
         })
         .join('\n');
     const family = content.family ? ` <span class="family">${escapeHtml(content.family)}</span>` : '';
+    // Anchored right (xMaxYMid): the card is 1.9:1 against the band's 2.69:1, and the right edge
+    // carries the gold tile and the diagonals (spec 036).
+    const band = HERO_SHAPES.map((sh) => 'side' in sh
+        ? `<rect x="${sh.cx - sh.side / 2}" y="${sh.cy - sh.side / 2}" width="${sh.side}" height="${sh.side}" rx="${sh.side * TILE_RADIUS}" transform="rotate(45 ${sh.cx} ${sh.cy})" fill="${readings.band[sh.fill]}"/>`
+        : `<line x1="${sh.from[0]}" y1="${sh.from[1]}" x2="${sh.to[0]}" y2="${sh.to[1]}" stroke="${readings.band[sh.stroke]}" stroke-width="5" stroke-linecap="round"/>`).join('');
 
     return `<!doctype html>
 <html>
@@ -359,7 +376,10 @@ export function cardHtml(readings: Readings, phrases: string[], fitSizePx: numbe
 <meta charset="utf-8">
 <style>
 ${fontFaces}
+.band { position: absolute; inset: 0; width: 100%; height: 100%; }
+.avatar, .text { position: relative; }
 body {
+    position: relative;
     margin: 0;
     width: ${geometry.widthPx}px;
     height: ${geometry.heightPx}px;
@@ -423,6 +443,7 @@ body {
 </style>
 </head>
 <body>
+<svg class="band" viewBox="0 0 ${HERO_BOX.width} ${HERO_BOX.height}" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">${band}</svg>
 <img class="avatar" src="${avatarDataUrl}" alt="">
 <div class="text">
 <h1 class="name"><span class="given">${escapeHtml(content.given)}</span>${family}</h1>
@@ -435,8 +456,8 @@ body {
 
 /** Validate that every required token is present and non-empty (state 4). */
 function validateTokens(readings: Readings): void {
-    for (const name of [...DRAWN_TOKENS, ...DARK_TOKENS]) {
-        const value = readings.tokens[name] ?? readings.darkTokens[name];
+    for (const name of [...DRAWN_TOKENS, ...DARK_TOKENS, ...Object.keys(readings.band)]) {
+        const value = readings.tokens[name] ?? readings.darkTokens[name] ?? readings.band[name];
         if (typeof value !== 'string' || value.trim() === '') {
             throw new Error(`Required token ${name} is missing or empty in 00-tokens.css or themes/dark.css`);
         }

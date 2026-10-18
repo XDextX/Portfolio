@@ -1114,3 +1114,26 @@ describe('the hero band shapes (spec 036 RF-2)', () => {
     });
 });
 
+describe('the og-cover band (spec 036 RF-4)', () => {
+    it('imports the hero shape definition', () => {
+        const src = stripComments(fs.readFileSync(GENERATOR, 'utf-8'));
+        expect(src).toMatch(/import\s*\{[^}]*\bHERO_SHAPES\b[^}]*\}\s*from\s*['"][^'"]*data\/heroShapes\.ts['"]/);
+    });
+
+    it('draws one shape per entry, in the dark theme values', async () => {
+        const { HERO_SHAPES } = await import('../src/data/heroShapes');
+        const dark = sheetTokens(path.join(SHEET_DIR, 'themes', 'dark.css'));
+        const base = sheetTokens();
+        const resolve = (name: string): string | undefined => {
+            let v = dark[name] ?? base[name];
+            for (let m; v && (m = v.match(/^var\((--[\w-]+)\)$/)); ) v = dark[m[1]] ?? base[m[1]];
+            return v;
+        };
+        const html = await card('es');
+        const svg = html.match(/<svg class="band"[\s\S]*?<\/svg>/)?.[0] ?? '';
+        const shapes = [...svg.matchAll(/<(rect|line)\b[^>]*>/g)].map((m) => m[0].match(/(?:fill|stroke)="([^"]+)"/)?.[1]);
+        expect(shapes, 'the card holds no band, or a different number of shapes').toHaveLength(HERO_SHAPES.length);
+        const want = HERO_SHAPES.map((s: any) => resolve(s.fill ?? s.stroke));
+        expect(shapes).toEqual(want);
+    });
+});
