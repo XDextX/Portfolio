@@ -40,8 +40,8 @@ for (const width of [1280, 390]) {
     });
 }
 
-test('no band off the home page (RF-1)', async ({ page }) => {
-    await open(page, 1280, 'light', '/proyectos?lang=es');
+test('no band on a page without a header band: the project detail (RF-1)', async ({ page }) => {
+    await open(page, 1280, 'light', '/proyectos/Portfolio?lang=es');
     expect(await page.locator('.hero-band').count()).toBe(0);
 });
 

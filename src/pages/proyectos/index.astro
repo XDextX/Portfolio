@@ -2,7 +2,8 @@
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Breadcrumbs from '@components/BreadCrumbs.astro';
 import ProjectsSection from '@components/ProjectsSection.astro';
-import { t } from '@i18n/index';
+import HeroBackground from '@components/HeroBackground.astro';
+import { t, tWords } from '@i18n/index';
 import { SECTION_TITLES } from '../../data/sectionTitles';
 import type { GitHubRepo } from '@type/github';
 import { applyLocale } from '@utils/locale';
@@ -31,6 +32,9 @@ try {
 }
 
 const previews = await listPreviewNames();
+
+// The gold word renders on one markup line: template whitespace would change the h1's name.
+const words = tWords('projects.title');
 
 const pageTitle = `${t('projects.title')} - Portfolio`;
 const pageDescription = topic
@@ -61,15 +65,14 @@ const jsonLd = {
 	locale={locale}
 >
 	<section class='wrap projects-page'>
-		<Breadcrumbs directions={directions} />
-
 		<header class='projects-page__header'>
-			<h1
-				transition:name={SECTION_TITLES.projects.transitionName}
-				class='projects-page__title'
-			>
-				{t('projects.title')}
-			</h1>
+			<HeroBackground variant='header' />
+			<Breadcrumbs directions={directions} />
+			<div class='projects-page__row'>
+				<span class='projects-page__tile' aria-hidden='true'></span>
+				<h1 transition:name={SECTION_TITLES.projects.transitionName} class='projects-page__title'>{words.map((w, i) => <>{i > 0 && ' '}{w.gold ? <span class='projects-page__word'>{w.text}</span> : w.text}</>)}</h1>
+			</div>
+			<p class='projects-page__lead'>{t('projects.lead')}</p>
 			{
 				topic && (
 					<p class='projects-page__topic'>
@@ -102,15 +105,53 @@ const jsonLd = {
 			gap: 1.25rem;
 		}
 
+		/* The band (spec 036) draws under the header's content and reaches the sheet's top edge. */
 		.projects-page__header {
+			position: relative;
+			isolation: isolate;
 			display: flex;
 			flex-direction: column;
 			gap: 0.5rem;
 		}
 
+		.projects-page__row {
+			display: flex;
+			align-items: center;
+			gap: var(--sp-4);
+		}
+
+		.projects-page__tile {
+			flex: none;
+			inline-size: 3rem;
+			block-size: 3rem;
+			border-radius: var(--radius-md);
+			background: var(--accent-surface);
+		}
+
+		/* Painted through the glyph's own alpha, so it follows the theme (AGENTS, UI icons). */
+		.projects-page__tile::before {
+			content: '';
+			display: block;
+			inline-size: 100%;
+			block-size: 100%;
+			background-color: var(--accent-surface-text);
+			-webkit-mask: url(/icons/ui/folder.svg) center / 60% no-repeat;
+			mask: url(/icons/ui/folder.svg) center / 60% no-repeat;
+		}
+
 		.projects-page__title {
 			margin: 0;
+			color: var(--text-color);
+		}
+
+		.projects-page__word {
 			color: var(--accent-text);
+		}
+
+		.projects-page__lead {
+			margin: 0;
+			max-width: var(--measure);
+			color: var(--text-secondary);
 		}
 
 		.projects-page__topic code {
