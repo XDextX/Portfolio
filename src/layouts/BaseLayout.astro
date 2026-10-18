@@ -93,7 +93,7 @@ const stylesVersion = import.meta.env.STYLES_VERSION; // the public sheets' cont
 	</script>
 
 	<main>
-		<header class='layout-topbar'>
+		<header class='layout-topbar' transition:name='layout-topbar' transition:animate='none'>
 			<LanguageSwitcher locale={locale} />
 			<ThemeSwitch />
 		</header>
