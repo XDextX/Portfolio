@@ -1,142 +1,75 @@
-# 🌐 Portfolio — Full-Stack Developer
+# Portfolio
 
-[![Astro](https://img.shields.io/badge/Astro-Framework-blueviolet?style=flat-square&logo=astro)](https://astro.build)
+[![Astro](https://img.shields.io/badge/Astro-5-blueviolet?style=flat-square&logo=astro)](https://astro.build)
 [![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=flat-square&logo=vercel)](https://portfolio-dext.vercel.app)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](./LICENSE)
 
-> **Full-Stack Developer** | .NET • Angular • Java • TypeScript • SSE  
-> Costa Rica 🇨🇷 — Building efficient, scalable, and real-time web applications.
+A full-stack developer's portfolio, in Spanish and English, rendered per request on Vercel.
 
----
+**Live:** [portfolio-dext.vercel.app](https://portfolio-dext.vercel.app)
 
-## 🚀 Live Demo
+## Features
 
-🌎 **[portfolio-dext.vercel.app](https://portfolio-dext.vercel.app)**
+- Projects loaded from the GitHub API by topic and cached in memory for 30 minutes, filterable by
+  category, each with its own page that renders the repository's README.
+- Spanish and English, resolved per request.
+- Light and dark themes.
+- Contact form that sends through Mailtrap.
+- Per-route title, description and JSON-LD, plus a social card per locale.
+- Downloadable CV.
 
-Explora mis proyectos, tecnologías, experiencia profesional y formas de contacto.
-
----
-
-## 🧠 Tecnologías Principales
-
-| Categoría | Tecnologías |
-|------------|--------------|
-| **Frontend** | Astro · Angular 19 · TypeScript · HTML · CSS |
-| **Backend / APIs** | .NET · Java · Spring Boot · Node.js |
-| **DevOps / Cloud** | Vercel · Docker · GitHub Actions · Azure Functions |
-| **Bases de Datos** | SQL Server · PostgreSQL · MongoDB |
-| **Testing** | Vitest · Playwright |
-
----
-
-## 🏗️ Estructura del Proyecto
-
-```
-📁 src/
-├── components/          → Componentes reutilizables (ProjectCard, ProjectsSection, etc.)
-├── layouts/             → Plantillas base (BaseLayout.astro)
-├── pages/
-│   ├── api/             → Rutas API server-side (github-list.json, v1/projects/[name].json)
-│   ├── lib/             → Helpers de GitHub (ghListByTopic, ghRepo, ghRepoReadme)
-│   └── proyectos/       → Páginas dinámicas de proyecto ([name].astro)
-├── styles/              → CSS global y variables
-└── types/               → Tipos TypeScript (GitHubRepo, etc.)
-📁 public/
-├── cv/                  → Archivos descargables (CV, imágenes OG)
-├── icons/               → Recursos estáticos
-└── styles/
-    ├── 00-tokens.css    → Design tokens
-    └── themes/          → Archivos de tema
-```
-
----
-
-## 💡 Características
-
-✅ Sección de presentación con resumen profesional  
-✅ Carga dinámica de proyectos desde la **API de GitHub** (caché TTL 30 min)  
-✅ Etiquetas visuales de tecnologías  
-✅ Diseño responsive y accesible  
-✅ SEO configurado con metadatos OG y Twitter Cards  
-✅ Despliegue continuo en **Vercel**  
-✅ Descarga de CV directamente desde el sitio  
-
----
-
-## ⚙️ Scripts de desarrollo
+## Getting started
 
 ```bash
-# Instalar dependencias
 npm install
-
-# Ejecutar en modo desarrollo
 npm run dev
-
-# Compilar para producción
-npm run build
-
-# Vista previa del build
-npm run preview
-
-# Tests unitarios (Vitest)
-npm run test
-
-# Tests E2E (Playwright)
-npm run test:e2e
 ```
 
----
+| Command            | What it does                         |
+| ------------------ | ------------------------------------ |
+| `npm run dev`      | Dev server                           |
+| `npm run build`    | Production build (Vercel adapter)    |
+| `npm run preview`  | Serve the build                      |
+| `npm test`         | Unit and source checks (Vitest)      |
+| `npm run test:e2e` | Rendered checks (Playwright)         |
 
-## 🧩 Variables de entorno
+The pre-commit hook runs both test suites and cancels the commit if either fails.
 
-Crea un archivo `.env` en la raíz con tu token de GitHub (solo lectura):
+## Environment variables
 
-```env
-GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxx
-GITHUB_USERNAME=tu_usuario
-GITHUB_TOPIC=tu_topic
+Put them in `.env` locally and in the Vercel project for production. They are read server-side
+only and never reach the client.
+
+| Variable             | Purpose                                                        |
+| -------------------- | -------------------------------------------------------------- |
+| `GITHUB_TOKEN`       | Read-only token; optional, but avoids the anonymous rate limit |
+| `GITHUB_USERNAME`    | Whose repositories to list                                     |
+| `GITHUB_TOPIC`       | Only repositories carrying this topic are shown                |
+| `MAILTRAP_API_TOKEN` | Contact form: Mailtrap sending token                           |
+| `CONTACT_FROM_EMAIL` | Contact form: verified sender address                          |
+| `MAILTRAP_ENDPOINT`  | Optional; overrides the send URL (e.g. the Mailtrap sandbox)   |
+
+The category filters read the repositories' GitHub topics (`web`, `backend`, `frontend`,
+`mobile`, `database`); a repository without one of them shows under no category.
+
+## Where things live
+
+| Path                 | Contents                                                       |
+| -------------------- | -------------------------------------------------------------- |
+| `src/data/`          | Site content: identity, contacts, skills, experience           |
+| `src/components/`    | Astro components                                               |
+| `src/pages/`         | Routes and API endpoints; GitHub and contact helpers in `lib/` |
+| `i18n/locales/`      | Spanish and English strings                                    |
+| `public/styles/`     | Design tokens, themes and shared component styles              |
+| `scripts/og-cover.ts`| Generates `public/og-cover-<locale>.png`                       |
+| `tests/`, `e2e/`     | Vitest and Playwright suites                                   |
+
+Regenerate the social cards after changing the identity, the hero or the tokens:
+
+```bash
+node --no-warnings scripts/og-cover.ts
 ```
 
-> `GITHUB_TOKEN` es opcional pero recomendado para evitar rate limits. Los tokens **nunca se exponen al cliente**.
+## Contributing
 
----
-
-## 🌍 SEO y Metadatos
-
-Ubicados en `src/layouts/BaseLayout.astro`. Nada se escribe a mano: el nombre y el
-título salen de `ABOUT`, y la imagen `og-cover.png` se genera con `scripts/og-cover.ts`.
-
-```astro
-<title>{title}</title>
-<meta name='description' content={description} />
-<meta property='og:title'       content={title} />
-<meta property='og:description' content={description} />
-<meta property='og:image'       content={image} />
-<meta property='og:site_name'   content={siteName} />
-<meta name='twitter:card'        content='summary_large_image' />
-```
-
----
-
-## 📷 Vista Previa
-
-<!-- Agrega aquí una captura de pantalla del sitio -->
-<!-- ![Vista previa](./public/og-image.png) -->
-
----
-
-## 📄 Licencia
-
-Este proyecto está bajo la licencia MIT — ver el archivo [LICENSE](./LICENSE) para más detalles.
-
----
-
-## 👋 Sobre mí
-
-Desarrollador Full-Stack con más de 6 años de experiencia creando soluciones escalables y eficientes.  
-Actualmente me enfoco en mejorar mi portafolio y contribuir a proyectos open-source.
-
-La identidad y los datos de contacto se definen una sola vez, en `src/data/about.ts` y
-`src/data/contacts.ts`. Este README no los duplica.
-
-🔗 [LinkedIn](https://www.linkedin.com/in/german-montero-ramirez/) · [GitHub](https://github.com/XDextX) · [Contacto](https://portfolio-dext.vercel.app)
+Read [`docs/constitution.md`](docs/constitution.md) and [`AGENTS.md`](AGENTS.md) first. Features
+and refactors start with a spec in [`specs/`](specs/).
