@@ -262,6 +262,77 @@ const { given, family } = ABOUT.nameParts;
 		text-decoration: none;
 	}
 
+	/* From 64rem the sheet holds tile, text and a phrases column: at 1024px the text keeps about
+	   470px beside the phrases, and the name spans both, so it stays on one line. The content
+	   column dissolves into the grid so the markup order (name, phrases, bio) never changes. */
+	@media (min-width: 64rem) {
+		.about-grid {
+			grid-template-columns: 160px minmax(0, 1fr) max-content;
+			grid-template-areas:
+				'avatar meta meta'
+				'avatar bio phrases'
+				'avatar actions phrases';
+			/* The phrases column runs taller than bio and actions; the last row takes the surplus, so
+			   the buttons keep the 1rem gap under the bio (44px without it at 1280px). */
+			grid-template-rows: auto auto 1fr;
+			row-gap: 1rem;
+		}
+
+		.about-avatar { grid-area: avatar; }
+		.about-content { display: contents; }
+		.about-meta { grid-area: meta; }
+		.about-bio { grid-area: bio; }
+		.about-actions { grid-area: actions; align-self: start; }
+
+		/* Stacked, the phrases read as a list; a gold check at each, joined by gold segments, keeps
+		   them a flow (owner, spec 035). The check is hollow, so the line is drawn between checks, never
+		   through one; 0.75em is half the 1.5 line box, where each check is centred. */
+		.about-phrases {
+			--dot: 1.25rem;
+			--seg-gap: 3px;
+			grid-area: phrases;
+			align-self: center;
+			position: relative;
+			flex-direction: column;
+			gap: var(--sp-3);
+			padding-inline-start: calc(var(--dot) + var(--sp-3));
+			font-size: var(--fs-xl);
+			line-height: 1.5;
+		}
+
+		.about-phrases li {
+			position: relative;
+		}
+
+		.about-phrases li::before,
+		.about-phrases li + li::before {
+			content: '';
+			position: absolute;
+			inset-inline-start: calc(-1 * (var(--dot) + var(--sp-3)));
+			inset-block-start: calc(0.75em - var(--dot) / 2);
+			inline-size: var(--dot);
+			block-size: var(--dot);
+			margin: 0;
+			border: 0;
+			background: var(--accent-text);
+			mask: url(/icons/ui/circle-check.svg) center / contain no-repeat;
+			-webkit-mask: url(/icons/ui/circle-check.svg) center / contain no-repeat;
+			transform: none;
+		}
+
+		/* From under this check to over the next: the item, the gap, less one check and two gaps. */
+		.about-phrases li:not(:last-child)::after {
+			content: '';
+			position: absolute;
+			inset-inline-start: calc(-1 * (var(--dot) + var(--sp-3)) + var(--dot) / 2 - 1px);
+			inset-block-start: calc(0.75em + var(--dot) / 2 + var(--seg-gap));
+			inline-size: 2px;
+			block-size: calc(100% + var(--sp-3) - var(--dot) - 2 * var(--seg-gap));
+			background: var(--accent-text);
+		}
+	}
+
+	/* Responsive */
 	/* Responsive */
 	@media (max-width: 720px) {
 		.about-grid {

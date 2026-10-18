@@ -72,3 +72,37 @@ for (const theme of THEMES) {
         expect(offenders, offenders.join('\n')).toEqual([]);
     });
 }
+
+test('phrases stacked on the right at 1280 (RF-3)', async ({ page }) => {
+    await open(page, 1280);
+    const r = await readHero(page);
+    const offenders: string[] = [];
+    const p = r.phrases;
+    if (p.length !== 4) offenders.push(`RF-3: ${p.length} phrases`);
+    // The flow (owner, at the visual review): a gold check at each phrase, a gold segment to the next.
+    p.forEach((li, i) => {
+        if (li.before === 'none' || li.before === 'normal' || li.mark.bg !== r.accent || li.mark.w !== li.mark.h || !li.mark.mask.includes('circle-check.svg')) offenders.push(`RF-3: phrase ${i + 1} mark is ${JSON.stringify(li.mark)}`);
+        if (i < p.length - 1) {
+            const next = p[i + 1];
+            const end = li.t + li.seg.top + li.seg.h;
+            const nextMark = next.t + next.mark.top;
+            if (li.seg.content === 'none' || li.seg.bg !== r.accent || li.seg.h <= 0 || end > nextMark + 0.5 || nextMark - end > 6) offenders.push(`RF-3: phrase ${i + 1} segment ${JSON.stringify(li.seg)} does not reach the next check (ends ${end.toFixed(1)}, check at ${nextMark.toFixed(1)})`);
+        } else if (li.seg.content !== 'none' && li.seg.content !== 'normal') offenders.push('RF-3: the last phrase draws a segment past the flow');
+        if (i && li.t < p[i - 1].b - 0.5) offenders.push(`RF-3: phrase ${i + 1} is not below phrase ${i}`);
+        if (li.l < r.bio!.r) offenders.push(`RF-3: phrase ${i + 1} starts at ${li.l.toFixed(0)}, inside the bio's column (ends ${r.bio!.r.toFixed(0)})`);
+        if (li.r > r.content!.r + 0.5) offenders.push(`RF-3: phrase ${i + 1} overflows the hero`);
+        if (li.style !== 'italic') offenders.push(`RF-3: phrase ${i + 1} is ${li.style}`);
+    });
+    expect(offenders, offenders.join('\n')).toEqual([]);
+});
+
+test('phrases in a row under the name at 390 (RF-4)', async ({ page }) => {
+    await open(page, 390);
+    const r = await readHero(page);
+    const offenders: string[] = [];
+    const p = r.phrases;
+    if (p.some((li) => li.t < r.sub!.b - 0.5 || li.b > r.bio!.t + 0.5)) offenders.push('RF-4: the phrases are not between the role line and the bio');
+    if (!p.some((li, i) => i && Math.abs(li.t - p[i - 1].t) < 1)) offenders.push('RF-4: no two phrases share a line');
+    if (!p.slice(1).every((li) => li.before !== 'none' && li.before !== 'normal')) offenders.push('RF-4: the chevrons are gone');
+    expect(offenders, offenders.join('\n')).toEqual([]);
+});

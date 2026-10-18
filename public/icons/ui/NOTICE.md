@@ -29,5 +29,6 @@ outline glyphs, painted the same way; the skills row's brand logos live apart, i
 | `plant.svg` | Tabler Icons v3.49.0, `icons/outline/plant.svg` | `LICENSE-tabler.txt` | Experience: Plantas y Flores (company glyph) |
 | `file-code.svg` | Tabler Icons v3.49.0, `icons/outline/file-code.svg` | `LICENSE-tabler.txt` | Project card: no known language |
 | `send.svg` | Tabler Icons v3.49.0, `icons/outline/send.svg` | `LICENSE-tabler.txt` | Contact form: the send button (spec 029) |
+| `circle-check.svg` | Tabler Icons v3.49.0, `icons/outline/circle-check.svg` | `LICENSE-tabler.txt` | Hero: each step of the phrases' flow (spec 035) |
 
 Tabler Icons: https://github.com/tabler/tabler-icons
