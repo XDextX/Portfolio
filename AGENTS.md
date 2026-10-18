@@ -78,6 +78,9 @@ call.
 
 - **NEVER push. NEVER commit unless asked.** Finishing a task does not imply committing, and if you
   are unsure whether to commit, ask.
+- **A new spec is drafted from `main`, and gets its own branch once approved**: `spec/NNN-<name>`,
+  the spec folder's name, cut from `main`. Its plan, code and commits live there; merging it back
+  is the owner's call. Work left on `main` is what mixes two specs in one history.
 - **The pre-commit hook runs `npm test`, then `npm run test:e2e`, and cancels the commit on
   failure**, so a rejected commit is the suite failing, not a git bug. Fix the test first; `--no-verify` is an escape hatch only when
   that is intentional.
