@@ -4,6 +4,7 @@
 **Size:** M
 **Approved:** 2026-10-17 · one clarify round, one minor finding applied; approved with its plan and tasks · 85 lines
 **Implemented:** 2026-10-17 · commits `d135111` (sheet frame), `4975cfb` (hero band), `8658899` (card band) · 4/4 tasks, `npm test` 262/262, e2e 175/175 · 5/5 RF, NFRs and edge cases validated (light and dark at 1280, 800 and 390, both cards, owner visual approval); 5 injections red
+**Changed:** 2026-10-17 · owner, after seeing it at 1860 px: the band ended in a hard line at the hero's bottom; its last 6rem now fade to transparent (RF-6), commit `a435c8c`, the fade shown red before it. (The shapes the owner saw outside the sheet came from a stale cached 00-tokens.css, not from the code.)
 
 ## Context and goal
 
@@ -47,6 +48,10 @@ the theme toggle, weighs about a kilobyte and adds no file and no request. The n
   with the dark tokens' values; the cards' text clears 4.5:1 over the shapes at the worst pixel.
 - RF-5: THE SYSTEM leaves the hero's layout as it is. — **Check:** the boxes of the tile, the name,
   the phrases, the bio and the actions are the same with and without the band, within 1px.
+- RF-6: THE SYSTEM fades the band's last 6rem to transparent, so the shapes blend into the sheet
+  instead of ending in a straight line at the hero's bottom. — **Check:** in both themes at 1280 and
+  1860 px, the band's bottom rows match the same rows with the band removed within 2 per channel,
+  while a row 6rem above the bottom still differs where a shape crosses it.
 
 ## Non-functional requirements
 
