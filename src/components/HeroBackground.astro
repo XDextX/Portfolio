@@ -6,12 +6,19 @@ import { HERO_SHAPES, HERO_BOX, TILE_RADIUS } from '../data/heroShapes';
  * the hero's bottom, decoration only. Each shape takes the class of its `--band-*` token, so the
  * fills live in the stylesheet below and follow the theme.
  */
+export interface Props {
+	/** Which band: the home hero draws every shape; a short page header skips the hero-only ones (spec 039). */
+	variant?: 'hero' | 'header';
+}
+
+const { variant = 'hero' } = Astro.props;
+const shapes = HERO_SHAPES.filter((s) => !('only' in s && s.only) || s.only === variant);
 const cls = (token: string) => token.slice(2);
 ---
 
 <div class='hero-band' aria-hidden='true'>
 	<svg viewBox={`0 0 ${HERO_BOX.width} ${HERO_BOX.height}`} preserveAspectRatio='xMidYMid slice' focusable='false'>
-		{HERO_SHAPES.map((s) => 'side' in s
+		{shapes.map((s) => 'side' in s
 			? <rect data-shape class={cls(s.fill)} x={s.cx - s.side / 2} y={s.cy - s.side / 2} width={s.side} height={s.side} rx={s.side * TILE_RADIUS} transform={`rotate(45 ${s.cx} ${s.cy})`} />
 			: <line data-shape class={cls(s.stroke)} x1={s.from[0]} y1={s.from[1]} x2={s.to[0]} y2={s.to[1]} />)}
 	</svg>
