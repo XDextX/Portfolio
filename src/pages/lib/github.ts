@@ -101,7 +101,64 @@ export function getRepo(name: string, now = Date.now()): Promise<GitHubRepo | nu
  */
 export async function getReadme(owner: string, name: string, now = Date.now()): Promise<string | null> {
     if (!isOwner(owner)) return null;
+    return rawReadme(name, now);
+}
+
+function rawReadme(name: string, now: number): Promise<string | null> {
     return cached(`readme:${name}`, now, () => ghRepoReadme({ user: USER, name }));
+}
+
+// Spec 037: README images come from this origin, not GitHub's image hosts (constitution 2). The
+// route takes an index, never a URL, and fetches only what GitHub's HTML names, on GitHub's hosts.
+export const README_IMAGE_HOSTS: ReadonlySet<string> = new Set([
+    "camo.githubusercontent.com", "raw.githubusercontent.com", "github.com", "user-images.githubusercontent.com",
+]);
+
+const IMG_TAG = /<img\b[^>]*>/g;
+
+/**
+ * The `src` of every image in a README, in document order.
+ * @param html GitHub's rendered README @returns absolute image URLs
+ */
+export function readmeImageUrls(html: string): string[] {
+    return [...html.matchAll(IMG_TAG)].map((m) => m[0].match(/\ssrc="([^"]*)"/)?.[1] ?? "");
+}
+
+/**
+ * The same-origin path of a README's N-th image (spec 037).
+ * @param owner the repository owner @param name the repository @param n the image's index
+ * @returns the route's path
+ */
+export function readmeImagePath(owner: string, name: string, n: number): string {
+    return `/api/v1/projects/readme/${encodeURIComponent(owner)}/${encodeURIComponent(name)}/image/${n}`;
+}
+
+/**
+ * A README with each image pointed at its index on this origin and its `srcset` dropped; nothing
+ * else changes. @param html GitHub's rendered README @param owner the owner @param name the repo
+ * @returns the rewritten HTML
+ */
+export function rewriteReadmeImages(html: string, owner: string, name: string): string {
+    let n = 0;
+    return html.replace(IMG_TAG, (tag) => tag
+        .replace(/\s+srcset="[^"]*"/, "")
+        .replace(/(\ssrc=")[^"]*(")/, (_, a, b) => `${a}${readmeImagePath(owner, name, n++)}${b}`));
+}
+
+/**
+ * A README's N-th image as GitHub serves it; null for another owner, no README, an index not a
+ * whole number in range, or a host outside GitHub's (spec 037 RF-3).
+ * @param owner as asked @param name as asked @param n as asked @param now the clock @returns it or null
+ */
+export async function getReadmeImage(owner: string, name: string, n: string, now = Date.now()): Promise<Response | null> {
+    if (!isOwner(owner) || !/^\d+$/.test(n)) return null;
+    const raw = await rawReadme(name, now);
+    if (raw === null) return null;
+    const url = readmeImageUrls(raw)[Number(n)];
+    if (!url) return null;
+    let host = "";
+    try { host = new URL(url).host; } catch { return null; }
+    return README_IMAGE_HOSTS.has(host) ? fetch(url) : null;
 }
 
 // Spec 032: a repository's social preview, only when the owner uploaded one. GraphQL alone
