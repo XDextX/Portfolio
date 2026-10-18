@@ -45,20 +45,6 @@ const readHero = (page: Page) => page.locator(HERO).evaluate((hero) => {
     };
 });
 
-for (const locale of ['es', 'en']) {
-    test(`bio and the email label — ${locale} (RF-5, RF-6)`, async ({ page }) => {
-        await open(page, 1280, 'light', locale);
-        const r = await readHero(page);
-        const card = await page.locator('.contact-card:has(a[href^="mailto:"]) .contact-label').first().textContent();
-        const offenders: string[] = [];
-        if (r.bioText !== (ABOUT.bio as any)[locale]) offenders.push(`RF-5: the bio reads "${r.bioText?.slice(0, 50)}…"`);
-        if ((ABOUT.bio as any).es !== PROPOSAL_BIO) offenders.push('RF-5: ABOUT.bio.es is not the proposal\'s sentence');
-        if (r.email !== 'Email') offenders.push(`RF-6: the hero's email button reads "${r.email}"`);
-        if (card?.trim() !== at(read(locale), 'about.social.email')) offenders.push(`RF-6: the contact card reads "${card?.trim()}", not about.social.email`);
-        expect(offenders, offenders.join('\n')).toEqual([]);
-    });
-}
-
 for (const theme of THEMES) {
     test(`tile and role line — ${theme} (RF-1, RF-2)`, async ({ page }) => {
         await open(page, 1280, theme);
@@ -106,3 +92,29 @@ test('phrases in a row under the name at 390 (RF-4)', async ({ page }) => {
     if (!p.slice(1).every((li) => li.before !== 'none' && li.before !== 'normal')) offenders.push('RF-4: the chevrons are gone');
     expect(offenders, offenders.join('\n')).toEqual([]);
 });
+
+for (const locale of ['es', 'en']) {
+    test(`bio and the email label — ${locale} (RF-5, RF-6)`, async ({ page }) => {
+        await open(page, 1280, 'light', locale);
+        const r = await readHero(page);
+        const card = await page.locator('.contact-card:has(a[href^="mailto:"]) .contact-label').first().textContent();
+        const offenders: string[] = [];
+        if (r.bioText !== (ABOUT.bio as any)[locale]) offenders.push(`RF-5: the bio reads "${r.bioText?.slice(0, 50)}…"`);
+        if ((ABOUT.bio as any).es !== PROPOSAL_BIO) offenders.push('RF-5: ABOUT.bio.es is not the proposal\'s sentence');
+        if (r.email !== 'Email') offenders.push(`RF-6: the hero's email button reads "${r.email}"`);
+        if (card?.trim() !== at(read(locale), 'about.social.email')) offenders.push(`RF-6: the contact card reads "${card?.trim()}", not about.social.email`);
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+}
+
+for (const theme of THEMES) {
+    test(`avatar beside the name on a phone — 390px, ${theme} (RF-7)`, async ({ page }) => {
+        await open(page, 390, theme);
+        const r = await readHero(page);
+        const offenders: string[] = [];
+        if (r.tile!.r > r.name!.l + 0.5) offenders.push(`RF-7: the tile (right edge ${r.tile!.r.toFixed(0)}) is not left of the name (${r.name!.l.toFixed(0)})`);
+        if (Math.abs(r.tile!.t - r.name!.t) > 4) offenders.push(`RF-7: the tile's top ${r.tile!.t.toFixed(0)} is not level with the name's ${r.name!.t.toFixed(0)}`);
+        if (r.bio!.l >= r.name!.l - 0.5) offenders.push(`RF-7: the bio starts at ${r.bio!.l.toFixed(0)}, not under the tile`);
+        expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+}

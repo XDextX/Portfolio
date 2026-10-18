@@ -333,16 +333,31 @@ const { given, family } = ABOUT.nameParts;
 	}
 
 	/* Responsive */
-	/* Responsive */
+	/* One column on a phone, but the tile beside the name rather than above it (owner, spec 035):
+	   the content column dissolves so the name can share the first row with the tile. */
 	@media (max-width: 720px) {
 		.about-grid {
-			grid-template-columns: 1fr;
+			grid-template-columns: 5.5rem minmax(0, 1fr);
+			grid-template-areas:
+				'avatar meta'
+				'phrases phrases'
+				'bio bio'
+				'actions actions';
+			gap: 1rem;
 			text-align: left;
 		}
 
+		.about-content { display: contents; }
+		.about-meta { grid-area: meta; }
+		.about-phrases { grid-area: phrases; }
+		.about-bio { grid-area: bio; }
+		.about-actions { grid-area: actions; }
+
 		.about-avatar {
-			width: 120px;
-			height: 120px;
+			grid-area: avatar;
+			width: 5.5rem;
+			height: 5.5rem;
+			padding: var(--sp-2);
 		}
 	}
 </style>
