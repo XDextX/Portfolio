@@ -43,3 +43,28 @@ describe('experience shape (spec 013 RF-2, RF-3, RF-4)', () => {
         expect(offenders, offenders.join('\n')).toEqual([]);
     });
 });
+
+/** Every Spanish string of the experience data: role, period, location and bullets. */
+function spanishStrings(jobs: typeof EXPERIENCES): string[] {
+    return jobs.flatMap((j) => [j.role.es, j.period.es, ...(j.location ? [j.location.es] : []), ...j.bullets.es]);
+}
+
+describe('the Spanish copy keeps its accents (spec 046 RF-4)', () => {
+    const WANT: [string, string][] = [['Optimizacion', 'Optimización'], ['indices', 'índices'], ['Implementacion', 'Implementación'], ['Diseno', 'Diseño'], ['moviles', 'móviles'], ['Administracion', 'Administración']];
+    const has = (text: string, word: string) => new RegExp(`(?<!\\p{L})${word}(?!\\p{L})`, 'u').test(text);
+
+    it('spanishStrings reads the role, period, location and every bullet', () => {
+        const job = { role: { es: 'R', en: '' }, company: 'C', period: { es: 'P', en: '' }, location: { es: 'L', en: '' }, bullets: { es: ['b1', 'b2'], en: [] } };
+        expect(spanishStrings([job as any])).toEqual(['R', 'P', 'L', 'b1', 'b2']);
+    });
+
+    it('no unaccented word is left, and each accented one is present', () => {
+        const text = spanishStrings(EXPERIENCES).join('\n');
+        const offenders: string[] = [];
+        for (const [plain, accented] of WANT) {
+            if (has(text, plain)) offenders.push(`"${plain}" is still unaccented`);
+            if (!has(text, accented)) offenders.push(`"${accented}" is missing`);
+        }
+        expect(offenders, offenders.join('; ')).toEqual([]);
+    });
+});

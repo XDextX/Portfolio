@@ -32,9 +32,9 @@ export const EXPERIENCES: Experience[] = [
         bullets: {
             es: [
                 "Desarrollo de APIs y servicios con .NET Core.",
-                "Optimizacion de consultas e indices SQL.",
+                "Optimización de consultas e índices SQL.",
                 "Frontend en Angular y TypeScript.",
-                "Implementacion de SSE para actualizaciones en tiempo real.",
+                "Implementación de SSE para actualizaciones en tiempo real.",
             ],
             en: [
                 "Built APIs and services with .NET Core.",
@@ -63,9 +63,9 @@ export const EXPERIENCES: Experience[] = [
         bullets: {
             es: [
                 "Desarrollo de aplicaciones web y escritorio con .NET y ASP.NET.",
-                "Diseno de APIs con C#, Node.js y JavaScript.",
-                "Apps moviles con Kotlin y Java.",
-                "Administracion de bases de datos SQL Server.",
+                "Diseño de APIs con C#, Node.js y JavaScript.",
+                "Apps móviles con Kotlin y Java.",
+                "Administración de bases de datos SQL Server.",
             ],
             en: [
                 "Developed web and desktop apps with .NET and ASP.NET.",
