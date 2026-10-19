@@ -27,10 +27,13 @@ in the code. `AGENTS.md` elaborates these and yields to them on any conflict.
    with the same `sortRepos()`. *Check:* one reader per secret, in no client
    asset; one ranking definition.
 7. **Tests run on what is installed.** `npm test` (`vitest --run tests`) and
-   `npm run test:e2e` (Playwright on the installed Chrome) are the whole policy,
-   and the pre-commit hook runs both; a new dependency to test something needs
-   its reason written down first. *Check:* `devDependencies` grew by nothing,
-   and `.husky/pre-commit` runs both commands.
+   `npm run test:e2e` (Playwright on the installed Chrome) are the whole policy:
+   the pre-commit hook runs `npm test`, and CI runs both on every pull request
+   into `main`, the rendered suite on the runner's installed Chrome; a new
+   dependency to test something needs its reason written down first. *Check:*
+   `devDependencies` grew by nothing, `.husky/pre-commit` runs `npm test` and no
+   rendered suite, and `.github/workflows/ci.yml` runs both on pull requests
+   into `main` with no browser download (`tests/ci-policy.test.ts`).
 8. **Assert data and rendered output, not source substrings.** A source grep
    breaks on refactors that change nothing visible. *Check:* a new one needs a
    reason it cannot be a data check.

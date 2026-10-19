@@ -68,6 +68,10 @@ call.
 - **Run tests with `npm test`, rendered checks with `npm run test:e2e`** — both are the policy
   (constitution 7). Never run bare `npx vitest --run`: without the `tests` argument it also picks up
   the Playwright spec, which vitest cannot run.
+- **A task runs the rendered checks it touches before it is reported done** — the hook no longer
+  runs them, so a red e2e found at the pull request is a task that skipped this. A check that fails
+  only on CI's Linux Chrome is a finding for the owner, re-measured on the runner, never a widened
+  tolerance.
 - **Do not run `lint` or `format`, and do not add them.** Neither eslint nor prettier is a
   dependency, and adding a tool to make a check pass is constitution 7. If they are ever wired up,
   add them to `.husky/pre-commit` in the same change.
@@ -81,9 +85,11 @@ call.
 - **A new spec is drafted from `main`, and gets its own branch once approved**: `spec/NNN-<name>`,
   the spec folder's name, cut from `main`. Its plan, code and commits live there; merging it back
   is the owner's call. Work left on `main` is what mixes two specs in one history.
-- **The pre-commit hook runs `npm test`, then `npm run test:e2e`, and cancels the commit on
-  failure**, so a rejected commit is the suite failing, not a git bug. Fix the test first; `--no-verify` is an escape hatch only when
-  that is intentional.
+- **The pre-commit hook runs the `shortcut:` check and `npm test`, and cancels the commit on
+  failure**, so a rejected commit is the suite failing, not a git bug. Fix the test first;
+  `--no-verify` is an escape hatch only when that is intentional. CI runs `npm test` and
+  `npm run test:e2e` on every pull request into `main` and every push to it. *Settled by
+  `tests/ci-policy.test.ts`.*
 - `AGENTS.md` and `docs/constitution.md` get their own `docs:` commit, never folded into a
   component commit.
 - **`git checkout -- .` destroys uncommitted work silently** — it restores from the index, and this
