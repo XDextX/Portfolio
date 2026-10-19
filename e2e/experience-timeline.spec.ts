@@ -277,7 +277,8 @@ test.describe('experience card layout (spec 028)', () => {
                 else if (Math.abs(c.tile.w - c.tile.h) > 1 || c.tile.w < 40) offenders.push(`RF-1: ${job} tile is ${c.tile.w.toFixed(0)}×${c.tile.h.toFixed(0)}, not a square of 40px or more`);
                 if (c.tile && !c.tileHoldsIcon) offenders.push(`RF-1: ${job} tile holds no company icon`);
                 if (c.tile && !c.tileHidden) offenders.push(`RF-1: ${job} tile is not aria-hidden`);
-                if (c.tile && (c.tile.r > c.role!.l || c.tile.r > c.company!.l)) offenders.push(`RF-1: ${job} tile does not end before the role and the company`);
+                // Below 40rem spec 046 RF-1 puts the tile on the period's row, above the title (plan D-5).
+                if (width === 1280 && c.tile && (c.tile.r > c.role!.l || c.tile.r > c.company!.l)) offenders.push(`RF-1: ${job} tile does not end before the role and the company`);
                 if (width === 1280) {
                     if (c.location && Math.abs(c.location.r - c.content) > 1) offenders.push(`RF-3: ${job} location ends at ${c.location.r.toFixed(0)}, not the content edge ${c.content.toFixed(0)}`);
                     if (c.location && (c.location.t >= c.role!.b || c.location.b <= c.role!.t)) offenders.push(`RF-3: ${job} location is not level with the role`);
@@ -306,6 +307,108 @@ test.describe('experience card layout (spec 028)', () => {
                     const [na, A] = parts[a]; const [nz, Z] = parts[z];
                     if (A.l < Z.r - 0.5 && Z.l < A.r - 0.5 && A.t < Z.b - 0.5 && Z.t < A.b - 0.5) offenders.push(`NFR: job ${i + 1}: ${na} overlaps ${nz}`);
                 }
+            });
+            expect(offenders, offenders.join('\n')).toEqual([]);
+        });
+    }
+});
+
+// Spec 046: the experience section on a phone. The tile moves onto the period's row below 40rem
+// (RF-1), the role holds one line from 390px (RF-2), a wrapped role or company never ends alone
+// or on its legal suffix (RF-3), and 800 and 1280 keep today's layout.
+test.describe('experience on a phone (spec 046)', () => {
+    const SUFFIXES = ['S.A.', 'S. A.', 'A.'];
+
+    async function open(page: Page, width: number, locale: string) {
+        await page.setViewportSize({ width, height: 844 });
+        await openIn(page, DEV_URL, 'light', `/?lang=${locale}`);
+        await page.locator('#Experience').scrollIntoViewIfNeeded();
+        await page.evaluate(() => document.fonts.ready);
+        await page.waitForTimeout(500);
+    }
+
+    // The words of an element's text grouped by line box, top to bottom (plan block 4).
+    const lineWords = (page: Page, selector: string) => page.locator(selector).evaluateAll((els) => els.map((el) => {
+        const lines: { top: number; words: string[] }[] = [];
+        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+        for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+            for (const m of (n.textContent ?? '').matchAll(/\S+/g)) {
+                const r = document.createRange();
+                r.setStart(n, m.index!); r.setEnd(n, m.index! + m[0].length);
+                const top = r.getClientRects()[0]?.top ?? 0;
+                const line = lines.find((l) => Math.abs(l.top - top) <= 4);
+                if (line) line.words.push(m[0]); else lines.push({ top, words: [m[0]] });
+            }
+        }
+        return lines.sort((a, b) => a.top - b.top).map((l) => l.words);
+    }));
+
+    const geometry = (page: Page) => page.locator('#Experience .exp-card').evaluateAll((cards) => cards.map((c) => {
+        const b = (s: string) => { const e = c.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return { l: r.left, r: r.right, t: r.top, b: r.bottom }; };
+        const item = c.closest('li');
+        const dot = item?.querySelector(':scope > .exp-dot')?.getBoundingClientRect();
+        return { tile: b('.exp-tile'), period: b('.exp-period'), title: b('.exp-title'), header: b('.exp-header'), dotY: dot ? dot.top + dot.height / 2 : null };
+    }));
+
+    for (const width of [360, 390]) {
+        test(`the tile sits on the period row and the title takes the header width — ${width}px (RF-1)`, async ({ page }) => {
+            await open(page, width, 'es');
+            const offenders: string[] = [];
+            (await geometry(page)).forEach((g, i) => {
+                const job = `job ${i + 1}`;
+                if (!g.tile || !g.period || !g.title || !g.header) { offenders.push(`RF-1: ${job} lacks a part`); return; }
+                if (g.tile.t < g.period.t - 1 || g.tile.t > g.period.b + 1) offenders.push(`RF-1: ${job} tile top ${g.tile.t.toFixed(1)} is off the period row (${g.period.t.toFixed(1)}-${g.period.b.toFixed(1)})`);
+                if (Math.abs(g.title.l - g.header.l) > 1) offenders.push(`RF-1: ${job} title starts ${g.title.l.toFixed(1)}, the header ${g.header.l.toFixed(1)}`);
+                if (g.dotY !== null && (g.dotY < g.period.t - 1 || g.dotY > g.period.b + 1)) offenders.push(`RF-1: ${job} rail dot at ${g.dotY.toFixed(1)} is off the period`);
+            });
+            expect(offenders, offenders.join('\n')).toEqual([]);
+        });
+    }
+
+    for (const locale of LOCALES) {
+        test(`each role holds one line at 390px — ${locale} (RF-2)`, async ({ page }) => {
+            await open(page, 390, locale);
+            const lines = await lineWords(page, '#Experience .exp-role');
+            expect(lines.length, 'roles measured').toBeGreaterThan(0);
+            expect(lines.map((l) => l.map((w) => w.join(' '))).filter((l) => l.length !== 1)).toEqual([]);
+        });
+    }
+
+    for (const width of [360, 390]) for (const locale of LOCALES) {
+        test(`a wrapped role or company never ends alone or on its suffix — ${width}px, ${locale} (RF-3)`, async ({ page }) => {
+            await open(page, width, locale);
+            const offenders: string[] = [];
+            for (const sel of ['#Experience .exp-role', '#Experience .exp-company']) {
+                for (const lines of await lineWords(page, sel)) {
+                    if (lines.length < 2) continue;
+                    const last = lines[lines.length - 1];
+                    if (last.length < 2 || SUFFIXES.includes(last.join(' '))) offenders.push(`RF-3: ${sel.split(' ')[1]} ends on "${last.join(' ')}" (${lines.map((l) => l.join(' ')).join(' / ')})`);
+                }
+            }
+            expect(offenders, offenders.join('\n')).toEqual([]);
+        });
+    }
+
+    test('RF-3 reads something: at 360 es at least one heading wraps', async ({ page }) => {
+        await open(page, 360, 'es');
+        const all = [...(await lineWords(page, '#Experience .exp-role')), ...(await lineWords(page, '#Experience .exp-company'))];
+        expect(all.some((l) => l.length >= 2), 'no role or company wraps at 360 es').toBe(true);
+    });
+
+    test('the 360 es role breaks as Desarrollador / Full Stack (RF-3)', async ({ page }) => {
+        await open(page, 360, 'es');
+        const [first] = await lineWords(page, '#Experience .exp-role');
+        expect(first.map((l) => l.join(' '))).toEqual(['Desarrollador', 'Full Stack']);
+    });
+
+    for (const width of [800, 1280]) {
+        test(`from 40rem the tile still sits beside the title — ${width}px (NFR)`, async ({ page }) => {
+            await open(page, width, 'es');
+            const offenders: string[] = [];
+            (await geometry(page)).forEach((g, i) => {
+                if (!g.tile || !g.title) { offenders.push(`job ${i + 1} lacks a part`); return; }
+                if (g.tile.r > g.title.l + 0.5) offenders.push(`job ${i + 1}: tile ends ${g.tile.r.toFixed(1)}, after the title starts ${g.title.l.toFixed(1)}`);
+                if (g.tile.t >= g.title.b) offenders.push(`job ${i + 1}: tile is below the title`);
             });
             expect(offenders, offenders.join('\n')).toEqual([]);
         });
