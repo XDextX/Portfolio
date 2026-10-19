@@ -34,6 +34,14 @@ const iconStyle = `--icon:url(/icons/ui/${e.icon}.svg)`;
 		font-weight: 700;
 	}
 
+	/* Spec 048: padding grows the inline link's box to 44px under a finger without touching the
+	   line it sits on, so a title that wraps keeps its spacing. */
+	@media (pointer: coarse) {
+		.section-title a {
+			padding-block: calc((44px - 1lh) / 2);
+		}
+	}
+
 	.glue {
 		white-space: nowrap;
 	}
