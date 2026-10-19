@@ -15,6 +15,7 @@ import { ABOUT } from '../src/data/about';
 import { init, setLocale, t } from '../i18n/i18n';
 import type { GitHubRepo } from '@type/github';
 import { buildRepo as baseRepo } from './helpers/github-mocks';
+import { CANONICAL_ORIGIN } from '../src/data/site';
 import type { Readings } from '../scripts/og-cover.ts';
 
 const locale = (name: 'es' | 'en') =>
@@ -1067,7 +1068,7 @@ describe('the og-cover generator spells out no colour (spec 033 RF-6)', () => {
 
 // ── Spec 034: the social tags follow the serving origin, search engines keep production ──
 
-const CONFIGURED_SITE = new URL(stripComments(fs.readFileSync(path.join(ROOT, 'astro.config.mjs'), 'utf-8')).match(/site:\s*['"]([^'"]+)['"]/)![1]).origin;
+const CONFIGURED_SITE = CANONICAL_ORIGIN;
 const PREVIEW = 'https://preview.example.test';
 
 /** Every `<meta>`/`<link>` the head carries, as attribute maps. */
@@ -1076,8 +1077,8 @@ function headTags(html: string): Record<string, string>[] {
 }
 
 describe('the head origins (spec 034)', () => {
-    // RF-2 (canonical and hreflang on the configured site) is e2e/og-cover-layout.spec.ts's: the
-    // Container types a `site` option but never applies it, so Astro.site is empty here.
+    // The Container leaves Astro.site empty; nothing reads it any more (spec 042), so canonical and
+    // hreflang can be checked here too.
     it('composes the social tags from the serving origin', async () => {
         const { experimental_AstroContainer: AstroContainer } = await import('astro/container');
         const container = await AstroContainer.create();
@@ -1091,6 +1092,25 @@ describe('the head origins (spec 034)', () => {
         if (meta('name', 'twitter:image') !== `${PREVIEW}/og-cover-es.png`) offenders.push(`RF-1: twitter:image is ${meta('name', 'twitter:image')}`);
         if (meta('property', 'og:url') !== `${PREVIEW}/proyectos`) offenders.push(`RF-1: og:url is ${meta('property', 'og:url')}`);
         expect(offenders, offenders.join('\n')).toEqual([]);
+    });
+
+    it('names the canonical origin in canonical and hreflang, whatever the serving origin (spec 042 RF-1)', async () => {
+        const { experimental_AstroContainer: AstroContainer } = await import('astro/container');
+        const container = await AstroContainer.create();
+        const BaseLayout = (await import('../src/layouts/BaseLayout.astro')).default;
+        setLocale('es');
+        const html = await container.renderToString(BaseLayout, { props: { title: 't', description: 'd', locale: 'es' }, request: new Request(`${PREVIEW}/proyectos?lang=es`) });
+        const tags = headTags(html);
+        const found = {
+            canonical: tags.find((t) => t.rel === 'canonical')?.href,
+            ...Object.fromEntries(['es-CR', 'en-US', 'x-default'].map((l) => [l, tags.find((t) => t.hreflang === l)?.href])),
+        };
+        expect(found).toEqual({
+            canonical: `${CANONICAL_ORIGIN}/proyectos`,
+            'es-CR': `${CANONICAL_ORIGIN}/proyectos`,
+            'en-US': `${CANONICAL_ORIGIN}/proyectos?lang=en`,
+            'x-default': `${CANONICAL_ORIGIN}/proyectos`,
+        });
     });
 
     // A source check on purpose (constitution 8): the rule is about a second copy of a datum.

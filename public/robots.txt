@@ -1,8 +1,0 @@
-User-agent: *
-Allow: /
-
-# Evita que los bots pierdan tiempo en endpoints SSR o APIs
-Disallow: /api/
-
-# Ubicación del sitemap
-Sitemap: https://portfolio-dext.vercel.app/sitemap.xml

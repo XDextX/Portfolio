@@ -2,11 +2,12 @@
 import { defineConfig } from 'astro/config';
 import vercel from "@astrojs/vercel";
 import { stylesVersion } from "./src/utils/styles-version.ts";
+import { CANONICAL_ORIGIN } from "./src/data/site.ts";
 
 // https://astro.build/config
 export default defineConfig({
   output: "server",
-  site: "https://portfolio-dext.vercel.app",
+  site: CANONICAL_ORIGIN,
   adapter: vercel(),
   // Spec 015: every dev server rewrites .astro/data-store.json and types.d.ts on start, and
   // each rewrite reloaded the pages open on the others mid-test (1 reload per file, measured).
