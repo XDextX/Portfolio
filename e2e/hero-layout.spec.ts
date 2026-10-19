@@ -89,7 +89,10 @@ test('phrases in a row under the name at 390 (RF-4)', async ({ page }) => {
     const p = r.phrases;
     if (p.some((li) => li.t < r.sub!.b - 0.5 || li.b > r.bio!.t + 0.5)) offenders.push('RF-4: the phrases are not between the role line and the bio');
     if (!p.some((li, i) => i && Math.abs(li.t - p[i - 1].t) < 1)) offenders.push('RF-4: no two phrases share a line');
-    if (!p.slice(1).every((li) => li.before !== 'none' && li.before !== 'normal')) offenders.push('RF-4: the chevrons are gone');
+    // A phrase that starts a line has no chevron (spec 047 RF-3); each one sharing a line with its predecessor does.
+    const drawn = (li: { before: string }) => li.before !== 'none' && li.before !== 'normal';
+    const joined = p.filter((li, i) => i && Math.abs(li.t - p[i - 1].t) < 1);
+    if (!joined.length || !joined.every(drawn)) offenders.push('RF-4: a phrase sharing a line with the one before has no chevron');
     expect(offenders, offenders.join('\n')).toEqual([]);
 });
 

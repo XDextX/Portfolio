@@ -126,6 +126,14 @@ import { t } from '@i18n/index';
 		inline-size: 34px;
 	}
 
+	/* Spec 048: 44 × 44 under a finger; the language control carries the same height (RF-4). */
+	@media (pointer: coarse) {
+		.theme-btn {
+			block-size: 44px;
+			inline-size: 44px;
+		}
+	}
+
 	/* No hover rule here on purpose: the theme owns it, in light.css and dark.css,
 	   because a theme-specific hover cannot live in a component. This used to
 	   carry `background: var(--neutral-200)`, compiling to (0,3,0) against the

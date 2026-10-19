@@ -76,6 +76,20 @@ const hint = t('layout.languageSwitcher');
 		transition: border-color var(--dur) var(--ease);
 	}
 
+	/* Spec 048: under a finger the wrapper is 44px, as .theme-btn, and the select, the only part a
+	   tap opens, fills the wrapper's border box (it overlays the 1px border, plan D-4). */
+	@media (pointer: coarse) {
+		.language-switcher {
+			block-size: 44px;
+		}
+
+		.select {
+			block-size: calc(100% + 2px);
+			margin-block: -1px;
+			min-inline-size: 44px;
+		}
+	}
+
 	/* Hover means the border turns gold, as on every bordered control (spec 017). */
 	.language-switcher:hover {
 		border-color: var(--accent-text);

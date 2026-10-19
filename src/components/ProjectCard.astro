@@ -227,6 +227,16 @@ function formatCount(n: number) {
 		text-decoration: none;
 	}
 
+	/* Spec 048: the name is a 44px target under a finger, its text unchanged. */
+	@media (pointer: coarse) {
+		.card-title a {
+			display: inline-flex;
+			align-items: center;
+			min-block-size: 44px;
+			min-inline-size: 44px;
+		}
+	}
+
 	.card-title a:hover {
 		text-decoration: underline;
 	}

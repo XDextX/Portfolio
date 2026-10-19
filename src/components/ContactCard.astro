@@ -9,7 +9,7 @@ export interface Props {
 }
 
 /**
- * One contact card: the channel's logo, its value as a link, and copy and open controls.
+ * One contact card: the channel's logo, its value as a link (on a desktop), and copy and open controls.
  * @param item the contact; its kind decides what a copy writes and whether links open outside
  */
 const { item } = Astro.props;
@@ -157,6 +157,20 @@ const errorLive  = t('contact.actions.errorLive', { label });
 		white-space: nowrap;
 	}
 
+	/* Spec 045: on a phone the value is not drawn (it was cut at 360 and 390): the card keeps its
+	   icon, a label in the value's type, and the controls, which still act on the value. Spec 035's
+	   single-column line, the same literal as AboutSection's query. */
+	@media (max-width: 720px) {
+		.contact-value {
+			display: none;
+		}
+
+		.contact-label {
+			font-size: var(--fs-sm);
+			color: var(--text-color);
+		}
+	}
+
 	.contact-value:hover {
 		color: var(--accent-text);
 		text-decoration: underline;
@@ -191,6 +205,18 @@ const errorLive  = t('contact.actions.errorLive', { label });
 			background var(--dur) var(--ease),
 			color var(--dur) var(--ease),
 			border-color var(--dur) var(--ease);
+	}
+
+	/* Spec 048: 44px under a finger. The value link grows by padding, so its ellipsis stays. */
+	@media (pointer: coarse) {
+		.icon-btn {
+			block-size: 44px;
+			min-inline-size: 44px;
+		}
+
+		.contact-value {
+			padding-block: calc((44px - 1lh) / 2);
+		}
 	}
 
 	.icon-btn:hover {

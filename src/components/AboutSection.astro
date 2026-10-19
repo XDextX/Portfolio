@@ -264,6 +264,14 @@ const { given, family } = ABOUT.nameParts;
 		-webkit-mask: var(--icon) center / contain no-repeat;
 	}
 
+	/* Spec 048: the hero's buttons are 44px tall under a finger (40px otherwise). */
+	@media (pointer: coarse) {
+		.btn-cv,
+		.btn-social {
+			block-size: 44px;
+		}
+	}
+
 	.btn-social:hover {
 		border-color: var(--accent-text);
 		color: var(--accent-text);
@@ -367,5 +375,23 @@ const { given, family } = ABOUT.nameParts;
 			height: 5.5rem;
 			padding: var(--sp-2);
 		}
+	}
+
+	/* Spec 047: where the four phrases do not fit on one line, two per line, the break held by an
+	   ordered ::after and no chevron starting phrase 3. Each number is the locale's one-line row (es
+	   402px, en 338px) plus the chrome around it: 72px to 30rem, 112px above it (the page gutter
+	   joins), the 4vw sheet padding after 500px; es lands at 516px, en at 410px, rounded up. */
+	@media (max-width: 32.5rem) {
+		.about-phrases:lang(es) { row-gap: 0; }
+		.about-phrases:lang(es)::after { content: ''; flex-basis: 100%; block-size: var(--sp-2); order: 1; }
+		.about-phrases:lang(es) li:nth-child(n + 3) { order: 2; }
+		.about-phrases:lang(es) li:nth-child(3)::before { content: none; }
+	}
+
+	@media (max-width: 26rem) {
+		.about-phrases:lang(en) { row-gap: 0; }
+		.about-phrases:lang(en)::after { content: ''; flex-basis: 100%; block-size: var(--sp-2); order: 1; }
+		.about-phrases:lang(en) li:nth-child(n + 3) { order: 2; }
+		.about-phrases:lang(en) li:nth-child(3)::before { content: none; }
 	}
 </style>

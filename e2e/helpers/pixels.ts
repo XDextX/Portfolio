@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test';
 
-export type PixelTarget = { sel: string; kind: 'text' | 'border' | 'icon'; floor: number };
+/** `pseudo` reads the colour from that pseudo-element (`'::before'`); the box measured stays the element's own. */
+export type PixelTarget = { sel: string; kind: 'text' | 'border' | 'icon'; floor: number; pseudo?: string };
 export type PixelResult = PixelTarget & { fg: string; ratio: number; at: string };
 
 /**
@@ -12,7 +13,7 @@ export type PixelResult = PixelTarget & { fg: string; ratio: number; at: string 
  */
 export async function worstOverBackground(page: Page, targets: PixelTarget[], hide: string, clip: string): Promise<PixelResult[]> {
     const found = await page.evaluate((list) => list.flatMap((t) => [...document.querySelectorAll(t.sel)].map((e) => {
-        const cs = getComputedStyle(e);
+        const cs = getComputedStyle(e, t.pseudo);
         return { ...t, fg: t.kind === 'border' ? cs.borderTopColor : cs.color, rects: [...e.getClientRects()].map((r) => ({ x: r.left, y: r.top, w: r.width, h: r.height })) };
     })), targets);
     await page.evaluate((sel) => { for (const e of document.querySelectorAll(sel)) (e as HTMLElement).style.visibility = 'hidden'; }, hide);
