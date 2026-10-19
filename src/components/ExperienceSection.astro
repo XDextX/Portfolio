@@ -103,6 +103,18 @@ const last = EXPERIENCES.length - 1;
 		}
 	}
 
+	/* Below 40rem the period stays in the card, so the tile takes its row and the title spans the
+	   header (spec 046). The breakpoint that decides where the period lives decides this too. */
+	@media (width < 40rem) {
+		.exp-item :global(.exp-header) {
+			grid-template-areas: 'tile period' 'title title' 'location location';
+		}
+
+		.exp-item :global(.exp-period) {
+			align-self: start;
+		}
+	}
+
 	.exp-more {
 		margin: var(--sp-4) 0 0;
 	}

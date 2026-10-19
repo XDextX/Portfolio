@@ -143,12 +143,15 @@ const headingId = `exp-${slug}${idSuffix ? `-${idSuffix}` : ''}-title`;
 		color: var(--accent-text);
 		margin: 0;
 		line-height: 1.3;
+		/* A wrapped role breaks evenly ("Desarrollador / Full Stack"), never leaving a lone last word. */
+		text-wrap: balance;
 	}
 
 	.exp-company {
 		font-size: var(--fs-sm);
 		font-weight: 600;
 		color: var(--text-color);
+		text-wrap: balance;
 	}
 
 	/* --icon-mono, not currentColor: the name's colour is not the icon's (012 D-3). */
