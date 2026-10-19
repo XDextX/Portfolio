@@ -38,6 +38,21 @@ const landed = (page: Page, origin: { href: string; index: number }) => page.eva
 
 const lastCard = (page: Page) => page.locator('a[href^="/proyectos/"]').last();
 
+/** Go back or forward and wait for the router's swap; returns the settled scrollY. */
+async function traverse(page: Page, go: () => Promise<unknown>, path: string) {
+    // A traverse changes the URL at popstate, before the router swaps and scrolls, so the URL alone
+    // read the old page's 0 (7 runs of 8 under load). Not page-load: the last follow's can still be due.
+    // after-swap comes right after the router's scrollTo, and the last follow's has already fired.
+    await page.evaluate(() => {
+        const w = window as any; w.__swapped = false;
+        document.addEventListener('astro:after-swap', () => { w.__swapped = true; }, { once: true });
+    });
+    await go();
+    await page.waitForURL((u) => u.pathname === path);
+    await page.waitForFunction(() => (window as any).__swapped, null, { timeout: 5_000 });
+    return settled(() => page.evaluate(() => scrollY));
+}
+
 for (const vp of VIEWPORTS) {
     for (const theme of THEMES) {
         test(`Home, "Ver todos", "Inicio" lands on that link, focused — ${vp.width}px ${theme} (RF-1)`, async ({ page }) => {
@@ -176,17 +191,12 @@ test('back and forward keep the router position, including after a return (RF-4)
     const before = await page.evaluate(() => scrollY);
     expect(before).toBeGreaterThan(0);
     await follow(page, page.locator(`${HOME_LINKS} a[href="/proyectos"]`).nth(1), '/proyectos');
-    await page.goBack();
-    await page.waitForURL((u) => u.pathname === '/');
-    expect(await settled(() => page.evaluate(() => scrollY)), 'back').toBe(before);
+    expect(await traverse(page, () => page.goBack(), '/'), 'back').toBe(before);
 
     await follow(page, page.locator(`${HOME_LINKS} a[href="/proyectos"]`).nth(1), '/proyectos');
     const returned = await follow(page, INICIO(page), '/');
-    await page.goBack();
-    await page.waitForURL((u) => u.pathname === '/proyectos');
-    await page.goForward();
-    await page.waitForURL((u) => u.pathname === '/');
-    expect(await settled(() => page.evaluate(() => scrollY)), 'forward').toBe(returned);
+    await traverse(page, () => page.goBack(), '/proyectos');
+    expect(await traverse(page, () => page.goForward(), '/'), 'forward').toBe(returned);
 });
 
 test('a page never left before opens at the top (RF-5)', async ({ page }) => {
