@@ -19,7 +19,6 @@
 			"starsLabel": "Stars: {{count}}",
 			"forksLabel": "Forks: {{count}}",
 			"updated": "Updated: {{date}}",
-			"description": "Description:",
 			"noDescription": "No description provided",
 			"tags": "Tags"
 		},
