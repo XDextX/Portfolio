@@ -13,10 +13,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Use Node.js 20
+      - name: Use the Node.js major package.json declares
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: package.json
 
       - name: Cache node modules
         uses: actions/cache@v4
@@ -40,16 +40,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Use Node.js 20
+      - name: Use the Node.js major package.json declares
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: package.json
 
       - name: Install dependencies
         run: npm install
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
-
+      # The runner has Chrome installed and playwright.config.ts uses channel: 'chrome': no download.
+      # The live GitHub API is read with the workflow's own token, for the repositories the owner
+      # selects with the repository variables (spec 049).
       - name: Run E2E tests (Playwright)
         run: npm run test:e2e
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOPIC: ${{ vars.GITHUB_TOPIC }}
+          GITHUB_USERNAME: ${{ vars.GITHUB_USERNAME }}
