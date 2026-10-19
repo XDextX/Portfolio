@@ -264,6 +264,14 @@ const { given, family } = ABOUT.nameParts;
 		-webkit-mask: var(--icon) center / contain no-repeat;
 	}
 
+	/* Spec 048: the hero's buttons are 44px tall under a finger (40px otherwise). */
+	@media (pointer: coarse) {
+		.btn-cv,
+		.btn-social {
+			block-size: 44px;
+		}
+	}
+
 	.btn-social:hover {
 		border-color: var(--accent-text);
 		color: var(--accent-text);

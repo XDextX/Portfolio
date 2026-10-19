@@ -193,6 +193,18 @@ const errorLive  = t('contact.actions.errorLive', { label });
 			border-color var(--dur) var(--ease);
 	}
 
+	/* Spec 048: 44px under a finger. The value link grows by padding, so its ellipsis stays. */
+	@media (pointer: coarse) {
+		.icon-btn {
+			block-size: 44px;
+			min-inline-size: 44px;
+		}
+
+		.contact-value {
+			padding-block: calc((44px - 1lh) / 2);
+		}
+	}
+
 	.icon-btn:hover {
 		background: var(--accent-surface);
 		color: var(--accent-surface-text);

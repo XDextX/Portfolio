@@ -58,6 +58,29 @@ const lastIndex = directions.length - 1;
 		text-decoration: none;
 	}
 
+	/* Spec 048: the link is 44px tall, its text where it is with a fine pointer. The width comes
+	   from an invisible box centred on it, so the gaps beside the text stay as they are and a tap
+	   there still hits the link. (A box also reaching 44px up and down would run under the topbar,
+	   3px above the row, and over the next sibling, 8px below.) */
+	@media (pointer: coarse) {
+		.crumbs a {
+			position: relative;
+			display: inline-flex;
+			align-items: center;
+			min-block-size: 44px;
+		}
+
+		.crumbs a::before {
+			content: '';
+			position: absolute;
+			inset-block: 0;
+			inset-inline-start: 50%;
+			transform: translateX(-50%);
+			min-inline-size: 44px;
+			inline-size: 100%;
+		}
+	}
+
 	.crumbs a:hover {
 		text-decoration: underline;
 	}

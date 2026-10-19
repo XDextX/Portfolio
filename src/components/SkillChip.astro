@@ -55,6 +55,14 @@ const Tag = href ? 'a' : 'span';
 			border-color var(--dur) var(--ease);
 	}
 
+	/* Spec 048: a linked chip is a 44px target under a finger (a span has no target to size). */
+	@media (pointer: coarse) {
+		a.chip {
+			min-block-size: 44px;
+			min-inline-size: 44px;
+		}
+	}
+
 	.chip:hover {
 		color: var(--accent-text);
 		border-color: var(--accent-text);

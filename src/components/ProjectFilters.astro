@@ -81,6 +81,13 @@ const filters = [
 			color var(--dur) var(--ease);
 	}
 
+	/* Spec 048: 44px tall under a finger (2.5rem otherwise). */
+	@media (pointer: coarse) {
+		.project-filter {
+			block-size: 44px;
+		}
+	}
+
 	.project-filter:hover:not([aria-current]) {
 		border-color: var(--accent-text);
 		color: var(--accent-text);

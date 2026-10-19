@@ -112,4 +112,14 @@ const last = EXPERIENCES.length - 1;
 		font-weight: 600;
 		text-decoration: underline;
 	}
+
+	/* Spec 048: a 44px target under a finger, the text as it is. */
+	@media (pointer: coarse) {
+		.exp-cv {
+			display: inline-flex;
+			align-items: center;
+			min-block-size: 44px;
+			min-inline-size: 44px;
+		}
+	}
 </style>

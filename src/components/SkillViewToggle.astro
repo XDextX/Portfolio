@@ -125,11 +125,19 @@ import { t } from '@i18n/index';
 		color: var(--accent-text);
 	}
 
-	/* Centred under the 1rem icon in the 2rem button: inset by half the difference.
-	   No transition, so reduced motion has nothing to drop. */
+	/* Spec 048: 44 × 44 under a finger; the icon stays 1rem, the indicator stays under it. */
+	@media (pointer: coarse) {
+		.toggle-btn {
+			width: 44px;
+			height: 44px;
+		}
+	}
+
+	/* Centred under the 1rem icon: inset by half the button less half the icon, so it holds at
+	   2rem and at 44px. No transition, so reduced motion has nothing to drop. */
 	.toggle-indicator {
 		position: absolute;
-		inset-inline: calc((2rem - 1rem) / 2);
+		inset-inline: calc(50% - 0.5rem);
 		inset-block-end: 0.2rem;
 		block-size: 2px;
 		background: var(--accent-text);
