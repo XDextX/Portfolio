@@ -88,8 +88,8 @@ const tagline = t('contact.tagline');
 
 	/* Each <li> is a flex item whose automatic minimum is its min-content width,
 	   and the nowrap value ellipsizes — so the minimum is the whole address and
-	   the item refuses to shrink. Measured 84px of scroll at 360px, 30px at
-	   414px. Zeroing it lets the card shrink and the ellipsis work. */
+	   the item refuses to shrink. Zeroing it lets the card shrink and the ellipsis
+	   work where a value is still drawn (above 720px, spec 045). */
 	.contact-list > li {
 		min-width: 0;
 	}
