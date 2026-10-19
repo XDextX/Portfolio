@@ -1,7 +1,7 @@
 ---
 import type { GitHubRepo } from '@type/github';
 import { t } from '@i18n/index';
-import { getReadme } from '@lib/github';
+import { getReadme, tidyReadme } from '@lib/github';
 
 interface Props {
 	repo: GitHubRepo;
@@ -19,7 +19,7 @@ let available = false;
 try {
 	const html = await getReadme(repo.owner.login, repo.name);
 	if (html !== null) {
-		readmeText = html;
+		readmeText = tidyReadme(html, repo.name);
 		available = true;
 	}
 } catch {

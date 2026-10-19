@@ -19,12 +19,13 @@
 			"starsLabel": "Stars: {{count}}",
 			"forksLabel": "Forks: {{count}}",
 			"updated": "Updated: {{date}}",
-			"description": "Description:",
-			"noDescription": "No description provided"
+			"noDescription": "No description provided",
+			"tags": "Tags"
 		},
 		"repo": "Repository:",
 		"license": "License:",
 		"readme": {
+			"label": "Documentation",
 			"missing": "This repository has no README."
 		},
 		"unavailable": {

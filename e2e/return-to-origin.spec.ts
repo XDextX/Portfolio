@@ -196,7 +196,7 @@ test('a page never left before opens at the top (RF-5)', async ({ page }) => {
 
 test('a filter click records no origin (RF-6)', async ({ page }) => {
     await open(page, '/proyectos');
-    const nav = page.locator('.projects-page__header .project-filters a');
+    const nav = page.locator('.page-header .project-filters a');
     const onBody = () => page.evaluate(() => document.activeElement === document.body);
     await nav.nth(2).click();
     await page.waitForURL(/cat=backend/);

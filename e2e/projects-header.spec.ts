@@ -7,14 +7,16 @@ import { worstOverBackground, type PixelTarget } from './helpers/pixels';
 import { contrast } from '../tests/helpers/colour';
 
 // Spec 039: the /proyectos header — glyph tile (RF-1), two-tone title (RF-2), the section's line
-// (RF-3) and the spec 036 band behind it (RF-4).
+// (RF-3) and the spec 036 band behind it (RF-4). Spec 044: the tile and the band are checked on
+// the project page too, whose header is the same component.
 
+const ROUTES = ['/proyectos', '/proyectos/Portfolio'];
 const locale = (l: string) => JSON.parse(readFileSync(join(process.cwd(), 'i18n', 'locales', `${l}.json`), 'utf8'));
 const plain = (s: string) => s.replace(/\*/g, '');
 
-async function open(page: Page, width: number, theme: Theme, lang = 'es') {
+async function open(page: Page, width: number, theme: Theme, lang = 'es', route = '/proyectos') {
     await page.setViewportSize({ width, height: 900 });
-    await openIn(page, E2E_URL, theme, `/proyectos?lang=${lang}`);
+    await openIn(page, E2E_URL, theme, `${route}?lang=${lang}`);
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForTimeout(400);
 }
@@ -26,12 +28,12 @@ const token = (page: Page, name: string) => page.evaluate((v) => {
 }, name);
 const hex = (rgb: string) => '#' + (rgb.match(/\d+/g)!.slice(0, 3).map((n) => Number(n).toString(16).padStart(2, '0')).join(''));
 
-for (const theme of THEMES) {
-    test(`the tile sits left of the title on one row, with the folder glyph — ${theme} (RF-1)`, async ({ page }) => {
-        await open(page, 1280, theme);
+for (const route of ROUTES) for (const width of [1280, 390]) for (const theme of THEMES) {
+    test(`the tile sits left of the title on one row, with the folder glyph — ${route}, ${width}px, ${theme} (RF-1)`, async ({ page }) => {
+        await open(page, width, theme, 'es', route);
         const r = await page.evaluate(() => {
-            const tile = document.querySelector('.projects-page__tile');
-            const h1 = document.querySelector('.projects-page__header h1');
+            const tile = document.querySelector('.page-header__tile');
+            const h1 = document.querySelector('.page-header h1');
             const box = (e: Element | null) => { if (!e) return null; const x = e.getBoundingClientRect(); return { l: x.left, r: x.right, t: x.top, b: x.bottom }; };
             // The glyph is the tile, a child or the tile's ::before — whichever carries the folder mask.
             const styles = tile ? [getComputedStyle(tile), getComputedStyle(tile, '::before'), ...[...tile.querySelectorAll('*')].map((e) => getComputedStyle(e))] : [];
@@ -54,12 +56,14 @@ for (const theme of THEMES) {
         }
         expect(offenders, offenders.join('\n')).toEqual([]);
     });
+}
 
+for (const theme of THEMES) {
     test(`the title is ink with a gold word, named by the plain title — ${theme} (RF-2)`, async ({ page }) => {
         await open(page, 1280, theme);
         const r = await page.evaluate(() => {
-            const h1 = document.querySelector('.projects-page__header h1');
-            const word = document.querySelector('.projects-page__header h1 .projects-page__word');
+            const h1 = document.querySelector('.page-header h1');
+            const word = document.querySelector('.page-header h1 .projects-page__word');
             return { name: h1?.textContent?.replace(/\s+/g, ' ').trim(), ink: h1 ? getComputedStyle(h1).color : null, gold: word ? getComputedStyle(word).color : null,
                 sheet: getComputedStyle(document.querySelector('main')!).backgroundColor };
         });
@@ -78,46 +82,61 @@ for (const theme of THEMES) {
 for (const lang of ['es', 'en']) {
     test(`the lead reads projects.lead — ${lang} (RF-3)`, async ({ page }) => {
         await open(page, 1280, 'light', lang);
-        const got = await page.locator('.projects-page__lead').first().textContent({ timeout: 2000 }).catch(() => null);
+        const got = await page.locator('.page-header__lead').first().textContent({ timeout: 2000 }).catch(() => null);
         expect(got?.trim() ?? null).toBe(locale(lang).projects.lead);
     });
 }
 
 // RF-4: every text, icon and control in the header, measured over the bare band.
 const TARGETS: PixelTarget[] = [
-    { sel: '.projects-page__header .crumbs a', kind: 'text', floor: 4.5 },
-    { sel: '.projects-page__header .crumbs span', kind: 'text', floor: 4.5 },
-    { sel: '.projects-page__header h1', kind: 'text', floor: 4.5 },
-    { sel: '.projects-page__header h1 .projects-page__word', kind: 'text', floor: 4.5 },
-    { sel: '.projects-page__lead', kind: 'text', floor: 4.5 },
+    { sel: '.page-header .crumbs a', kind: 'text', floor: 4.5 },
+    { sel: '.page-header .crumbs span', kind: 'text', floor: 4.5 },
+    { sel: '.page-header h1', kind: 'text', floor: 4.5 },
+    { sel: '.page-header h1 .projects-page__word', kind: 'text', floor: 4.5 },
+    { sel: '.page-header__lead', kind: 'text', floor: 4.5 },
     { sel: '.layout-topbar select, .layout-topbar label', kind: 'border', floor: 3 },
     { sel: '.theme-btn', kind: 'border', floor: 3 },
     { sel: '.theme-btn', kind: 'icon', floor: 3 },
     // Spec 040: the filters rest transparent on the band; the current one carries its own fill (RF-3).
-    { sel: '.projects-page__header .project-filter:not([aria-current])', kind: 'text', floor: 4.5 },
-    { sel: '.projects-page__header .project-filter:not([aria-current])', kind: 'border', floor: 3 },
+    { sel: '.page-header .project-filter:not([aria-current])', kind: 'text', floor: 4.5 },
+    { sel: '.page-header .project-filter:not([aria-current])', kind: 'border', floor: 3 },
 ];
 
-for (const width of [1280, 390]) {
-    test(`band box: sheet top to header bottom, full sheet width — ${width}px (RF-4)`, async ({ page }) => {
-        await open(page, width, 'light');
+for (const route of ROUTES) for (const width of [1280, 390]) {
+    test(`band box: sheet top to header bottom, full sheet width — ${route}, ${width}px (RF-4)`, async ({ page }) => {
+        await open(page, width, 'light', 'es', route);
         const r = await page.evaluate(() => {
             const b = (e: Element | null) => { if (!e) return null; const x = e.getBoundingClientRect(); return { l: x.left, r: x.right, t: x.top, b: x.bottom }; };
-            return { band: b(document.querySelector('.hero-band')), main: b(document.querySelector('main')), header: b(document.querySelector('.projects-page__header')) };
+            return { band: b(document.querySelector('.hero-band')), main: b(document.querySelector('main')), header: b(document.querySelector('.page-header')), grid: b(document.querySelector('.grid')) };
         });
         const offenders: string[] = [];
         if (!r.band) offenders.push('RF-4: no band');
         else for (const [k, want] of [['l', r.main!.l], ['r', r.main!.r], ['t', r.main!.t], ['b', r.header!.b]] as const) {
             if (Math.abs((r.band as any)[k] - want) > 1) offenders.push(`RF-4: band ${k} ${(r.band as any)[k].toFixed(1)}, want ${want.toFixed(1)}`);
         }
+        // The sidebar and the README sit below the header, so the band ends above them (spec 044).
+        if (route !== '/proyectos' && (!r.grid || r.grid.t < r.header!.b - 0.5)) offenders.push('RF-2: the body starts inside the header');
         expect(offenders, offenders.join('\n')).toEqual([]);
     });
 }
 
-for (const theme of THEMES) for (const width of [1280, 390]) {
-    test(`text, icons and controls clear their floors over the band — ${theme}, ${width}px (RF-4)`, async ({ page }) => {
-        await open(page, width, theme);
-        const res = await worstOverBackground(page, TARGETS, '.layout-topbar, .projects-page__header > :not(.hero-band)', '.hero-band');
+// The project page's header: crumbs, the back button's text and border, the title, the lead.
+const PROJECT_TARGETS: PixelTarget[] = [
+    { sel: '.page-header .crumbs a', kind: 'text', floor: 4.5 },
+    { sel: '.page-header .crumbs span', kind: 'text', floor: 4.5 },
+    { sel: '.page-header .back-btn', kind: 'text', floor: 4.5 },
+    { sel: '.page-header .back-btn', kind: 'border', floor: 3 },
+    { sel: '.page-header h1', kind: 'text', floor: 4.5 },
+    { sel: '.page-header__lead', kind: 'text', floor: 4.5 },
+    { sel: '.layout-topbar select, .layout-topbar label', kind: 'border', floor: 3 },
+    { sel: '.theme-btn', kind: 'border', floor: 3 },
+    { sel: '.theme-btn', kind: 'icon', floor: 3 },
+];
+
+for (const route of ROUTES) for (const theme of THEMES) for (const width of [1280, 390]) {
+    test(`text, icons and controls clear their floors over the band — ${route}, ${theme}, ${width}px (RF-4)`, async ({ page }) => {
+        await open(page, width, theme, 'es', route);
+        const res = await worstOverBackground(page, route === '/proyectos' ? TARGETS : PROJECT_TARGETS, '.layout-topbar, .page-header > :not(.hero-band)', '.hero-band');
         const offenders = res.filter((w) => w.ratio < w.floor).map((w) => `RF-4: ${w.sel} ${w.kind} ${w.fg} on ${w.at} is ${w.ratio.toFixed(2)}:1, under ${w.floor}`);
         expect(offenders, offenders.join('\n')).toEqual([]);
     });

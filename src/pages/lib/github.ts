@@ -301,3 +301,47 @@ export function demoUrl(repo: Pick<GitHubRepo, "homepage">): string | null {
         return null;
     }
 }
+
+
+/** A heading's or fragment's text: tags stripped (so image alt text is out), entities decoded. */
+function textOf(html: string): string {
+    return html
+        .replace(/<[^>]*>/g, '')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+        .replace(/&quot;/g, '"').replace(/&#x27;|&apos;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+}
+
+/** Whether two names match once lowercased and stripped of everything but letters and digits. */
+function sameName(a: string, b: string): boolean {
+    const norm = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+    return norm(a) !== '' && norm(a) === norm(b);
+}
+
+const ANCHOR = String.raw`<a\b[^>]*\bclass="anchor"[^>]*>[\s\S]*?<\/a>`;
+
+/**
+ * A README as the project page shows it (spec 044): anchors dropped, their ids moved onto their
+ * headings, no leading heading repeating the name. @param html GitHub's README, images already
+ * rewritten. @param repoName the repository's name. @returns the HTML to render.
+ */
+export function tidyReadme(html: string, repoName: string): string {
+    // The id sits on the anchor, not the heading: carry it over, or a link to the heading breaks.
+    const withId = (open: string, attrs: string, anchor: string) => {
+        const id = anchor.match(/\bid="([^"]*)"/)?.[1];
+        return `${open}${attrs}${id && !/\bid=/.test(attrs) ? ` id="${id}"` : ''}>`;
+    };
+    html = html
+        .replace(new RegExp(String.raw`(<h([1-6])\b)([^>]*)>((?:(?!<h[1-6]\b)[\s\S])*?<\/h\2>)\s*(${ANCHOR})`, 'g'),
+            (_, open, _l, attrs, rest, anchor) => `${withId(open, attrs, anchor)}${rest}`)
+        .replace(new RegExp(String.raw`(<h([1-6])\b)([^>]*)>\s*(${ANCHOR})`, 'g'),
+            (_, open, _l, attrs, anchor) => withId(open, attrs, anchor));
+
+    const first = /<h([1-6])\b[^>]*>([\s\S]*?)<\/h\1>/.exec(html);
+    if (!first || textOf(html.slice(0, first.index)).trim() !== '' || !sameName(textOf(first[2]), repoName)) return html;
+    let [start, end] = [first.index, first.index + first[0].length];
+    const wrapper = /<div class="markdown-heading"[^>]*>\s*$/.exec(html.slice(0, start));
+    const close = /^\s*<\/div>/.exec(html.slice(end));
+    if (wrapper && close) [start, end] = [wrapper.index, end + close[0].length];
+    return html.slice(0, start) + html.slice(end);
+}

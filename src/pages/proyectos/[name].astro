@@ -10,6 +10,7 @@ import { getRepo } from '@lib/github';
 import { CANONICAL_ORIGIN } from '../../data/site';
 import { projectDescription, projectEntity } from '@utils/seo';
 import LanguageBadge from '@components/LanguageBadge.astro';
+import PageHeader from '@components/PageHeader.astro';
 
 const { name } = Astro.params;
 const locale = applyLocale(Astro);
@@ -66,16 +67,16 @@ const { title, desc, lang, hasDemo, topics, updated, fmtDate, starsLabel, forksL
 {
 	repo ? (
 <BaseLayout title={title} description={desc} jsonLd={jsonLd} locale={locale}>
-	<section class='wrap'>
-		<Breadcrumbs directions={directions} />
-
-		<a class='btn btn--ghost back-btn' href='/proyectos'>
-			<span aria-hidden='true'>←</span>
-			{t('nav.back')}
-		</a>
-
-		<header>
-			<div class='hero__top'>
+	<section class='wrap project-page'>
+		<PageHeader lead={desc}>
+			<Fragment slot='before'>
+				<Breadcrumbs directions={directions} />
+				<a class='btn btn--ghost back-btn' href='/proyectos'>
+					<span aria-hidden='true'>←</span>
+					{t('nav.back')}
+				</a>
+			</Fragment>
+			<div slot='title' class='project-page__heading'>
 				<h1 id='project-title' class='title' transition:name=`p-${repo.id}-title`>
 					{repo.name}
 				</h1>
@@ -83,78 +84,69 @@ const { title, desc, lang, hasDemo, topics, updated, fmtDate, starsLabel, forksL
 					<LanguageBadge lang={lang} />
 				</p>
 			</div>
+		</PageHeader>
 
-			{
-				desc && (
-					<div class='desc' id='project-desc'>
-						<h3 class='mb-4'>{t('project.meta.description')}</h3>
-						<p class='m'>{desc}</p>
-					</div>
-				)
-			}
+		<section class='grid section'>
+			<aside class='card sidebar' aria-label={t('project.actions.section')}>
+				<div class='updated flex items-center gap-2'>
+					<span class='dot' aria-hidden='true'></span>
+					<span>
+						<time datetime={updated.toISOString()}>
+							{t('project.meta.updated', { date: fmtDate.format(updated) })}
+						</time>
+					</span>
+				</div>
 
-			<section class='grid' aria-describedby='project-desc'>
-				<aside class='card sidebar' aria-label={t('project.actions.section')}>
-					<div class='updated flex items-center gap-2'>
-						<span class='dot' aria-hidden='true'></span>
-						<span>
-							<time datetime={updated.toISOString()}>
-								{t('project.meta.updated', { date: fmtDate.format(updated) })}
-							</time>
-						</span>
-					</div>
+				<div
+					class='flex gap-4 items-center mt-2'
+					aria-label={t('project.meta.metrics')}
+				>
+					<span title={starsLabel}>{starsLabel}</span>
+					<span title={forksLabel}>{forksLabel}</span>
+				</div>
 
-					<div
-						class='flex gap-4 items-center mt-2'
-						aria-label={t('project.meta.metrics')}
+				{
+					topics.length ? (
+						<div class='topics' role='group' aria-label={t('project.meta.tags')}>
+							{topics.map((tag) => (
+								<Chip text={tag} />
+							))}
+						</div>
+					) : null
+				}
+
+				<nav class='actions' aria-label={t('project.actions.section')}>
+					<a
+						class='btn btn--ghost'
+						href={repo.html_url}
+						target='_blank'
+						rel='noopener'
 					>
-						<span title='Stars' aria-label='Stars'>{starsLabel}</span>
-						<span title='Forks' aria-label='Forks'>{forksLabel}</span>
-					</div>
-
+						{t('project.actions.code')}
+					</a>
 					{
-						topics.length ? (
-							<div class='topics' aria-label='Tags'>
-								{topics.map((tag) => (
-									<Chip text={tag} />
-								))}
-							</div>
-						) : null
+						hasDemo ? (
+							<a
+								class='btn btn--primary'
+								href={repo.homepage}
+								target='_blank'
+								rel='noopener'
+							>
+								{t('project.actions.liveDemo')}
+							</a>
+						) : (
+							<span class='btn btn--disabled' aria-disabled='true'>
+								{t('project.actions.noDemo')}
+							</span>
+						)
 					}
+				</nav>
+			</aside>
 
-					<nav class='actions' aria-label={t('project.actions.section')}>
-						<a
-							class='btn btn--ghost'
-							href={repo.html_url}
-							target='_blank'
-							rel='noopener'
-						>
-							{t('project.actions.code')}
-						</a>
-						{
-							hasDemo ? (
-								<a
-									class='btn btn--primary'
-									href={repo.homepage}
-									target='_blank'
-									rel='noopener'
-								>
-									{t('project.actions.liveDemo')}
-								</a>
-							) : (
-								<span class='btn btn--disabled' aria-disabled='true'>
-									{t('project.actions.noDemo')}
-								</span>
-							)
-						}
-					</nav>
-				</aside>
-
-				<section class='readme' aria-label='Documentation'>
-					<Readme repo={repo} />
-				</section>
+			<section class='readme' aria-label={t('project.readme.label')}>
+				<Readme repo={repo} />
 			</section>
-		</header>
+		</section>
 	</section>
 </BaseLayout>
 	) : (
@@ -163,13 +155,14 @@ const { title, desc, lang, hasDemo, topics, updated, fmtDate, starsLabel, forksL
 			description={t('project.unavailable.message')}
 			locale={locale}
 		>
-			<section class='wrap'>
-				<a class='btn btn--ghost back-btn' href='/proyectos'>
-					<span aria-hidden='true'>←</span>
-					{t('nav.back')}
-				</a>
-				<h1 class='title'>{t('project.unavailable.title')}</h1>
-				<p class='unavailable'>{t('project.unavailable.message')}</p>
+			<section class='wrap project-page'>
+				<PageHeader lead={t('project.unavailable.message')}>
+					<a slot='before' class='btn btn--ghost back-btn' href='/proyectos'>
+						<span aria-hidden='true'>←</span>
+						{t('nav.back')}
+					</a>
+					<h1 slot='title' class='title'>{t('project.unavailable.title')}</h1>
+				</PageHeader>
 			</section>
 		</BaseLayout>
 	)
@@ -180,14 +173,28 @@ const { title, desc, lang, hasDemo, topics, updated, fmtDate, starsLabel, forksL
 		display: inline-flex;
 		align-items: center;
 		gap: 0.4rem;
-		margin-block: 0.75rem;
+		align-self: flex-start;
 		font-size: var(--fs-sm);
 	}
 
-	.hero__top {
+	.project-page {
+		display: grid;
+		gap: 1.25rem;
+	}
+
+	/* The badge wraps under a long name; the name wraps before the tile shrinks. */
+	.project-page__heading {
+		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
-		gap: 0.75rem;
-		margin: 1rem 0;
+		gap: 0.5rem 0.75rem;
+		min-inline-size: 0;
+	}
+
+	.project-page__heading h1 {
+		margin: 0;
+		min-inline-size: 0;
+		overflow-wrap: anywhere;
 	}
 
 	.grid {
@@ -245,10 +252,5 @@ const { title, desc, lang, hasDemo, topics, updated, fmtDate, starsLabel, forksL
 		.readme {
 			max-height: none;
 		}
-	}
-
-	.unavailable {
-		margin: 0;
-		max-width: var(--measure);
 	}
 </style>

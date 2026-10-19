@@ -4,6 +4,7 @@ import path from 'path';
 import { LEVEL_COLOR, LEVEL_TEXT_COLOR, LEVEL_SCALE, type TechLevel } from '../src/data/levelLabels';
 import * as levelData from '../src/data/levelLabels';
 import { TECH } from '../src/data/tech';
+import { stripComments as stripSourceComments } from './helpers/source';
 import { stripComments, luminance, contrast, toHex, resolveColour, cssRules, styleSources, hue, hueDistance, borderColourOf, parseColour, parseGradients, composites, onRamp } from './helpers/colour';
 
 /**
@@ -154,7 +155,7 @@ describe('visual language', () => {
         ).toEqual([]);
     });
 
-    it('translations go through t(), not inline ternaries', () => {
+    it('translations go through t(), not inline ternaries or literal title / aria-label', () => {
         // "Inline `lang === 'es' ? … : …` survives a locale switch and ships
         // Spanish to English readers." AboutSection held three of them.
         //
@@ -174,6 +175,13 @@ describe('visual language', () => {
                 const [, es, en] = m;
                 if (isLanguageTag(es) && isLanguageTag(en)) continue;
                 offenders.push(`${where}  '${es}' | '${en}'`);
+            }
+
+            // A quoted title / aria-label is prose that skips t() (spec 043); `title={x}` and
+            // aria-labelledby cannot match, and an empty value names nothing.
+            for (const m of stripSourceComments(src).matchAll(/(?<![\w-])(title|aria-label)\s*=\s*(['"])([^'"]*)\2/g)) {
+                if (m[3].trim() === '') continue;
+                offenders.push(`${where}  ${m[1]}='${m[3]}'`);
             }
         }
 
