@@ -2,7 +2,7 @@
 # Runs before every commit; any failure cancels it (constitution 7).
 #   - shortcut: markers  none in the staged code (AGENTS.md, Comments)
 #   - npm test           vitest, data and source guards
-#   - npm run test:e2e   Playwright on the installed Chrome, rendered checks
+# The rendered suite runs in CI on every pull request into main (constitution 7).
 # lint and format are not run: neither eslint nor prettier is installed.
 # Bypass, only when intentional:  git commit --no-verify
 
@@ -16,14 +16,6 @@ npm test
 if [ $? -ne 0 ]; then
   echo ""
   echo "❌ npm test failed — commit cancelled."
-  echo "   If intentional: git commit --no-verify"
-  exit 1
-fi
-
-npm run test:e2e
-if [ $? -ne 0 ]; then
-  echo ""
-  echo "❌ npm run test:e2e failed — commit cancelled."
   echo "   If intentional: git commit --no-verify"
   exit 1
 fi
